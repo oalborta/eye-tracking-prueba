@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Tracking Suavizado</title>
+    <title>Recolección de Data</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
@@ -31,7 +31,6 @@
             box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.8);
             display: none;
             transform: translate(-50%, -50%);
-            /* Quitamos la transición abrupta para que el suavizado de JS haga el trabajo */
         }
     </style>
 </head>
@@ -45,7 +44,7 @@
         <p style="max-width: 500px; text-align: center; line-height: 1.6;">
             Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
             <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
-            <br><br>El estudio tiene una duración de <strong>15 segundos</strong>.
+            <br><br>El estudio tiene una duración de <strong>15 segundos</strong>. Al finalizar se descargará un archivo con los datos.
         </p>
         <br>
         <button onclick="iniciarTodo()">Acepto y comenzar</button>
@@ -59,7 +58,8 @@
 
     <div id="pantalla-fin" class="pantalla">
         <h2>¡Estudio terminado!</h2>
-        <p>Gracias por su participación.</p>
+        <p style="font-size: 20px; color: #00ff00;">Se descargó el archivo <strong>datos_ojo.csv</strong></p>
+        <p style="margin-top: 20px;">Abrilo con Excel o Google Sheets para ver la data cruda.</p>
     </div>
 
     <script type="module">
@@ -76,14 +76,13 @@
         let estudioActivo = false;
         let timerActivo = false;
 
-        // --- NUEVAS VARIABLES DE AJUSTE FINO ---
+        // --- NUEVA VARIABLE: EL DIARIO SECRETO ---
+        let datosOjo = []; 
+        let tiempoInicio = 0;
+
         let posicionAnteriorX = window.innerWidth / 2;
         let posicionAnteriorY = window.innerHeight / 2;
-        
-        // Cuanto más cerca de 1.0, más lento y suave es el punto. Cuanto más cerca a 0.0, más rápido y tembloroso.
         let pesoSuavizado = 0.7; 
-        
-        // Cuántos píxeles lo corremos hacia ARRIBA para centrarlo. Si mira muy abajo, subilo (ej: -150).
         let corrimientoY = -100; 
 
         window.iniciarTodo = async function() {
@@ -112,6 +111,7 @@
             estimulo.style.display = 'block';
             puntoMirada.style.display = 'block';
             estudioActivo = true;
+            tiempoInicio = performance.now(); // Tomamos el tiempo exacto de arranque
             
             iniciarTimer();
             procesarVideo();
@@ -141,32 +141,36 @@
                     let sensibilidadX = 4.5; 
                     let sensibilidadY = 9.0; 
 
-                    // 1. Calculamos el punto "crudo" (con la inversión de signo)
                     let rawX = centroX - (promedioX - 0.5) * window.innerWidth * sensibilidadX;
                     let rawY = centroY - (promedioY - 0.5) * window.innerHeight * sensibilidadY;
 
-                    // Limitamos para que no se salga de la pantalla
                     rawX = Math.max(0, Math.min(window.innerWidth, rawX));
                     rawY = Math.max(0, Math.min(window.innerHeight, rawY));
 
-                    // 2. APLICAMOS EL SUAVIZADO (Promedio con la posición anterior)
                     let smoothX = (posicionAnteriorX * pesoSuavizado) + (rawX * (1 - pesoSuavizado));
                     let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawY * (1 - pesoSuavizado));
 
-                    // 3. APLICAMOS EL CORRIMIENTO VERTICAL
                     smoothY = smoothY + corrimientoY;
 
-                    // Limitamos de nuevo por si el corrimiento lo sacó de la pantalla
                     smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
                     smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
 
-                    // Movemos el punto
                     puntoMirada.style.left = smoothX + "px";
                     puntoMirada.style.top = smoothY + "px";
 
-                    // Guardamos la posición actual para el próximo frame
                     posicionAnteriorX = smoothX;
                     posicionAnteriorY = smoothY;
+
+                    // --- ESCRIBIMOS EN EL DIARIO ---
+                    // Calculamos cuántos milisegundos pasaron desde que empezó
+                    let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
+                    
+                    // Guardamos el tiempo, la X y la Y
+                    datosOjo.push({
+                        tiempo: tiempoTranscurrido.toFixed(3), // 3 decimales de precisión
+                        x: Math.round(smoothX), // Redondeamos a píxel entero
+                        y: Math.round(smoothY)
+                    });
                 }
             }
             requestAnimationFrame(procesarVideo);
@@ -205,6 +209,33 @@
             puntoMirada.style.display = 'none';
             estimulo.style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
+            
+            // --- CREAMOS Y DESCARGAMOS EL EXCEL (CSV) ---
+            // 1. Armamos el texto del archivo (cabecera + datos)
+            let contenidoCSV = "Tiempo_Segundos,X_Pantalla,Y_Pantalla\n";
+            for (let punto of datosOjo) {
+                contenidoCSV += `${punto.tiempo},${punto.x},${punto.y}\n`;
+            }
+
+            // 2. Creamos un "Blob" (un paquete de datos virtual)
+            let blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
+            
+            // 3. Creamos un link invisible para forzar la descarga
+            let url = URL.createObjectURL(blob);
+            let linkDescarga = document.createElement("a");
+            linkDescarga.setAttribute("href", url);
+            linkDescarga.setAttribute("download", "datos_ojo.csv"); // Nombre del archivo
+            linkDescarga.style.display = "none";
+            document.body.appendChild(linkDescarga);
+            
+            // 4. Hacemos clic automático en el link
+            linkDescarga.click();
+            
+            // Limpiamos
+            document.body.removeChild(linkDescarga);
+            URL.revokeObjectURL(url);
+
+            // Mostramos pantalla de fin
             pantallaFin.style.display = 'flex';
         }
     </script>
