@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Tracking Tuneado</title>
+    <title>Eye Tracking Ejes Corregidos</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
@@ -120,24 +120,22 @@
                     let centroX = window.innerWidth / 2;
                     let centroY = window.innerHeight / 2;
 
-                    // EJE X
                     let ratioXIzq = (lm[468].x - lm[33].x) / (lm[133].x - lm[33].x);
                     let ratioXDer = (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x);
                     let promedioX = (ratioXIzq + ratioXDer) / 2; 
 
-                    // EJE Y
                     let ratioYIzq = (lm[468].y - lm[159].y) / (lm[145].y - lm[159].y);
                     let ratioYDer = (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y);
                     let promedioY = (ratioYIzq + ratioYDer) / 2; 
 
-                    // --- TUNEO ASIMÉTRICO ---
-                    let sensibilidadX = 4.5; // Volumen para costados
-                    let sensibilidadY = 9.0; // Volumen duplicado para arriba/abajo (por la anatomía del ojo)
+                    let sensibilidadX = 4.5; 
+                    let sensibilidadY = 9.0; 
 
-                    let finalX = centroX + (promedioX - 0.5) * window.innerWidth * sensibilidadX;
-                    let finalY = centroY + (promedioY - 0.5) * window.innerHeight * sensibilidadY;
+                    // --- EL CAMBIO MÁGICO ---
+                    // Cambiamos el '+' por un '-' para invertir la dirección
+                    let finalX = centroX - (promedioX - 0.5) * window.innerWidth * sensibilidadX;
+                    let finalY = centroY - (promedioY - 0.5) * window.innerHeight * sensibilidadY;
 
-                    // Limitamos para que no se vaya fuera de la pantalla
                     finalX = Math.max(0, Math.min(window.innerWidth, finalX));
                     finalY = Math.max(0, Math.min(window.innerHeight, finalY));
 
