@@ -2,77 +2,128 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prueba MediaPipe</title>
-    <!-- Cargamos el motor de Google -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <title>Motor Google 2024</title>
     <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #222; color: white; flex-direction: column; }
-        #contenedor-video { position: relative; width: 640px; height: 480px; border: 4px solid #00ff00; border-radius: 10px; overflow: hidden; }
-        video { display: none; }
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #222; color: white; flex-direction: column; font-family: sans-serif; }
+        #contenedor { position: relative; width: 640px; height: 480px; border: 4px solid #00ff00; border-radius: 10px; overflow: hidden; background: #000; }
+        video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        h1 { margin-bottom: 20px; }
+        h1 { margin-bottom: 10px; }
+        #estado { color: #ffcc00; font-size: 20px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <h1>Prueba de Motor Google (MediaPipe)</h1>
-    <p>Si esto funciona, tu Mac es compatible perfecto.</p>
-
-    <div id="contenedor-video">
-        <video id="video-entrada" playsinline></video>
-        <canvas id="canvas-salida" width="640" height="480"></canvas>
+    <h1>Prueba de MediaPipe Nuevo</h1>
+    <div id="contenedor">
+        <video id="video" playsinline></video>
+        <canvas id="canvas" width="640" height="480"></canvas>
     </div>
+    <div id="estado">Iniciando cámara...</div>
 
-    <script>
-        const videoElement = document.getElementById('video-entrada');
-        const canvasElement = document.getElementById('canvas-salida');
-        const canvasCtx = canvasElement.getContext('2d');
+    <!-- Usamos la nueva forma de importar Google -->
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
-        // Configuramos el motor de Google
-        const faceMesh = new FaceMesh({
-            locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
-            }
-        });
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const estado = document.getElementById('estado');
 
-        faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true, // Esto es clave para los ojos
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
+        let faceLandmarker;
+        let lastTime = -1;
 
-        // Qué hacer cuando detecta algo
-        faceMesh.onResults((results) => {
-            canvasCtx.save();
-            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        // 1. Descargar el "cerebro" de Google
+        async function inicializarIA() {
+            estado.innerText = "Descargando modelo de IA (puede tardar 10 seg)...";
             
-            // Dibujamos el video de fondo
-            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            const vision = await FilesetResolver.forVisionTasks(
+                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+            );
+            
+            faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                baseOptions: {
+                    modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+                    delegate: "GPU"
+                },
+                runningMode: "VIDEO",
+                numFaces: 1
+            });
 
-            if (results.multiFaceLandmarks) {
-                for (const landmarks of results.multiFaceLandmarks) {
-                    // Dibujamos los puntos de la cara
-                    drawConnectors(canvasCtx, landmarks, FACEMESH_TESSELATION, {color: '#C0C0C070', lineWidth: 1});
-                    drawConnectors(canvasCtx, landmarks, FACEMESH_RIGHT_EYE, {color: '#FF3030'});
-                    drawConnectors(canvasCtx, landmarks, FACEMESH_LEFT_EYE, {color: '#30FF30'});
-                    drawConnectors(canvasCtx, landmarks, FACEMESH_FACE_OVAL, {color: '#E0E0E0'});
+            estado.innerText = "Modelo cargado. Prendiendo cámara...";
+            prenderCamara();
+        }
+
+        // 2. Prender la cámara
+        async function prenderCamara() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                video.srcObject = stream;
+                await video.play();
+                estado.innerText = "¡Funcionando! Mueva su cara.";
+                procesarVideo();
+            } catch (err) {
+                estado.innerText = "Error al acceder a la cámara: " + err.message;
+            }
+        }
+
+        // 3. Leer la cámara y dibujar
+        async function procesarVideo() {
+            let startTime = performance.now();
+            
+            // Leemos un cuadro de la cámara
+            if (video.readyState >= 2) {
+                // Ignoramos cuadros si no pasaron 100ms (para no sobrecargar el celular)
+                let currentTime = performance.now();
+                if (currentTime - lastTime > 100) {
+                    lastTime = currentTime;
+                    
+                    // Enviamos la imagen a la IA
+                    const resultados = await faceLandmarker.detectForVideo(video, startTime);
+                    
+                    // Limpiamos el canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Si encontró una cara, dibujamos los puntos
+                    if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
+                        const landmarks = resultados.faceLandmarks[0];
+                        
+                        // Dibujamos todos los puntos de la cara (gris)
+                        for (const punto of landmarks) {
+                            ctx.beginPath();
+                            ctx.arc(punto.x * canvas.width, punto.y * canvas.height, 1, 0, 3 * Math.PI);
+                            ctx.fillStyle = "#AAAAAA";
+                            ctx.fill();
+                        }
+
+                        // Dibujamos los ojos más grandes (rojo y verde)
+                        // Ojo izquierdo (puntos del 33 al 133 aprox, usamos índices específicos de iris)
+                        const ojoIzq = landmarks[468]; // Centro del iris izquierdo
+                        const ojoDer = landmarks[473]; // Centro del iris derecho
+                        
+                        if(ojoIzq) {
+                            ctx.beginPath();
+                            ctx.arc(ojoIzq.x * canvas.width, ojoIzq.y * canvas.height, 6, 0, 3 * Math.PI);
+                            ctx.fillStyle = "#FF0000";
+                            ctx.fill();
+                        }
+                        if(ojoDer) {
+                            ctx.beginPath();
+                            ctx.arc(ojoDer.x * canvas.width, ojoDer.y * canvas.height, 6, 0, 3 * Math.PI);
+                            ctx.fillStyle = "#00FF00";
+                            ctx.fill();
+                        }
+                    }
                 }
             }
-            canvasCtx.restore();
-        });
+            
+            // Hacemos que esto se repita para siempre como un video
+            requestAnimationFrame(procesarVideo);
+        }
 
-        // Prendemos la cámara y la mandamos al motor
-        const camera = new Camera(videoElement, {
-            onFrame: async () => {
-                await faceMesh.send({image: videoElement});
-            },
-            width: 640,
-            height: 480
-        });
-        camera.start();
+        // Arrancamos todo
+        inicializarIA();
+
     </script>
-
 </body>
 </html>
