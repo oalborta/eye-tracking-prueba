@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prototipo Eye Tracking v1.5</title>
+    <title>Prototipo Eye Tracking v1.6</title>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
@@ -14,6 +14,9 @@
         button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; }
         button:hover { background: #0056b3; }
         .marca-clic { position: absolute; width: 20px; height: 20px; background: rgba(0, 255, 255, 0.5); border: 2px solid cyan; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 2; }
+        
+        /* Esta línea mágica esconde el video de tu cara para que no moleste */
+        #webgazerVideoFeed { display: none !important; }
     </style>
 </head>
 <body>
@@ -30,9 +33,9 @@
     </div>
 
     <div id="pantalla-calibracion" class="pantalla">
-        <div style="background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px;">
-            <h3 id="texto-calibracion">Calibrando: Haz 5 clics por la pantalla</h3>
-            <p id="texto-timer" style="font-size: 24px; color: #ffcc00; display: none;">Tiempo restante: 5s</p>
+        <div style="background: rgba(0,0,0,0.8); padding: 20px; border-radius: 10px; border: 2px solid yellow;">
+            <h3 id="texto-calibracion" style="color: yellow;">Hacé 5 clics en cualquier parte de la imagen</h3>
+            <p id="texto-timer" style="font-size: 24px; color: #00ff00; display: none; margin-top: 10px;">Exposición: 5s</p>
         </div>
     </div>
 
@@ -40,28 +43,32 @@
 
     <div id="pantalla-fin" class="pantalla">
         <h2>¡Estudio terminado!</h2>
-        <p>Gracias por su participación. Puede cerrar esta pestaña.</p>
+        <p>Gracias por su participación.</p>
     </div>
 
     <script>
         let clicsCalibracion = 0;
-        let estudioIniciado = false;
+        let estudioIniciado = false; // Empieza en FALSO
         let timerActivo = false;
         let textoCalibracion = document.getElementById('texto-calibracion');
 
         document.addEventListener('click', function(e) {
+            // Si el estudio NO inició, estamos calibrando
             if (!estudioIniciado) {
                 clicsCalibracion++;
-                textoCalibracion.innerText = "Calibrando: Clic " + clicsCalibracion + " de 5";
+                textoCalibracion.innerText = "Clic " + clicsCalibracion + " de 5";
                 
                 if(clicsCalibracion >= 5) {
-                    textoCalibracion.innerText = "¡Calibración lista!";
+                    textoCalibracion.innerText = "¡Perfecto, mirá la imagen!";
                     document.getElementById('pantalla-calibracion').style.display = 'none';
+                    
+                    estudioIniciado = true; // <-- AQUÍ ESTÁ EL ARREGLO: Recién ahora le decimos que arrancó
                     iniciarTimer();
                 }
                 return;
             }
 
+            // Si el estudio YA inició, dibujamos los clics del mouse
             let marca = document.createElement('div');
             marca.className = 'marca-clic';
             marca.style.left = e.clientX + 'px';
@@ -72,11 +79,12 @@
         function iniciarEstudio() {
             document.getElementById('pantalla-consentimiento').style.display = 'none';
             
+            // Prendemos la cámara
             webgazer.setGazeListener(function(data, elapsedTime) {
                 if (data == null) return;
             }).begin();
             
-            estudioIniciado = true;
+            // NOTÁ QUE ACÁ YA NO PONGO "estudioIniciado = true"
         }
 
         function iniciarTimer() {
@@ -86,12 +94,11 @@
             let tiempoTotal = 5; 
             let tiempoRestante = tiempoTotal;
             let textoTimer = document.getElementById('texto-timer');
-            
             textoTimer.style.display = 'block';
 
             let cuentaRegresiva = setInterval(function() {
                 tiempoRestante--;
-                textoTimer.innerText = "Exposición activa: " + tiempoRestante + "s";
+                textoTimer.innerText = "Exposición: " + tiempoRestante + "s";
                 
                 if (tiempoRestante <= 0) {
                     clearInterval(cuentaRegresiva);
