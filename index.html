@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prototipo Eye Tracking v3.0</title>
+    <title>Prototipo Eye Tracking v4.0</title>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
@@ -19,19 +19,30 @@
         
         .marca-clic { position: absolute; width: 20px; height: 20px; background: rgba(0, 255, 255, 0.5); border: 2px solid cyan; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; }
 
-        /* Ocultamos basura de WebGazer */
-        #webgazerVideoFeed, #webgazerVideoCanvas, #webgazerFaceFeedbackBox { display: none !important; }
+        /* OCULTAMOS TODO LO DE WEBGAZER */
+        #webgazerVideoFeed, #webgazerVideoCanvas, #webgazerFaceFeedbackBox, #webgazerGazeDot { display: none !important; }
         
-        /* FORZAMOS que el punto rojo esté siempre arriba de todo */
-        #webgazerGazeDot { 
-            pointer-events: none !important; 
-            z-index: 99999 !important; 
-            width: 15px !important;
-            height: 15px !important;
+        /* NUESTRO PUNTO ROJO PERSONALIZADO */
+        #mi-punto {
+            width: 20px;
+            height: 20px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            pointer-events: none;
+            z-index: 999999;
+            box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.8); /* Efecto neón para que se vea sí o sí */
+            display: none; /* Empieza oculto */
+            transform: translate(-50%, -50%);
         }
     </style>
 </head>
 <body>
+
+    <!-- NUESTRO PUNTO ROJO -->
+    <div id="mi-punto"></div>
 
     <div id="pantalla-consentimiento" class="pantalla">
         <h2>Aviso de Privacidad</h2>
@@ -41,7 +52,6 @@
             <br><br>El estudio tiene una duración de <strong>5 segundos</strong> de exposición más una calibración inicial.
         </p>
         <br>
-        <!-- Le pasamos el 'event' al botón para poder frenarlo -->
         <button onclick="iniciarEstudio(event)">Acepto y comenzar</button>
     </div>
 
@@ -62,11 +72,11 @@
         let clicsCalibracion = 0;
         let estudioIniciado = false;
         let timerActivo = false;
-        let permitirClics = false; // Nuevo seguro
+        let permitirClics = false; 
         let textoCalibracion = document.getElementById('texto-calibracion');
+        let miPuntoRojo = document.getElementById('mi-punto'); // Capturamos nuestro punto
 
         document.addEventListener('click', function(e) {
-            // Si no permitimos clics o el estudio ya inició, ignoramos
             if (!permitirClics) return; 
 
             if (!estudioIniciado) {
@@ -89,9 +99,7 @@
         });
 
         function iniciarEstudio(event) {
-            // FRENA el clic para que no cuente como calibración
             event.stopPropagation(); 
-            
             document.getElementById('pantalla-consentimiento').style.display = 'none';
             document.getElementById('pantalla-calibracion').style.display = 'flex';
 
@@ -99,14 +107,21 @@
             webgazer.showFaceOverlay(false); 
             webgazer.showFaceFeedbackBox(false); 
 
+            // ACÁ ESTÁ LA MAGIA: Movemos NUESTRO punto con los datos de WebGazer
             webgazer.setGazeListener(function(data, elapsedTime) {
                 if (data == null) return;
+                
+                // Si estamos en la fase de prueba, mostramos y movemos el punto
+                if (estudioIniciado) {
+                    miPuntoRojo.style.display = 'block';
+                    miPuntoRojo.style.left = data.x + "px"; // Coordenada X
+                    miPuntoRojo.style.top = data.y + "px";  // Coordenada Y
+                }
             }).begin();
 
-            // Esperamos 4 segundos para que la cámara prenda y procese
             setTimeout(function() {
-                textoCalibracion.innerText = "MIRÁ el centro de la pantalla y hacé clic ahí. Repetí 5 veces en diferentes lugares.";
-                permitirClics = true; // Recién ahora habilitamos los clics
+                textoCalibracion.innerText = "MIRÁ un punto de la imagen y hacé clic exactamente ahí. Repetí 5 veces.";
+                permitirClics = true; 
             }, 4000);
         }
 
@@ -147,7 +162,7 @@
             
             document.getElementById('estimulo').style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
-            document.getElementById('webgazerGazeDot').style.display = 'none';
+            miPuntoRojo.style.display = 'none'; // Escondemos nuestro punto
             
             document.getElementById('pantalla-fin').style.display = 'flex';
         }
