@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Prototipo Eye Tracking v2.0</title>
+    <title>Prototipo Eye Tracking v3.0</title>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
         .pantalla { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
         #pantalla-consentimiento { background: #222; z-index: 100; }
-        #pantalla-calibracion { background: transparent; z-index: 50; }
+        #pantalla-calibracion { background: transparent; z-index: 50; display: none; }
         #pantalla-fin { background: rgba(0,0,0,0.9); display: none; z-index: 100; }
         
         #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; }
@@ -19,12 +19,15 @@
         
         .marca-clic { position: absolute; width: 20px; height: 20px; background: rgba(0, 255, 255, 0.5); border: 2px solid cyan; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; }
 
-        /* ESTO MATA CUALQUIER COSA QUE WEBGAZER INTENTE DIBUJAR */
-        #webgazerVideoFeed, #webgazerVideoCanvas, #webgazerFaceFeedbackBox { 
-            display: none !important; 
-        }
-        #webgazerGazeDot {
-            pointer-events: none !important; /* El punto rojo no roba clics */
+        /* Ocultamos basura de WebGazer */
+        #webgazerVideoFeed, #webgazerVideoCanvas, #webgazerFaceFeedbackBox { display: none !important; }
+        
+        /* FORZAMOS que el punto rojo esté siempre arriba de todo */
+        #webgazerGazeDot { 
+            pointer-events: none !important; 
+            z-index: 99999 !important; 
+            width: 15px !important;
+            height: 15px !important;
         }
     </style>
 </head>
@@ -38,12 +41,13 @@
             <br><br>El estudio tiene una duración de <strong>5 segundos</strong> de exposición más una calibración inicial.
         </p>
         <br>
-        <button onclick="iniciarEstudio()">Acepto y comenzar</button>
+        <!-- Le pasamos el 'event' al botón para poder frenarlo -->
+        <button onclick="iniciarEstudio(event)">Acepto y comenzar</button>
     </div>
 
-    <div id="pantalla-calibracion" class="pantalla" style="display: none;">
+    <div id="pantalla-calibracion" class="pantalla">
         <div style="background: rgba(0,0,0,0.8); padding: 30px; border-radius: 10px; border: 2px solid #ffcc00;">
-            <h2 id="texto-calibracion" style="color: #ffcc00; margin: 0;">Hacé 5 clics en cualquier lugar</h2>
+            <h2 id="texto-calibracion" style="color: #ffcc00; margin: 0;">Preparando cámara...</h2>
         </div>
     </div>
 
@@ -58,11 +62,13 @@
         let clicsCalibracion = 0;
         let estudioIniciado = false;
         let timerActivo = false;
+        let permitirClics = false; // Nuevo seguro
         let textoCalibracion = document.getElementById('texto-calibracion');
 
-        // ESCUCHADOR DE CLICS
         document.addEventListener('click', function(e) {
-            // Si el estudio NO inició, contamos calibración
+            // Si no permitimos clics o el estudio ya inició, ignoramos
+            if (!permitirClics) return; 
+
             if (!estudioIniciado) {
                 clicsCalibracion++;
                 textoCalibracion.innerText = "Clic " + clicsCalibracion + " de 5";
@@ -75,7 +81,6 @@
                 return;
             }
 
-            // Si el estudio YA inició, dibujamos los clics del mouse
             let marca = document.createElement('div');
             marca.className = 'marca-clic';
             marca.style.left = e.clientX + 'px';
@@ -83,26 +88,28 @@
             document.body.appendChild(marca);
         });
 
-        // INICIAR ESTUDIO
-        function iniciarEstudio() {
-            // 1. Escondemos la pantalla de inicio
-            document.getElementById('pantalla-consentimiento').style.display = 'none';
+        function iniciarEstudio(event) {
+            // FRENA el clic para que no cuente como calibración
+            event.stopPropagation(); 
             
-            // 2. Mostramos la pantalla de calibración
+            document.getElementById('pantalla-consentimiento').style.display = 'none';
             document.getElementById('pantalla-calibracion').style.display = 'flex';
 
-            // 3. LE DECIMOS A WEBGAZER QUE NO MUESTRE NADA
             webgazer.showVideoPreview(false); 
             webgazer.showFaceOverlay(false); 
             webgazer.showFaceFeedbackBox(false); 
 
-            // 4. Prendemos la cámara en silencio
             webgazer.setGazeListener(function(data, elapsedTime) {
                 if (data == null) return;
             }).begin();
+
+            // Esperamos 4 segundos para que la cámara prenda y procese
+            setTimeout(function() {
+                textoCalibracion.innerText = "MIRÁ el centro de la pantalla y hacé clic ahí. Repetí 5 veces en diferentes lugares.";
+                permitirClics = true; // Recién ahora habilitamos los clics
+            }, 4000);
         }
 
-        // INICIAR TIMER
         function iniciarTimer() {
             if(timerActivo) return;
             timerActivo = true;
@@ -133,17 +140,15 @@
             }, 1000);
         }
 
-        // TERMINAR ESTUDIO
         function terminarEstudio() {
             estudioIniciado = false; 
+            permitirClics = false;
             webgazer.end(); 
             
-            // Escondemos todo
             document.getElementById('estimulo').style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
             document.getElementById('webgazerGazeDot').style.display = 'none';
             
-            // Mostramos pantalla de fin
             document.getElementById('pantalla-fin').style.display = 'flex';
         }
     </script>
