@@ -2,35 +2,29 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Recolección de Data</title>
+    <title>Trayectoria Visual</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
         .pantalla { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
         #pantalla-consentimiento { background: #222; z-index: 100; }
         #pantalla-carga { background: #222; z-index: 100; display: none; }
-        #pantalla-fin { background: rgba(0,0,0,0.9); display: none; z-index: 100; }
+        #pantalla-fin { background: rgba(0,0,0,0.85); z-index: 200; flex-direction: column; gap: 20px; }
         
         #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; }
         
-        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; z-index: 200; }
+        /* El lienzo donde vamos a dibujar */
+        #lienzo-trayectoria { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: none; }
+        
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; z-index: 300; }
         button:hover { background: #0056b3; }
         
         video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; }
 
         #punto-mirada {
-            width: 30px;
-            height: 30px;
-            background-color: #ff0000;
-            border-radius: 50%;
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            pointer-events: none;
-            z-index: 999999;
-            box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.8);
-            display: none;
-            transform: translate(-50%, -50%);
+            width: 30px; height: 30px; background-color: #ff0000; border-radius: 50%;
+            position: absolute; top: 0px; left: 0px; pointer-events: none; z-index: 999999;
+            box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.8); display: none; transform: translate(-50%, -50%);
         }
     </style>
 </head>
@@ -38,13 +32,17 @@
 
     <div id="punto-mirada"></div>
     <video id="video" playsinline></video>
+    <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba" style="display: none;">
+    
+    <!-- Lienzo vacío listo para dibujar -->
+    <canvas id="lienzo-trayectoria"></canvas>
 
     <div id="pantalla-consentimiento" class="pantalla">
         <h2>Aviso de Privacidad</h2>
         <p style="max-width: 500px; text-align: center; line-height: 1.6;">
             Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
             <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
-            <br><br>El estudio tiene una duración de <strong>15 segundos</strong>. Al finalizar se descargará un archivo con los datos.
+            <br><br>El estudio tiene una duración de <strong>15 segundos</strong>.
         </p>
         <br>
         <button onclick="iniciarTodo()">Acepto y comenzar</button>
@@ -54,12 +52,11 @@
         <h2 id="texto-carga">Descargando modelo de IA...</h2>
     </div>
 
-    <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba" style="display: none;">
-
-    <div id="pantalla-fin" class="pantalla">
+    <div id="pantalla-fin" class="pantalla" style="display: none;">
         <h2>¡Estudio terminado!</h2>
-        <p style="font-size: 20px; color: #00ff00;">Se descargó el archivo <strong>datos_ojo.csv</strong></p>
-        <p style="margin-top: 20px;">Abrilo con Excel o Google Sheets para ver la data cruda.</p>
+        <p>Se descargó el archivo CSV con la data cruda.</p>
+        <button id="btn-descargar-img" onclick="descargarImagen()">Descargar Trayectoria como Imagen (PNG)</button>
+        <p style="font-size: 12px; color: #aaa;">(Mirá la imagen dibujada detrás de este cuadro)</p>
     </div>
 
     <script type="module">
@@ -71,12 +68,13 @@
         const textoCarga = document.getElementById('texto-carga');
         const pantallaFin = document.getElementById('pantalla-fin');
         const estimulo = document.getElementById('estimulo');
+        const lienzo = document.getElementById('lienzo-trayectoria');
+        const ctx = lienzo.getContext('2d');
 
         let faceLandmarker;
         let estudioActivo = false;
         let timerActivo = false;
 
-        // --- NUEVA VARIABLE: EL DIARIO SECRETO ---
         let datosOjo = []; 
         let tiempoInicio = 0;
 
@@ -97,7 +95,6 @@
                 baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`, delegate: "GPU" },
                 runningMode: "VIDEO", numFaces: 1
             });
-            
             textoCarga.innerText = "Modelo listo. Prendiendo cámara...";
             await prenderCamara();
         };
@@ -111,7 +108,7 @@
             estimulo.style.display = 'block';
             puntoMirada.style.display = 'block';
             estudioActivo = true;
-            tiempoInicio = performance.now(); // Tomamos el tiempo exacto de arranque
+            tiempoInicio = performance.now(); 
             
             iniciarTimer();
             procesarVideo();
@@ -119,14 +116,11 @@
 
         async function procesarVideo() {
             if (!estudioActivo) return;
-
             let startTime = performance.now();
             if (video.readyState >= 2) {
                 const resultados = await faceLandmarker.detectForVideo(video, startTime);
-                
                 if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
                     const lm = resultados.faceLandmarks[0];
-                    
                     let centroX = window.innerWidth / 2;
                     let centroY = window.innerHeight / 2;
 
@@ -151,7 +145,6 @@
                     let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawY * (1 - pesoSuavizado));
 
                     smoothY = smoothY + corrimientoY;
-
                     smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
                     smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
 
@@ -161,16 +154,8 @@
                     posicionAnteriorX = smoothX;
                     posicionAnteriorY = smoothY;
 
-                    // --- ESCRIBIMOS EN EL DIARIO ---
-                    // Calculamos cuántos milisegundos pasaron desde que empezó
                     let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
-                    
-                    // Guardamos el tiempo, la X y la Y
-                    datosOjo.push({
-                        tiempo: tiempoTranscurrido.toFixed(3), // 3 decimales de precisión
-                        x: Math.round(smoothX), // Redondeamos a píxel entero
-                        y: Math.round(smoothY)
-                    });
+                    datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(smoothX), y: Math.round(smoothY) });
                 }
             }
             requestAnimationFrame(procesarVideo);
@@ -180,18 +165,11 @@
             if(timerActivo) return;
             timerActivo = true;
             let tiempoRestante = 15; 
-            
             let textoTimer = document.createElement('div');
             textoTimer.id = 'timer-display';
-            textoTimer.style.position = 'absolute';
-            textoTimer.style.top = '20px';
-            textoTimer.style.right = '20px';
-            textoTimer.style.fontSize = '24px';
-            textoTimer.style.color = '#00ff00';
-            textoTimer.style.background = 'rgba(0,0,0,0.7)';
-            textoTimer.style.padding = '10px';
-            textoTimer.style.borderRadius = '5px';
-            textoTimer.style.zIndex = '100';
+            textoTimer.style.position = 'absolute'; textoTimer.style.top = '20px'; textoTimer.style.right = '20px';
+            textoTimer.style.fontSize = '24px'; textoTimer.style.color = '#00ff00'; textoTimer.style.background = 'rgba(0,0,0,0.7)';
+            textoTimer.style.padding = '10px'; textoTimer.style.borderRadius = '5px'; textoTimer.style.zIndex = '100';
             textoTimer.innerText = "Tiempo: " + tiempoRestante + "s";
             document.body.appendChild(textoTimer);
 
@@ -207,37 +185,95 @@
             timerActivo = false;
             video.srcObject.getTracks().forEach(track => track.stop());
             puntoMirada.style.display = 'none';
-            estimulo.style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
             
-            // --- CREAMOS Y DESCARGAMOS EL EXCEL (CSV) ---
-            // 1. Armamos el texto del archivo (cabecera + datos)
-            let contenidoCSV = "Tiempo_Segundos,X_Pantalla,Y_Pantalla\n";
-            for (let punto of datosOjo) {
-                contenidoCSV += `${punto.tiempo},${punto.x},${punto.y}\n`;
-            }
-
-            // 2. Creamos un "Blob" (un paquete de datos virtual)
+            // 1. Descargamos el CSV (igual que antes)
+            let contenidoCSV = "Tiempo_Segundos;X_Pantalla;Y_Pantalla\n";
+            for (let punto of datosOjo) { contenidoCSV += `${punto.tiempo};${punto.x};${punto.y}\n`; }
             let blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
-            
-            // 3. Creamos un link invisible para forzar la descarga
             let url = URL.createObjectURL(blob);
             let linkDescarga = document.createElement("a");
-            linkDescarga.setAttribute("href", url);
-            linkDescarga.setAttribute("download", "datos_ojo.csv"); // Nombre del archivo
-            linkDescarga.style.display = "none";
-            document.body.appendChild(linkDescarga);
-            
-            // 4. Hacemos clic automático en el link
-            linkDescarga.click();
-            
-            // Limpiamos
-            document.body.removeChild(linkDescarga);
-            URL.revokeObjectURL(url);
+            linkDescarga.setAttribute("href", url); linkDescarga.setAttribute("download", "datos_ojo.csv");
+            linkDescarga.style.display = "none"; document.body.appendChild(linkDescarga);
+            linkDescarga.click(); document.body.removeChild(linkDescarga); URL.revokeObjectURL(url);
 
-            // Mostramos pantalla de fin
+            // 2. DIBUJAMOS LA TRAYECTORIA
+            dibujarTrayectoria();
+        }
+
+        function dibujarTrayectoria() {
+            // Configuramos el tamaño del lienzo
+            lienzo.width = window.innerWidth;
+            lienzo.height = window.innerHeight;
+            lienzo.style.display = 'block';
+
+            // Dibujamos la imagen de fondo exactamente como se veía (con object-fit: contain)
+            let imgRatio = estimulo.naturalWidth / estimulo.naturalHeight;
+            let screenRatio = lienzo.width / lienzo.height;
+            let drawWidth, drawHeight, offsetX, offsetY;
+
+            if (imgRatio > screenRatio) {
+                drawWidth = lienzo.width;
+                drawHeight = lienzo.width / imgRatio;
+            } else {
+                drawHeight = lienzo.height;
+                drawWidth = lienzo.height * imgRatio;
+            }
+            offsetX = (lienzo.width - drawWidth) / 2;
+            offsetY = (lienzo.height - drawHeight) / 2;
+
+            ctx.drawImage(estimulo, offsetX, offsetY, drawWidth, drawHeight);
+
+            // Preparamos el dibujo de las líneas y números
+            ctx.lineWidth = 2;
+            ctx.fillStyle = "#FF0000";
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textAlign = "middle";
+
+            let puntoPrevio = null;
+            let contador = 1;
+            let ultimoTiempoDibujado = 0;
+            const INTERVALO_DIBUJO = 0.15; // Tomamos una muestra cada 150 milisegundos
+
+            for (let punto of datosOjo) {
+                if (punto.tiempo - ultimoTiempoDibujado >= INTERVALO_DIBUJO) {
+                    // Dibujamos la línea desde el punto anterior
+                    if (puntoPrevio) {
+                        ctx.beginPath();
+                        ctx.moveTo(puntoPrevio.x, puntoPrevio.y);
+                        ctx.lineTo(punto.x, punto.y);
+                        ctx.stroke();
+                    }
+
+                    // Dibujamos el círculo
+                    ctx.beginPath();
+                    ctx.arc(punto.x, punto.y, 10, 0, 2 * Math.PI);
+                    ctx.fill();
+
+                    // Dibujamos el número
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillText(contador, punto.x, punto.y);
+                    ctx.fillStyle = "#FF0000"; // Volvemos a rojo para el próximo círculo
+
+                    puntoPrevio = {x: punto.x, y: punto.y};
+                    contador++;
+                    ultimoTiempoDibujado = punto.tiempo;
+                }
+            }
+
+            // Mostramos la pantalla de fin arriba
             pantallaFin.style.display = 'flex';
         }
+
+        // Función para descargar el dibujo como imagen
+        window.descargarImagen = function() {
+            const link = document.createElement("a");
+            link.download = 'trayectoria_ojo.png';
+            link.href = lienzo.toDataURL();
+            link.click();
+        };
     </script>
 
 </body>
