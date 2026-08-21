@@ -2,128 +2,205 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Motor Google 2024</title>
+    <title>MVP Eye Tracking Real</title>
     <style>
-        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #222; color: white; flex-direction: column; font-family: sans-serif; }
-        #contenedor { position: relative; width: 640px; height: 480px; border: 4px solid #00ff00; border-radius: 10px; overflow: hidden; background: #000; }
-        video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        h1 { margin-bottom: 10px; }
-        #estado { color: #ffcc00; font-size: 20px; margin-top: 15px; }
+        body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
+        
+        .pantalla { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        #pantalla-consentimiento { background: #222; z-index: 100; }
+        #pantalla-carga { background: #222; z-index: 100; display: none; }
+        #pantalla-fin { background: rgba(0,0,0,0.9); display: none; z-index: 100; }
+        
+        #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; }
+        
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; z-index: 200; }
+        button:hover { background: #0056b3; }
+        
+        /* El video de la cámara queda oculto detrás de todo */
+        video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; }
+
+        /* Nuestro punto de mirada */
+        #punto-mirada {
+            width: 30px;
+            height: 30px;
+            background-color: #ff0000;
+            border-radius: 50%;
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            pointer-events: none;
+            z-index: 999999;
+            box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.8);
+            display: none;
+            transform: translate(-50%, -50%);
+            transition: left 0.1s ease-out, top 0.1s ease-out; /* Suaviza el movimiento */
+        }
     </style>
 </head>
 <body>
 
-    <h1>Prueba de MediaPipe Nuevo</h1>
-    <div id="contenedor">
-        <video id="video" playsinline></video>
-        <canvas id="canvas" width="640" height="480"></canvas>
-    </div>
-    <div id="estado">Iniciando cámara...</div>
+    <div id="punto-mirada"></div>
+    <video id="video" playsinline></video>
 
-    <!-- Usamos la nueva forma de importar Google -->
+    <div id="pantalla-consentimiento" class="pantalla">
+        <h2>Aviso de Privacidad</h2>
+        <p style="max-width: 500px; text-align: center; line-height: 1.6;">
+            Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
+            <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
+            <br><br>El estudio tiene una duración de <strong>10 segundos</strong>. No requiere calibración manual.
+        </p>
+        <br>
+        <button onclick="iniciarTodo()">Acepto y comenzar</button>
+    </div>
+
+    <div id="pantalla-carga" class="pantalla">
+        <h2 id="texto-carga">Descargando modelo de IA (puede tardar 10 segundos)...</h2>
+    </div>
+
+    <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba" style="display: none;">
+
+    <div id="pantalla-fin" class="pantalla">
+        <h2>¡Estudio terminado!</h2>
+        <p>Gracias por su participación.</p>
+    </div>
+
     <script type="module">
-        import { FaceLandmarker, FilesetResolver, DrawingUtils } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const estado = document.getElementById('estado');
+        const puntoMirada = document.getElementById('punto-mirada');
+        const pantallaCarga = document.getElementById('pantalla-carga');
+        const textoCarga = document.getElementById('texto-carga');
+        const pantallaFin = document.getElementById('pantalla-fin');
+        const estimulo = document.getElementById('estimulo');
 
         let faceLandmarker;
-        let lastTime = -1;
+        let estudioActivo = false;
+        let timerActivo = false;
 
-        // 1. Descargar el "cerebro" de Google
+        // 1. INICIO GENERAL
+        window.iniciarTodo = async function() {
+            document.getElementById('pantalla-consentimiento').style.display = 'none';
+            pantallaCarga.style.display = 'flex';
+            
+            await inicializarIA();
+        };
+
+        // 2. CARGAR INTELIGENCIA ARTIFICIAL
         async function inicializarIA() {
-            estado.innerText = "Descargando modelo de IA (puede tardar 10 seg)...";
-            
-            const vision = await FilesetResolver.forVisionTasks(
-                "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-            );
-            
+            const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
             faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-                baseOptions: {
-                    modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
-                    delegate: "GPU"
-                },
-                runningMode: "VIDEO",
-                numFaces: 1
+                baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`, delegate: "GPU" },
+                runningMode: "VIDEO", numFaces: 1
             });
-
-            estado.innerText = "Modelo cargado. Prendiendo cámara...";
-            prenderCamara();
-        }
-
-        // 2. Prender la cámara
-        async function prenderCamara() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
-                video.srcObject = stream;
-                await video.play();
-                estado.innerText = "¡Funcionando! Mueva su cara.";
-                procesarVideo();
-            } catch (err) {
-                estado.innerText = "Error al acceder a la cámara: " + err.message;
-            }
-        }
-
-        // 3. Leer la cámara y dibujar
-        async function procesarVideo() {
-            let startTime = performance.now();
             
-            // Leemos un cuadro de la cámara
+            textoCarga.innerText = "Modelo listo. Prendiendo cámara...";
+            await prenderCamara();
+        };
+
+        // 3. PRENDER CAMARA
+        async function prenderCamara() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+            video.srcObject = stream;
+            await video.play();
+            
+            pantallaCarga.style.display = 'none';
+            estimulo.style.display = 'block';
+            puntoMirada.style.display = 'block';
+            estudioActivo = true;
+            
+            iniciarTimer();
+            procesarVideo();
+        };
+
+        // 4. CALCULAR MIRADA Y MOVER PUNTO
+        async function procesarVideo() {
+            if (!estudioActivo) return;
+
+            let startTime = performance.now();
             if (video.readyState >= 2) {
-                // Ignoramos cuadros si no pasaron 100ms (para no sobrecargar el celular)
-                let currentTime = performance.now();
-                if (currentTime - lastTime > 100) {
-                    lastTime = currentTime;
+                const resultados = await faceLandmarker.detectForVideo(video, startTime);
+                
+                if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
+                    const landmarks = resultados.faceLandmarks[0];
                     
-                    // Enviamos la imagen a la IA
-                    const resultados = await faceLandmarker.detectForVideo(video, startTime);
+                    // MATEMÁTICA BÁSICA DE MIRADA:
+                    // Tomamos el centro del iris (punto 468 y 473) y lo comparamos con el rinconcito del ojo.
                     
-                    // Limpiamos el canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    // Ojo Izquierdo (Puntos: 33=externo, 133=interno, 159=arriba, 145=abajo)
+                    const ojoIzqExtX = landmarks[33].x;
+                    const ojoIzqIntX = landmarks[133].x;
+                    const irisIzqX = landmarks[468].x;
+                    
+                    // Ojo Derecho (Puntos: 362=interno, 263=externo)
+                    const ojoDerIntX = landmarks[362].x;
+                    const ojoDerExtX = landmarks[263].x;
+                    const irisDerX = landmarks[473].x;
 
-                    // Si encontró una cara, dibujamos los puntos
-                    if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
-                        const landmarks = resultados.faceLandmarks[0];
-                        
-                        // Dibujamos todos los puntos de la cara (gris)
-                        for (const punto of landmarks) {
-                            ctx.beginPath();
-                            ctx.arc(punto.x * canvas.width, punto.y * canvas.height, 1, 0, 3 * Math.PI);
-                            ctx.fillStyle = "#AAAAAA";
-                            ctx.fill();
-                        }
+                    // Calculamos qué porcentaje del ojo ocupa el iris (0 a 1)
+                    let ratioIzq = (irisIzqX - ojoIzqExtX) / (ojoIzqIntX - ojoIzqExtX);
+                    let ratioDer = (irisDerX - ojoDerIntX) / (ojoDerExtX - ojoDerIntX);
+                    
+                    // Promediamos ambos ojos
+                    let miradaX = ((ratioIzq + ratioDer) / 2) * window.innerWidth;
 
-                        // Dibujamos los ojos más grandes (rojo y verde)
-                        // Ojo izquierdo (puntos del 33 al 133 aprox, usamos índices específicos de iris)
-                        const ojoIzq = landmarks[468]; // Centro del iris izquierdo
-                        const ojoDer = landmarks[473]; // Centro del iris derecho
-                        
-                        if(ojoIzq) {
-                            ctx.beginPath();
-                            ctx.arc(ojoIzq.x * canvas.width, ojoIzq.y * canvas.height, 6, 0, 3 * Math.PI);
-                            ctx.fillStyle = "#FF0000";
-                            ctx.fill();
-                        }
-                        if(ojoDer) {
-                            ctx.beginPath();
-                            ctx.arc(ojoDer.x * canvas.width, ojoDer.y * canvas.height, 6, 0, 3 * Math.PI);
-                            ctx.fillStyle = "#00FF00";
-                            ctx.fill();
-                        }
-                    }
+                    // Eje Y (usamos la nariz como referencia aproximada de arriba/abajo)
+                    // Nariz punta=1, frente=10, barbilla=152
+                    let miradaY = landmarks[1].y * window.innerHeight;
+
+                    // Movemos nuestro punto rojo
+                    puntoMirada.style.left = miradaX + "px";
+                    puntoMirada.style.top = miradaY + "px";
                 }
             }
-            
-            // Hacemos que esto se repita para siempre como un video
             requestAnimationFrame(procesarVideo);
         }
 
-        // Arrancamos todo
-        inicializarIA();
+        // 5. TIMER DE EXPOSICIÓN
+        function iniciarTimer() {
+            if(timerActivo) return;
+            timerActivo = true;
+            
+            // Lo puse a 10 segundos para que lo disfrutes!
+            let tiempoRestante = 10; 
+            let textoTimer = document.createElement('div');
+            textoTimer.id = 'timer-display';
+            textoTimer.style.position = 'absolute';
+            textoTimer.style.top = '20px';
+            textoTimer.style.right = '20px';
+            textoTimer.style.fontSize = '24px';
+            textoTimer.style.color = '#00ff00';
+            textoTimer.style.background = 'rgba(0,0,0,0.7)';
+            textoTimer.style.padding = '10px';
+            textoTimer.style.borderRadius = '5px';
+            textoTimer.style.zIndex = '100';
+            textoTimer.innerText = "Tiempo: " + tiempoRestante + "s";
+            document.body.appendChild(textoTimer);
 
+            let cuentaRegresiva = setInterval(function() {
+                tiempoRestante--;
+                textoTimer.innerText = "Tiempo: " + tiempoRestante + "s";
+                
+                if (tiempoRestante <= 0) {
+                    clearInterval(cuentaRegresiva);
+                    terminarEstudio();
+                }
+            }, 1000);
+        }
+
+        function terminarEstudio() {
+            estudioActivo = false; 
+            timerActivo = false;
+            
+            // Apagamos todo
+            video.srcObject.getTracks().forEach(track => track.stop()); // Apaga cámara
+            puntoMirada.style.display = 'none';
+            estimulo.style.display = 'none';
+            document.getElementById('timer-display').style.display = 'none';
+            
+            pantallaFin.style.display = 'flex';
+        }
     </script>
+
 </body>
 </html>
