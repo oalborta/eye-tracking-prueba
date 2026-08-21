@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Tracking Ejes Corregidos</title>
+    <title>Eye Tracking Suavizado</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
@@ -31,7 +31,7 @@
             box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.8);
             display: none;
             transform: translate(-50%, -50%);
-            transition: left 0.1s ease-out, top 0.1s ease-out; 
+            /* Quitamos la transición abrupta para que el suavizado de JS haga el trabajo */
         }
     </style>
 </head>
@@ -45,14 +45,14 @@
         <p style="max-width: 500px; text-align: center; line-height: 1.6;">
             Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
             <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
-            <br><br>El estudio tiene una duración de <strong>15 segundos</strong> para que pruebes el seguimiento.
+            <br><br>El estudio tiene una duración de <strong>15 segundos</strong>.
         </p>
         <br>
         <button onclick="iniciarTodo()">Acepto y comenzar</button>
     </div>
 
     <div id="pantalla-carga" class="pantalla">
-        <h2 id="texto-carga">Descargando modelo de IA (puede tardar 10 segundos)...</h2>
+        <h2 id="texto-carga">Descargando modelo de IA...</h2>
     </div>
 
     <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba" style="display: none;">
@@ -75,6 +75,16 @@
         let faceLandmarker;
         let estudioActivo = false;
         let timerActivo = false;
+
+        // --- NUEVAS VARIABLES DE AJUSTE FINO ---
+        let posicionAnteriorX = window.innerWidth / 2;
+        let posicionAnteriorY = window.innerHeight / 2;
+        
+        // Cuanto más cerca de 1.0, más lento y suave es el punto. Cuanto más cerca a 0.0, más rápido y tembloroso.
+        let pesoSuavizado = 0.7; 
+        
+        // Cuántos píxeles lo corremos hacia ARRIBA para centrarlo. Si mira muy abajo, subilo (ej: -150).
+        let corrimientoY = -100; 
 
         window.iniciarTodo = async function() {
             document.getElementById('pantalla-consentimiento').style.display = 'none';
@@ -131,16 +141,32 @@
                     let sensibilidadX = 4.5; 
                     let sensibilidadY = 9.0; 
 
-                    // --- EL CAMBIO MÁGICO ---
-                    // Cambiamos el '+' por un '-' para invertir la dirección
-                    let finalX = centroX - (promedioX - 0.5) * window.innerWidth * sensibilidadX;
-                    let finalY = centroY - (promedioY - 0.5) * window.innerHeight * sensibilidadY;
+                    // 1. Calculamos el punto "crudo" (con la inversión de signo)
+                    let rawX = centroX - (promedioX - 0.5) * window.innerWidth * sensibilidadX;
+                    let rawY = centroY - (promedioY - 0.5) * window.innerHeight * sensibilidadY;
 
-                    finalX = Math.max(0, Math.min(window.innerWidth, finalX));
-                    finalY = Math.max(0, Math.min(window.innerHeight, finalY));
+                    // Limitamos para que no se salga de la pantalla
+                    rawX = Math.max(0, Math.min(window.innerWidth, rawX));
+                    rawY = Math.max(0, Math.min(window.innerHeight, rawY));
 
-                    puntoMirada.style.left = finalX + "px";
-                    puntoMirada.style.top = finalY + "px";
+                    // 2. APLICAMOS EL SUAVIZADO (Promedio con la posición anterior)
+                    let smoothX = (posicionAnteriorX * pesoSuavizado) + (rawX * (1 - pesoSuavizado));
+                    let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawY * (1 - pesoSuavizado));
+
+                    // 3. APLICAMOS EL CORRIMIENTO VERTICAL
+                    smoothY = smoothY + corrimientoY;
+
+                    // Limitamos de nuevo por si el corrimiento lo sacó de la pantalla
+                    smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
+                    smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
+
+                    // Movemos el punto
+                    puntoMirada.style.left = smoothX + "px";
+                    puntoMirada.style.top = smoothY + "px";
+
+                    // Guardamos la posición actual para el próximo frame
+                    posicionAnteriorX = smoothX;
+                    posicionAnteriorY = smoothY;
                 }
             }
             requestAnimationFrame(procesarVideo);
