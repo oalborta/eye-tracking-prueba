@@ -201,45 +201,30 @@
             dibujarTrayectoria();
         }
 
-        function dibujarTrayectoria() {
+               function dibujarTrayectoria() {
             // Configuramos el tamaño del lienzo
             lienzo.width = window.innerWidth;
             lienzo.height = window.innerHeight;
             lienzo.style.display = 'block';
 
-            // Dibujamos la imagen de fondo exactamente como se veía (con object-fit: contain)
-            let imgRatio = estimulo.naturalWidth / estimulo.naturalHeight;
-            let screenRatio = lienzo.width / lienzo.height;
-            let drawWidth, drawHeight, offsetX, offsetY;
-
-            if (imgRatio > screenRatio) {
-                drawWidth = lienzo.width;
-                drawHeight = lienzo.width / imgRatio;
-            } else {
-                drawHeight = lienzo.height;
-                drawWidth = lienzo.height * imgRatio;
-            }
-            offsetX = (lienzo.width - drawWidth) / 2;
-            offsetY = (lienzo.height - drawHeight) / 2;
-
-            ctx.drawImage(estimulo, offsetX, offsetY, drawWidth, drawHeight);
+            // EN VEZ DE LA FOTO, PINTAMOS UN FONDO OSCURO PARA EVITAR EL BLOQUEO DE SEGURIDAD
+            ctx.fillStyle = '#222222';
+            ctx.fillRect(0, 0, lienzo.width, lienzo.height);
 
             // Preparamos el dibujo de las líneas y números
             ctx.lineWidth = 2;
             ctx.fillStyle = "#FF0000";
             ctx.strokeStyle = "#FFFFFF";
             ctx.font = "bold 16px Arial";
-            ctx.textAlign = "center";
             ctx.textAlign = "middle";
 
             let puntoPrevio = null;
             let contador = 1;
             let ultimoTiempoDibujado = 0;
-            const INTERVALO_DIBUJO = 0.15; // Tomamos una muestra cada 150 milisegundos
+            const INTERVALO_DIBUJO = 0.15; 
 
             for (let punto of datosOjo) {
                 if (punto.tiempo - ultimoTiempoDibujado >= INTERVALO_DIBUJO) {
-                    // Dibujamos la línea desde el punto anterior
                     if (puntoPrevio) {
                         ctx.beginPath();
                         ctx.moveTo(puntoPrevio.x, puntoPrevio.y);
@@ -247,15 +232,13 @@
                         ctx.stroke();
                     }
 
-                    // Dibujamos el círculo
                     ctx.beginPath();
                     ctx.arc(punto.x, punto.y, 10, 0, 2 * Math.PI);
                     ctx.fill();
 
-                    // Dibujamos el número
                     ctx.fillStyle = "#FFFFFF";
                     ctx.fillText(contador, punto.x, punto.y);
-                    ctx.fillStyle = "#FF0000"; // Volvemos a rojo para el próximo círculo
+                    ctx.fillStyle = "#FF0000"; 
 
                     puntoPrevio = {x: punto.x, y: punto.y};
                     contador++;
@@ -263,7 +246,6 @@
                 }
             }
 
-            // Mostramos la pantalla de fin arriba
             pantallaFin.style.display = 'flex';
         }
 
