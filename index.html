@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Intento 2 - Matemática Real</title>
+    <title>Eye Tracking Tuneado</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
@@ -117,36 +117,30 @@
                 if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
                     const lm = resultados.faceLandmarks[0];
                     
-                    // --- NUEVA MATEMÁTICA ---
-                    
-                    // Calculamos el centro de la pantalla
                     let centroX = window.innerWidth / 2;
                     let centroY = window.innerHeight / 2;
 
-                    // EJE X (Izquierda / Derecha)
-                    // Qué tanto se corrió el iris respecto al tamaño del ojo
+                    // EJE X
                     let ratioXIzq = (lm[468].x - lm[33].x) / (lm[133].x - lm[33].x);
                     let ratioXDer = (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x);
-                    let promedioX = (ratioXIzq + ratioXDer) / 2; // Da un número de 0 a 1
+                    let promedioX = (ratioXIzq + ratioXDer) / 2; 
 
-                    // EJE Y (Arriba / Abajo) - Ahora sí usamos los ojos!
-                    // Puntos 159(arriba) y 145(abajo) para ojo izq. 386(arriba) y 374(abajo) para ojo der.
+                    // EJE Y
                     let ratioYIzq = (lm[468].y - lm[159].y) / (lm[145].y - lm[159].y);
                     let ratioYDer = (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y);
-                    let promedioY = (ratioYIzq + ratioYDer) / 2; // Da un número de 0 a 1
+                    let promedioY = (ratioYIzq + ratioYDer) / 2; 
 
-                    // AMPLIFICADOR: Como el ojo se mueve poco, exageramos el movimiento
-                    let sensibilidad = 5.0; 
+                    // --- TUNEO ASIMÉTRICO ---
+                    let sensibilidadX = 4.5; // Volumen para costados
+                    let sensibilidadY = 9.0; // Volumen duplicado para arriba/abajo (por la anatomía del ojo)
 
-                    // Calculamos la posición final restándole el centro (0.5) y multiplicando
-                    let finalX = centroX + (promedioX - 0.5) * window.innerWidth * sensibilidad;
-                    let finalY = centroY + (promedioY - 0.5) * window.innerHeight * sensibilidad;
+                    let finalX = centroX + (promedioX - 0.5) * window.innerWidth * sensibilidadX;
+                    let finalY = centroY + (promedioY - 0.5) * window.innerHeight * sensibilidadY;
 
-                    // Limitamos para que el punto no se salga de la pantalla
+                    // Limitamos para que no se vaya fuera de la pantalla
                     finalX = Math.max(0, Math.min(window.innerWidth, finalX));
                     finalY = Math.max(0, Math.min(window.innerHeight, finalY));
 
-                    // Movemos el punto
                     puntoMirada.style.left = finalX + "px";
                     puntoMirada.style.top = finalY + "px";
                 }
@@ -157,7 +151,7 @@
         function iniciarTimer() {
             if(timerActivo) return;
             timerActivo = true;
-            let tiempoRestante = 15; // 15 segundos para jugar
+            let tiempoRestante = 15; 
             
             let textoTimer = document.createElement('div');
             textoTimer.id = 'timer-display';
