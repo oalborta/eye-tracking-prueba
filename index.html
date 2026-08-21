@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>MVP Eye Tracking Real</title>
+    <title>Intento 2 - Matemática Real</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
@@ -16,10 +16,8 @@
         button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; z-index: 200; }
         button:hover { background: #0056b3; }
         
-        /* El video de la cámara queda oculto detrás de todo */
         video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; }
 
-        /* Nuestro punto de mirada */
         #punto-mirada {
             width: 30px;
             height: 30px;
@@ -33,7 +31,7 @@
             box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.8);
             display: none;
             transform: translate(-50%, -50%);
-            transition: left 0.1s ease-out, top 0.1s ease-out; /* Suaviza el movimiento */
+            transition: left 0.1s ease-out, top 0.1s ease-out; 
         }
     </style>
 </head>
@@ -47,7 +45,7 @@
         <p style="max-width: 500px; text-align: center; line-height: 1.6;">
             Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
             <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
-            <br><br>El estudio tiene una duración de <strong>10 segundos</strong>. No requiere calibración manual.
+            <br><br>El estudio tiene una duración de <strong>15 segundos</strong> para que pruebes el seguimiento.
         </p>
         <br>
         <button onclick="iniciarTodo()">Acepto y comenzar</button>
@@ -78,15 +76,12 @@
         let estudioActivo = false;
         let timerActivo = false;
 
-        // 1. INICIO GENERAL
         window.iniciarTodo = async function() {
             document.getElementById('pantalla-consentimiento').style.display = 'none';
             pantallaCarga.style.display = 'flex';
-            
             await inicializarIA();
         };
 
-        // 2. CARGAR INTELIGENCIA ARTIFICIAL
         async function inicializarIA() {
             const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
             faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
@@ -98,7 +93,6 @@
             await prenderCamara();
         };
 
-        // 3. PRENDER CAMARA
         async function prenderCamara() {
             const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
             video.srcObject = stream;
@@ -113,7 +107,6 @@
             procesarVideo();
         };
 
-        // 4. CALCULAR MIRADA Y MOVER PUNTO
         async function procesarVideo() {
             if (!estudioActivo) return;
 
@@ -122,47 +115,50 @@
                 const resultados = await faceLandmarker.detectForVideo(video, startTime);
                 
                 if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
-                    const landmarks = resultados.faceLandmarks[0];
+                    const lm = resultados.faceLandmarks[0];
                     
-                    // MATEMÁTICA BÁSICA DE MIRADA:
-                    // Tomamos el centro del iris (punto 468 y 473) y lo comparamos con el rinconcito del ojo.
+                    // --- NUEVA MATEMÁTICA ---
                     
-                    // Ojo Izquierdo (Puntos: 33=externo, 133=interno, 159=arriba, 145=abajo)
-                    const ojoIzqExtX = landmarks[33].x;
-                    const ojoIzqIntX = landmarks[133].x;
-                    const irisIzqX = landmarks[468].x;
-                    
-                    // Ojo Derecho (Puntos: 362=interno, 263=externo)
-                    const ojoDerIntX = landmarks[362].x;
-                    const ojoDerExtX = landmarks[263].x;
-                    const irisDerX = landmarks[473].x;
+                    // Calculamos el centro de la pantalla
+                    let centroX = window.innerWidth / 2;
+                    let centroY = window.innerHeight / 2;
 
-                    // Calculamos qué porcentaje del ojo ocupa el iris (0 a 1)
-                    let ratioIzq = (irisIzqX - ojoIzqExtX) / (ojoIzqIntX - ojoIzqExtX);
-                    let ratioDer = (irisDerX - ojoDerIntX) / (ojoDerExtX - ojoDerIntX);
-                    
-                    // Promediamos ambos ojos
-                    let miradaX = ((ratioIzq + ratioDer) / 2) * window.innerWidth;
+                    // EJE X (Izquierda / Derecha)
+                    // Qué tanto se corrió el iris respecto al tamaño del ojo
+                    let ratioXIzq = (lm[468].x - lm[33].x) / (lm[133].x - lm[33].x);
+                    let ratioXDer = (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x);
+                    let promedioX = (ratioXIzq + ratioXDer) / 2; // Da un número de 0 a 1
 
-                    // Eje Y (usamos la nariz como referencia aproximada de arriba/abajo)
-                    // Nariz punta=1, frente=10, barbilla=152
-                    let miradaY = landmarks[1].y * window.innerHeight;
+                    // EJE Y (Arriba / Abajo) - Ahora sí usamos los ojos!
+                    // Puntos 159(arriba) y 145(abajo) para ojo izq. 386(arriba) y 374(abajo) para ojo der.
+                    let ratioYIzq = (lm[468].y - lm[159].y) / (lm[145].y - lm[159].y);
+                    let ratioYDer = (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y);
+                    let promedioY = (ratioYIzq + ratioYDer) / 2; // Da un número de 0 a 1
 
-                    // Movemos nuestro punto rojo
-                    puntoMirada.style.left = miradaX + "px";
-                    puntoMirada.style.top = miradaY + "px";
+                    // AMPLIFICADOR: Como el ojo se mueve poco, exageramos el movimiento
+                    let sensibilidad = 3.0; 
+
+                    // Calculamos la posición final restándole el centro (0.5) y multiplicando
+                    let finalX = centroX + (promedioX - 0.5) * window.innerWidth * sensibilidad;
+                    let finalY = centroY + (promedioY - 0.5) * window.innerHeight * sensibilidad;
+
+                    // Limitamos para que el punto no se salga de la pantalla
+                    finalX = Math.max(0, Math.min(window.innerWidth, finalX));
+                    finalY = Math.max(0, Math.min(window.innerHeight, finalY));
+
+                    // Movemos el punto
+                    puntoMirada.style.left = finalX + "px";
+                    puntoMirada.style.top = finalY + "px";
                 }
             }
             requestAnimationFrame(procesarVideo);
         }
 
-        // 5. TIMER DE EXPOSICIÓN
         function iniciarTimer() {
             if(timerActivo) return;
             timerActivo = true;
+            let tiempoRestante = 15; // 15 segundos para jugar
             
-            // Lo puse a 10 segundos para que lo disfrutes!
-            let tiempoRestante = 10; 
             let textoTimer = document.createElement('div');
             textoTimer.id = 'timer-display';
             textoTimer.style.position = 'absolute';
@@ -180,24 +176,17 @@
             let cuentaRegresiva = setInterval(function() {
                 tiempoRestante--;
                 textoTimer.innerText = "Tiempo: " + tiempoRestante + "s";
-                
-                if (tiempoRestante <= 0) {
-                    clearInterval(cuentaRegresiva);
-                    terminarEstudio();
-                }
+                if (tiempoRestante <= 0) { clearInterval(cuentaRegresiva); terminarEstudio(); }
             }, 1000);
         }
 
         function terminarEstudio() {
             estudioActivo = false; 
             timerActivo = false;
-            
-            // Apagamos todo
-            video.srcObject.getTracks().forEach(track => track.stop()); // Apaga cámara
+            video.srcObject.getTracks().forEach(track => track.stop());
             puntoMirada.style.display = 'none';
             estimulo.style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
-            
             pantallaFin.style.display = 'flex';
         }
     </script>
