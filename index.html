@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Calibración Regresión Lineal</title>
+    <title>Calibración Suavizada</title>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
@@ -54,7 +54,7 @@
     </div>
 
     <div id="pantalla-calibracion" class="pantalla">
-        <div style="background: rgba(0,0,0,0.8); padding: 30px; border-radius: 10px; border: 2px solid #ffcc00; pointer-events: auto; z-index: 1000;">
+        <div style="background: rgba(0,0,0,0.8); padding: 30px; border-radius: 10px; border: 2px #ffcc00; pointer-events: auto; z-index: 1000;">
             <h2 id="texto-calibracion" style="color: #ffcc00; margin: 0;">Preparando...</h2>
         </div>
     </div>
@@ -96,9 +96,8 @@
         let estadoPunto = 'esperando';
         let tiempoFijacionInicio = 0;
         const DURACION_FIJACION = 1500; 
-        const UMBRAL_MOVIMIENTO = 0.045;
+        const UMBRAL_MOVIMIENTO = 0.15; // Más permisivo y usaremos el "Camino Suave"
 
-        // Configuración de Calibración
         let puntosPantalla = [
             {x: window.innerWidth / 2, y: window.innerHeight / 2, tipo: 'centro'},
             {x: window.innerWidth * 0.15, y: window.innerHeight * 0.15, tipo: 'arriba-izq'},
@@ -107,9 +106,8 @@
             {x: window.innerWidth * 0.85, y: window.innerHeight * 0.85, tipo: 'abajo-der'}
         ];
         let clickCalibracionCount = 0;
-        let datosRawCalibracion = []; // Guardaremos los datos crudos de cada clic
+        let datosRawCalibracion = []; 
         
-        // Variables de Mapeo (Se calculan solas)
         let customSensX = 4.5;
         let customSensY = 9.0;
         let customOffsetX = 0;
@@ -146,6 +144,7 @@
             textoCalibracion.innerText = "Mire el punto hasta que se ponga VERDE (1 de 5)";
             
             calibrando = true;
+            procesarVideo();
         };
 
         function moverPuntoCalibracion(indice) {
@@ -166,16 +165,30 @@
                     const lm = resultados.faceLandmarks[0];
 
                     let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
-                    let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
+                    let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386).y)) / 2;
 
                     currentRawX = pX;
                     currentRawY = pY;
 
                     if (calibrando) {
-                        let diffX = Math.abs(pX - rawXAnterior);
-                        let diffY = Math.abs(pY - rawYAnterior);
-                        rawXAnterior = pX; rawYAnterior = pY;
+                        // 1. INICIALIZACIÓN EN EL PRIMER FRAME
+                        if (posicionAnteriorX === 0) { 
+                            posicionAnteriorX = pX; 
+                            posicionAnteriorY = pY; 
+                        }
 
+                        // 2. APLICAMOS EL SUAVIZADO ANTES DE MEDIR ESTABILIDAD
+                        let smoothX = (posicionAnteriorX * pesoSuavizado) + (pX * (1 - pesoSuavizado));
+                        let smoothY = (posicionAnteriorY * pesoSuavizado) + (pY * (1 - pesoSuavizado));
+
+                        // 3. MEDIMOS LA ESTABILIDAD CON LOS DATOS SUAVIZADOS (sin ruido)
+                        let diffX = Math.abs(smoothX - posicionAnteriorX);
+                        let diffY = smoothY; // Ya está suavizado, no hace falta Math.abs
+                        // Actualizamos para el próximo frame
+                        posicionAnteriorX = smoothX;
+                        posicionAnteriorY = smoothY;
+
+                        // 4. LÓGICA DE ESTADO (Rojo -> Amarillo -> Verde)
                         if (diffX < UMBRAL_MOVIMIENTO && diffY < UMBRAL_MOVIMIENTO) {
                             if (estadoPunto === 'esperando') {
                                 estadoPunto = 'fijando';
@@ -190,29 +203,30 @@
                                 }
                             }
                         } else {
+                            // Se movió demasiado (parpadeo o se distrajo)
                             estadoPunto = 'esperando';
                             puntoRojo.style.backgroundColor = '#ff0000';
                             puntoRojo.style.boxShadow = '0 0 30px 10px rgba(255, 0, 0, 0.9)';
                         }
 
                     } else {
-                        // --- MATEMÁTICA DE REGRESIÓN LINEAL PURA ---
+                        // --- MATEMÁTICA DE REGRESIÓN LINEAL ---
                         let mapeadoX = customOffsetX - (pX * customSensX);
                         let mapeadoY = customOffsetY - (pY * customSensY);
 
                         if (posicionAnteriorX === 0) { posicionAnteriorX = mapeadoX; posicionAnteriorY = mapeadoY; }
                         
-                        let smoothX = (posicionAnteriorX * pesoSuavizado) + (mapeadoX * (1 - pesoSuavizado));
-                        let smoothY = (posicionAnteriorY * pesoSuavizado) + (mapeadoY * (1 - pesoSuavizado));
+                        let finalX = (posicionAnteriorX * pesoSuavizado) + (mapeadoX * (1 - pesoSuavizado));
+                        let finalY = (posicionAnteriorY * pesoSuavizado) + (mapeadoY * (1 - pesoSuavizado));
 
-                        smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
-                        smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
+                        finalX = Math.max(0, Math.min(window.innerWidth, finalX));
+                        finalY = Math.max(0, Math.min(window.innerHeight, finalY));
 
-                        posicionAnteriorX = smoothX;
-                        posicionAnteriorY = smoothY;
+                        posicionAnteriorX = finalX;
+                        posicionAnteriorY = finalY;
 
                         let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
-                        datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(smoothX), y: Math.round(smoothY) });
+                        datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(finalX), y: Math.round(finalY) });
                     }
                 }
             }
@@ -227,7 +241,6 @@
                 return; 
             }
 
-            // Guardamos el dato crudo de este punto específico
             datosRawCalibracion.push({
                 rawX: currentRawX, 
                 rawY: currentRawY, 
@@ -251,7 +264,6 @@
         function finalizarCalibracion() {
             calibrando = false;
             
-            // 1. Extraemos promedios reales
             let rawIzq = datosRawCalibracion.filter(p => p.tipo.includes('izq'));
             let rawDer = datosRawCalibracion.filter(p => p.tipo.includes('der'));
             let rawArriba = datosRawCalibracion.filter(p => p.tipo.includes('arriba'));
@@ -262,23 +274,14 @@
             let promRawArribaY = rawArriba.reduce((s, p) => s + p.rawY, 0) / rawArriba.length;
             let promRawAbajoY = rawAbajo.reduce((s, p) => s + p.rawY, 0) / rawAbajo.length;
 
-            // 2. Extraemos coordenadas de pantalla reales
-            let promScrIzqX = rawIzq.reduce((s, p) => s + p.screenX, 0) / rawIzq.length;
-            let promScrDerX = rawDer.reduce((s, p) => s + p.screenX, 0) / rawDer.length;
-            let promScrArribaY = rawArriba.reduce((s, p) => s + p.screenY, 0) / rawArriba.length;
-            let promScrAbajoY = rawAbajo.reduce((s, p) => s + p.screenY, 0) / rawAbajo.length;
-
-            // 3. Calculamos la sensibilidad real de esta persona
-            // Si el ojo se movió un delta X, y la pantalla se movió un delta X -> Sensibilidad = deltaX_Pantalla / deltaX_Ojo
             let deltaXOjo = promRawDerX - promRawIzqX;
             let deltaXPantalla = promScrDerX - promScrIzqX;
-            if (Math.abs(deltaXOjo) > 0.01) { customSensX = deltaXPantalla / deltaXOjo; } // Evita dividir por cero
+            if (Math.abs(deltaXOjo) > 0.01) { customSensX = deltaXPantalla / deltaXOjo; }
 
             let deltaYOjo = promRawAbajoY - promRawArribaY;
             let deltaYPantalla = promScrAbajoY - promScrArribaY;
             if (Math.abs(deltaYOjo) > 0.01) { customSensY = deltaYPantalla / deltaYOjo; }
 
-            // 4. Calculamos el Offset basado en dónde estaba su ojo al mirar el centro
             let rawCentroX = datosRawCalibracion.find(p => p.tipo === 'centro').rawX;
             let rawCentroY = datosRawCalibracion.find(p => p.tipo === 'centro').rawY;
             let scrCentroX = window.innerWidth / 2;
@@ -287,7 +290,6 @@
             customOffsetX = scrCentroX - (rawCentroX * customSensX);
             customOffsetY = scrCentroY - (rawCentroY * customSensY);
 
-            // Transición limpia al estudio
             puntoRojo.style.display = 'none';
             pantallaCalibracion.style.display = 'none';
             estimulo.style.display = 'block';
