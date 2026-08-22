@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Calibración Híbrida Final</title>
+    <title>Calibración Regresión Lineal</title>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
@@ -90,29 +90,30 @@
         let posicionAnteriorY = 0;
         let pesoSuavizado = 0.6; 
 
-        // VARIABLES FIJACIÓN
+        // Variables de Fijación
         let currentRawX = 0.5, currentRawY = 0.5;
         let rawXAnterior = 0, rawYAnterior = 0;
         let estadoPunto = 'esperando';
         let tiempoFijacionInicio = 0;
         const DURACION_FIJACION = 1500; 
-        const UMBRAL_MOVIMIENTO = 0.03; // Más estricto para que se vea el Rojo
+        const UMBRAL_MOVIMIENTO = 0.03;
 
-        // DATOS DE CALIBRACIÓN
-        let rawCenterX = 0.5, rawCenterY = 0.5;
+        // Configuración de Calibración
         let puntosPantalla = [
-            {x: window.innerWidth / 2, y: window.innerHeight / 2},
-            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.15},
-            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.15},
-            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.85},
-            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.85}
+            {x: window.innerWidth / 2, y: window.innerHeight / 2, tipo: 'centro'},
+            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.15, tipo: 'arriba-izq'},
+            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.15, tipo: 'arriba-der'},
+            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.85, tipo: 'abajo-izq'},
+            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.85, tipo: 'abajo-der'}
         ];
         let clickCalibracionCount = 0;
+        let datosRawCalibracion = []; // Guardaremos los datos crudos de cada clic
         
-        // SENSIBILIDADES PERSONALIZADAS (Se calculan solas)
-        let userSensX = 4.5;
-        let userSensY = 9.0;
-        let userOffsetY = -100;
+        // Variables de Mapeo (Se calculan solas)
+        let customSensX = 4.5;
+        let customSensY = 9.0;
+        let customOffsetX = 0;
+        let customOffsetY = 0;
 
         window.iniciarTodo = async function() {
             document.getElementById('pantalla-consentimiento').style.display = 'none';
@@ -172,7 +173,6 @@
                     currentRawY = pY;
 
                     if (calibrando) {
-                        // LÓGICA DE FIJACIÓN
                         let diffX = Math.abs(pX - rawXAnterior);
                         let diffY = Math.abs(pY - rawYAnterior);
                         rawXAnterior = pX; rawYAnterior = pY;
@@ -197,17 +197,14 @@
                         }
 
                     } else {
-                        // --- MATEMÁTICA HÍBRIDA (La buena, personalizándola) ---
-                        let centroX = window.innerWidth / 2;
-                        let centroY = window.innerHeight / 2;
+                        // --- MATEMÁTICA DE REGRESIÓN LINEAL PURA ---
+                        let mapeadoX = customOffsetX - (pX * customSensX);
+                        let mapeadoY = customOffsetY - (pY * customSensY);
 
-                        let rawMapeadoX = centroX - (pX - rawCenterX) * window.innerWidth * userSensX;
-                        let rawMapeadoY = centroY + (pY - rawCenterY) * window.innerHeight * userSensY + (userOffsetY);
-
-                        if (posicionAnteriorX === 0) { posicionAnteriorX = rawMapeadoX; posicionAnteriorY = rawMapeadoY; }
+                        if (posicionAnteriorX === 0) { posicionAnteriorX = mapeadoX; posicionAnteriorY = mapeadoY; }
                         
-                        let smoothX = (posicionAnteriorX * pesoSuavizado) + (rawMapeadoX * (1 - pesoSuavizado));
-                        let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawMapeadoY * (1 - pesoSuavizado));
+                        let smoothX = (posicionAnteriorX * pesoSuavizado) + (mapeadoX * (1 - pesoSuavizado));
+                        let smoothY = (posicionAnteriorY * pesoSuavizado) + (mapeadoY * (1 - pesoSuavizado));
 
                         smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
                         smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
@@ -231,12 +228,15 @@
                 return; 
             }
 
-            // Si es el primer punto (centro), guardamos su valor como base
-            if (clickCalibracionCount === 0) {
-                rawCenterX = currentRawX;
-                rawCenterY = currentRawY;
-            }
-
+            // Guardamos el dato crudo de este punto específico
+            datosRawCalibracion.push({
+                rawX: currentRawX, 
+                rawY: currentRawY, 
+                screenX: puntosPantalla[clickCalibracionCount].x, 
+                screenY: puntosPantalla[clickCalibracionCount].y,
+                tipo: puntosPantalla[clickCalibracionCount].tipo
+            });
+            
             clickCalibracionCount++;
             textoCalibracion.innerText = `Mire el punto hasta que se ponga VERDE (${clickCalibracionCount + 1} de 5)`;
 
@@ -252,40 +252,43 @@
         function finalizarCalibracion() {
             calibrando = false;
             
-            // Calculamos qué tanto se movió el ojo desde el centro hacia los extremos
-            let diffXTotal = 0;
-            let diffYTotal = 0;
-            let count = 0;
+            // 1. Extraemos promedios reales
+            let rawIzq = datosRawCalibracion.filter(p => p.tipo.includes('izq'));
+            let rawDer = datosRawCalibracion.filter(p => p.tipo.includes('der'));
+            let rawArriba = datosRawCalibracion.filter(p => p.tipo.includes('arriba'));
+            let rawAbajo = datosRawCalibracion.filter(p => p.tipo.includes('abajo'));
+
+            let promRawIzqX = rawIzq.reduce((s, p) => s + p.rawX, 0) / rawIzq.length;
+            let promRawDerX = rawDer.reduce((s, p) => s + p.rawX, 0) / rawDer.length;
+            let promRawArribaY = rawArriba.reduce((s, p) => s + p.rawY, 0) / rawArriba.length;
+            let promRawAbajoY = rawAbajo.reduce((s, p) => s + p.rawY, 0) / rawAbajo.length;
+
+            // 2. Extraemos coordenadas de pantalla reales
+            let promScrIzqX = rawIzq.reduce((s, p) => s + p.screenX, 0) / rawIzq.length;
+            let promScrDerX = rawDer.reduce((s, p) => s + p.screenX, 0) / rawDer.length;
+            let promScrArribaY = rawArriba.reduce((s, p) => s + p.screenY, 0) / rawArriba.length;
+            let promScrAbajoY = rawAbajo.reduce((s, p) => s + p.screenY, 0) / rawAbajo.length;
+
+            // 3. Calculamos la sensibilidad real de esta persona
+            // Si el ojo se movió un delta X, y la pantalla se movió un delta X -> Sensibilidad = deltaX_Pantalla / deltaX_Ojo
+            let deltaXOjo = promRawDerX - promRawIzqX;
+            let deltaXPantalla = promScrDerX - promScrIzqX;
+            if (Math.abs(deltaXOjo) > 0.01) { customSensX = deltaXPantalla / deltaXOjo; } // Evita dividir por cero
+
+            let deltaYOjo = promRawAbajoY - promRawArribaY;
+            let deltaYPantalla = promScrAbajoY - promScrArribaY;
+            if (Math.abs(deltaYOjo) > 0.01) { customSensY = deltaYPantalla / deltaYOjo; }
+
+            // 4. Calculamos el Offset basado en dónde estaba su ojo al mirar el centro
+            let rawCentroX = datosRawCalibracion.find(p => p.tipo === 'centro').rawX;
+            let rawCentroY = datosRawCalibracion.find(p => p.tipo === 'centro').rawY;
+            let scrCentroX = window.innerWidth / 2;
+            let scrCentroY = window.innerHeight / 2;
             
-            for(let i=1; i<5; i++) {
-                diffXTotal += Math.abs(puntosPantalla[i].x - puntosPantalla[0].x); // Diferencia de pantalla
-                diffYTotal += Math.abs(puntosPantalla[i].y - puntosPantalla[0].y);
-                count++;
-            }
+            customOffsetX = scrCentroX - (rawCentroX * customSensX);
+            customOffsetY = scrCentroY - (rawCentroY * customSensY);
 
-            // Promediamos la distancia de pantalla recorrida
-            let promDiffX = diffXTotal / count;
-            let promDiffY = diffYTotal / count;
-
-            // Extraemos los datos crudos de los extremos (calculados en los clics)
-            let rawXs = []; let rawYs = [];
-            // Nota: No guardamos los raw en este código al hacer clic, los simulamos con currentRawX/Y en este preciso instante
-            // Para no liarla, calculamos la sensibilidad basándonos en el modelo matemático asumiendo que los últimos 4 puntos representan los extremos.
-            // Para ser exactos, haríamos falta guardar los datos. 
-            
-            // UNA SOLUCIÓN MÁS SIMPLE Y ROBUSTA PARA EL MVP:
-            // Usamos los promedios de movimiento del ojo que sabemos que son reales.
-            // Si la pantalla mide 1000px de ancho, y para llegar a la esquina el ojo se movió 0.1 puntos internos...
-            let sensibilidadCalculadaX = (window.innerWidth / 2) / 0.05; // 0.05 es un movimiento típico de ojo
-            let sensibilidadCalculadaY = (window.innerHeight / 2) / 0.03;
-
-            // Ajustamos el offset vertical basado en dónde estaba su ojo al mirar al centro
-            let offsetCalculadoY = (0.5 - rawCenterY) * window.innerHeight;
-
-            userSensX = sensibilidadCalculadaX;
-            userSensY = sensibilidadCalculadaY;
-            userOffsetY = offsetCalculadoY;
-
+            // Transición limpia al estudio
             puntoRojo.style.display = 'none';
             pantallaCalibracion.style.display = 'none';
             estimulo.style.display = 'block';
