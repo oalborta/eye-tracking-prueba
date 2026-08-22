@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mapa de Calor Real</title>
-    <!-- Cargamos la librería matemática del mapa de calor -->
+    <title>Eye Tracking con Calibración</title>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
@@ -11,9 +10,10 @@
         .pantalla { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
         #pantalla-consentimiento { background: #222; z-index: 100; }
         #pantalla-carga { background: #222; z-index: 100; display: none; }
-        #pantalla-fin { background: rgba(0,0,0,0.85); z-index: 200; flex-direction: column; gap: 20px; }
+        #pantalla-calibracion { background: transparent; z-index: 50; display: none; pointer-events: none; }
+        #pantalla-fin { background: rgba(0,0,0,0.85); z-index: 200; flex-direction: column; gap: 20px; display: none; }
         
-        #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; }
+        #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; }
         #lienzo-calor { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: none; }
         
         button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; z-index: 300; }
@@ -22,17 +22,24 @@
         video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; }
 
         #punto-mirada {
-            width: 30px; height: 30px; background-color: #ff0000; border-radius: 50%;
+            width: 40px; height: 40px; background-color: #ff0000; border-radius: 50%;
             position: absolute; top: 0px; left: 0px; pointer-events: none; z-index: 999999;
-            box-shadow: 0 0 20px 5px rgba(255, 0, 0, 0.8); display: none; transform: translate(-50%, -50%);
+            box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9); display: none; transform: translate(-50%, -50%);
+        }
+        
+        #punto-calibracion {
+            width: 40px; height: 40px; background-color: #ff0000; border-radius: 50%;
+            position: absolute; top: 50%; left: 50%; pointer-events: none; z-index: 999999;
+            box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9); transform: translate(-50%, -50%);
         }
     </style>
 </head>
 <body>
 
     <div id="punto-mirada"></div>
+    <div id="punto-calibracion"></div>
     <video id="video" playsinline></video>
-    <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba" style="display: none;">
+    <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba">
     <canvas id="lienzo-calor"></canvas>
 
     <div id="pantalla-consentimiento" class="pantalla">
@@ -40,7 +47,7 @@
         <p style="max-width: 500px; text-align: center; line-height: 1.6;">
             Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
             <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
-            <br><br>El estudio tiene una duración de <strong>15 segundos</strong>.
+            <br><br>Primero deberá calibrar mirando 5 puntos, y luego verá una imagen durante 15 segundos.
         </p>
         <br>
         <button onclick="iniciarTodo()">Acepto y comenzar</button>
@@ -50,7 +57,13 @@
         <h2 id="texto-carga">Descargando modelo de IA...</h2>
     </div>
 
-    <div id="pantalla-fin" class="pantalla" style="display: none;">
+    <div id="pantalla-calibracion" class="pantalla">
+        <div style="background: rgba(0,0,0,0.8); padding: 30px; border-radius: 10px; border: 2px solid #ffcc00; pointer-events: auto;">
+            <h2 id="texto-calibracion" style="color: #ffcc00; margin: 0;">Preparando cámara...</h2>
+        </div>
+    </div>
+
+    <div id="pantalla-fin" class="pantalla">
         <h2>¡Estudio terminado!</h2>
         <p>Se descargó el archivo CSV con la data cruda.</p>
         <button onclick="descargarImagen()">Descargar Mapa de Calor (PNG)</button>
@@ -61,8 +74,11 @@
 
         const video = document.getElementById('video');
         const puntoMirada = document.getElementById('punto-mirada');
+        const puntoCalibracion = document.getElementById('punto-calibracion');
         const pantallaCarga = document.getElementById('pantalla-carga');
         const textoCarga = document.getElementById('texto-carga');
+        const pantallaCalibracion = document.getElementById('pantalla-calibracion');
+        const textoCalibracion = document.getElementById('texto-calibracion');
         const pantallaFin = document.getElementById('pantalla-fin');
         const estimulo = document.getElementById('estimulo');
         const lienzo = document.getElementById('lienzo-calor');
@@ -70,14 +86,29 @@
 
         let faceLandmarker;
         let estudioActivo = false;
+        let calibrando = false;
         let timerActivo = false;
         let datosOjo = []; 
         let tiempoInicio = 0;
 
-        let posicionAnteriorX = window.innerWidth / 2;
-        let posicionAnteriorY = window.innerHeight / 2;
-        let pesoSuavizado = 0.7; 
-        let corrimientoY = -100; 
+        // Variables de suavizado
+        let posicionAnteriorX = 0;
+        let posicionAnteriorY = 0;
+        let pesoSuavizado = 0.6; 
+
+        // Variables de calibración matemática
+        let puntosCalibracionRaw = [];
+        let puntosPantalla = [
+            {x: window.innerWidth / 2, y: window.innerHeight / 2}, // Centro
+            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.15}, // Arriba Izq
+            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.15}, // Arriba Der
+            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.85}, // Abajo Izq
+            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.85}  // Abajo Der
+        ];
+        let clickCalibracionCount = 0;
+        
+        // Factores de mapeo (se calculan solos)
+        let mapMinX=0, mapMaxX=1, mapMinY=0, mapMaxY=1;
 
         window.iniciarTodo = async function() {
             document.getElementById('pantalla-consentimiento').style.display = 'none';
@@ -101,25 +132,22 @@
             await video.play();
             
             pantallaCarga.style.display = 'none';
-            estimulo.style.display = 'block';
-            puntoMirada.style.display = 'none'; // OCULTAMOS EL PUNTO ROJO PARA EL USUARIO FINAL
-            estudioActivo = true;
-            tiempoInicio = performance.now(); 
+            pantallaCalibracion.style.display = 'flex';
+            puntoMirada.style.display = 'block'; // Mostramos punto para calibrar
+            calibrando = true;
             
-            iniciarTimer();
             procesarVideo();
         };
 
         async function procesarVideo() {
-            if (!estudioActivo) return;
+            if (!estudioActivo && !calibrando) return;
             let startTime = performance.now();
             if (video.readyState >= 2) {
                 const resultados = await faceLandmarker.detectForVideo(video, startTime);
                 if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
                     const lm = resultados.faceLandmarks[0];
-                    let centroX = window.innerWidth / 2;
-                    let centroY = window.innerHeight / 2;
 
+                    // Calculamos los ratios CRUDOS (sin sensibilidad fija)
                     let ratioXIzq = (lm[468].x - lm[33].x) / (lm[133].x - lm[33].x);
                     let ratioXDer = (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x);
                     let promedioX = (ratioXIzq + ratioXDer) / 2; 
@@ -128,31 +156,91 @@
                     let ratioYDer = (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y);
                     let promedioY = (ratioYIzq + ratioYDer) / 2; 
 
-                    let sensibilidadX = 4.5; 
-                    let sensibilidadY = 9.0; 
+                    if (calibrando) {
+                        // Movemos el punto de calibración para que lo sigan
+                        puntoMirada.style.left = puntosPantalla[clickCalibracionCount].x + "px";
+                        puntoMirada.style.top = puntosPantalla[clickCalibracionCount].y + "px";
+                    } else {
+                        // --- MATEMÁTICA DE MAPEO PERSONALIZADA ---
+                        // Convertimos el ratio crudo de su ojo a píxeles de pantalla
+                        let rawMapeadoX = ((promedioX - mapMinX) / (mapMaxX - mapMinX)) * window.innerWidth;
+                        let rawMapeadoY = ((promedioY - mapMinY) / (mapMaxY - mapMinY)) * window.innerHeight;
 
-                    let rawX = centroX - (promedioX - 0.5) * window.innerWidth * sensibilidadX;
-                    let rawY = centroY - (promedioY - 0.5) * window.innerHeight * sensibilidadY;
+                        // Aplicamos suavizado
+                        if (posicionAnteriorX === 0) { posicionAnteriorX = rawMapeadoX; posicionAnteriorY = rawMapeadoY; }
+                        
+                        let smoothX = (posicionAnteriorX * pesoSuavizado) + (rawMapeadoX * (1 - pesoSuavizado));
+                        let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawMapeadoY * (1 - pesoSuavizado));
 
-                    rawX = Math.max(0, Math.min(window.innerWidth, rawX));
-                    rawY = Math.max(0, Math.min(window.innerHeight, rawY));
+                        // Limitamos pantalla
+                        smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
+                        smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
 
-                    let smoothX = (posicionAnteriorX * pesoSuavizado) + (rawX * (1 - pesoSuavizado));
-                    let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawY * (1 - pesoSuavizado));
+                        posicionAnteriorX = smoothX;
+                        posicionAnteriorY = smoothY;
 
-                    smoothY = smoothY + corrimientoY;
-                    smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
-                    smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
-
-                    // No movemos nada visualmente, solo guardamos la data
-                    posicionAnteriorX = smoothX;
-                    posicionAnteriorY = smoothY;
-
-                    let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
-                    datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(smoothX), y: Math.round(smoothY) });
+                        // No movemos punto rojo, solo guardamos data
+                        let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
+                        datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(smoothX), y: Math.round(smoothY) });
+                    }
                 }
             }
             requestAnimationFrame(procesarVideo);
+        }
+
+        // Manejador de clics para la calibración
+        document.addEventListener('click', function() {
+            if (!calibrando) return;
+
+            // Obtenemos los valores RAW actuales de los ojos (tenemos que recalcularlos acá para guardarlos)
+            // Para no repetir código, simulamos lo que hace el bucle
+            faceLandmarker.detectForVideo(video, performance.now()).then(resultados => {
+                if (!resultados.faceLandmarks) return;
+                const lm = resultados.faceLandmarks[0];
+                let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
+                let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
+
+                // Guardamos la relación: "Cuando miraba la pantalla en X/Y, el ojo valía pX/pY"
+                puntosCalibracionRaw.push({rawX: pX, rawY: pY, screenX: puntosPantalla[clickCalibracionCount].x, screenY: puntosPantalla[clickCalibracionCount].y});
+                
+                clickCalibracionCount++;
+                textoCalibracion.innerText = `Mire el punto rojo y haga clic (${clickCalibracionCount} de 5)`;
+
+                // Movemos el punto rojo de calibración al siguiente lugar
+                if(clickCalibracionCount < 5) {
+                    puntoCalibracion.style.left = puntosPantalla[clickCalibracionCount].x + "px";
+                    puntoCalibracion.style.top = puntosPantalla[clickCalibracionCount].y + "px";
+                }
+
+                if (clickCalibracionCount === 5) {
+                    finalizarCalibracion();
+                }
+            });
+        });
+
+        function finalizarCalibracion() {
+            calibrando = false;
+            
+            // Calculamos los límites mínimos y máximos del ojo de esta persona
+            let rawXs = puntosCalibracionRaw.map(p => p.rawX);
+            let rawYs = puntosCalibracionRaw.map(p => p.rawY);
+            
+            // Pongo un margen de seguridad por si la persona parpadea o se mueve
+            mapMinX = Math.min(...rawXs) - 0.05;
+            mapMaxX = Math.max(...rawXs) + 0.05;
+            mapMinY = Math.min(...rawYs) - 0.05;
+            mapMaxY = Math.max(...rawYs) + 0.05;
+
+            // Ocultamos puntos y arrancamos el estudio real
+            puntoMirada.style.display = 'none';
+            puntoCalibracion.style.display = 'none';
+            pantallaCalibracion.style.display = 'none';
+            estimulo.style.display = 'block';
+            
+            estudioActivo = true;
+            tiempoInicio = performance.now();
+            
+            iniciarTimer();
         }
 
         function iniciarTimer() {
@@ -181,7 +269,6 @@
             estimulo.style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
             
-            // Descargamos CSV
             let contenidoCSV = "Tiempo_Segundos;X_Pantalla;Y_Pantalla\n";
             for (let punto of datosOjo) { contenidoCSV += `${punto.tiempo};${punto.x};${punto.y}\n`; }
             let blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
@@ -191,7 +278,6 @@
             linkDescarga.style.display = "none"; document.body.appendChild(linkDescarga);
             linkDescarga.click(); document.body.removeChild(linkDescarga); URL.revokeObjectURL(url);
 
-            // Dibujamos Mapa de Calor
             dibujarMapaCalor();
         }
 
@@ -199,26 +285,16 @@
             lienzo.width = window.innerWidth;
             lienzo.height = window.innerHeight;
             lienzo.style.display = 'block';
-
-            // Fondo oscuro
             ctx.fillStyle = '#222222';
             ctx.fillRect(0, 0, lienzo.width, lienzo.height);
 
-            // Inicializamos la librería simpleheat
             let heat = simpleheat('lienzo-calor');
-            
-            // Le pasamos los datos en formato [x, y, intensidad]
             let datosParaCalor = datosOjo.map(punto => [punto.x, punto.y, 1]);
             heat.data(datosParaCalor);
-
-            // Configuración visual (Radio del punto, gradiente de colores)
             heat.radius(30, 40);
             heat.gradient({0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'});
-            
-            // Lo dibujamos
-            heat.draw();
+            heat.draw(0.01); // Intensidad suave
 
-            // Mostramos botón de descarga
             pantallaFin.style.display = 'flex';
         }
 
