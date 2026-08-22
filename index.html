@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Trayectoria Visual</title>
+    <title>Mapa de Calor Real</title>
+    <!-- Cargamos la librería matemática del mapa de calor -->
+    <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
         
@@ -12,9 +14,7 @@
         #pantalla-fin { background: rgba(0,0,0,0.85); z-index: 200; flex-direction: column; gap: 20px; }
         
         #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; }
-        
-        /* El lienzo donde vamos a dibujar */
-        #lienzo-trayectoria { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: none; }
+        #lienzo-calor { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: none; }
         
         button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; z-index: 300; }
         button:hover { background: #0056b3; }
@@ -33,9 +33,7 @@
     <div id="punto-mirada"></div>
     <video id="video" playsinline></video>
     <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba" style="display: none;">
-    
-    <!-- Lienzo vacío listo para dibujar -->
-    <canvas id="lienzo-trayectoria"></canvas>
+    <canvas id="lienzo-calor"></canvas>
 
     <div id="pantalla-consentimiento" class="pantalla">
         <h2>Aviso de Privacidad</h2>
@@ -55,8 +53,7 @@
     <div id="pantalla-fin" class="pantalla" style="display: none;">
         <h2>¡Estudio terminado!</h2>
         <p>Se descargó el archivo CSV con la data cruda.</p>
-        <button id="btn-descargar-img" onclick="descargarImagen()">Descargar Trayectoria como Imagen (PNG)</button>
-        <p style="font-size: 12px; color: #aaa;">(Mirá la imagen dibujada detrás de este cuadro)</p>
+        <button onclick="descargarImagen()">Descargar Mapa de Calor (PNG)</button>
     </div>
 
     <script type="module">
@@ -68,13 +65,12 @@
         const textoCarga = document.getElementById('texto-carga');
         const pantallaFin = document.getElementById('pantalla-fin');
         const estimulo = document.getElementById('estimulo');
-        const lienzo = document.getElementById('lienzo-trayectoria');
+        const lienzo = document.getElementById('lienzo-calor');
         const ctx = lienzo.getContext('2d');
 
         let faceLandmarker;
         let estudioActivo = false;
         let timerActivo = false;
-
         let datosOjo = []; 
         let tiempoInicio = 0;
 
@@ -106,7 +102,7 @@
             
             pantallaCarga.style.display = 'none';
             estimulo.style.display = 'block';
-            puntoMirada.style.display = 'block';
+            puntoMirada.style.display = 'none'; // OCULTAMOS EL PUNTO ROJO PARA EL USUARIO FINAL
             estudioActivo = true;
             tiempoInicio = performance.now(); 
             
@@ -148,9 +144,7 @@
                     smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
                     smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
 
-                    puntoMirada.style.left = smoothX + "px";
-                    puntoMirada.style.top = smoothY + "px";
-
+                    // No movemos nada visualmente, solo guardamos la data
                     posicionAnteriorX = smoothX;
                     posicionAnteriorY = smoothY;
 
@@ -184,10 +178,10 @@
             estudioActivo = false; 
             timerActivo = false;
             video.srcObject.getTracks().forEach(track => track.stop());
-            puntoMirada.style.display = 'none';
+            estimulo.style.display = 'none';
             document.getElementById('timer-display').style.display = 'none';
             
-            // 1. Descargamos el CSV (igual que antes)
+            // Descargamos CSV
             let contenidoCSV = "Tiempo_Segundos;X_Pantalla;Y_Pantalla\n";
             for (let punto of datosOjo) { contenidoCSV += `${punto.tiempo};${punto.x};${punto.y}\n`; }
             let blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
@@ -197,62 +191,40 @@
             linkDescarga.style.display = "none"; document.body.appendChild(linkDescarga);
             linkDescarga.click(); document.body.removeChild(linkDescarga); URL.revokeObjectURL(url);
 
-            // 2. DIBUJAMOS LA TRAYECTORIA
-            dibujarTrayectoria();
+            // Dibujamos Mapa de Calor
+            dibujarMapaCalor();
         }
 
-               function dibujarTrayectoria() {
-            // Configuramos el tamaño del lienzo
+        function dibujarMapaCalor() {
             lienzo.width = window.innerWidth;
             lienzo.height = window.innerHeight;
             lienzo.style.display = 'block';
 
-            // EN VEZ DE LA FOTO, PINTAMOS UN FONDO OSCURO PARA EVITAR EL BLOQUEO DE SEGURIDAD
+            // Fondo oscuro
             ctx.fillStyle = '#222222';
             ctx.fillRect(0, 0, lienzo.width, lienzo.height);
 
-            // Preparamos el dibujo de las líneas y números
-            ctx.lineWidth = 2;
-            ctx.fillStyle = "#FF0000";
-            ctx.strokeStyle = "#FFFFFF";
-            ctx.font = "bold 16px Arial";
-            ctx.textAlign = "middle";
+            // Inicializamos la librería simpleheat
+            let heat = simpleheat('lienzo-calor');
+            
+            // Le pasamos los datos en formato [x, y, intensidad]
+            let datosParaCalor = datosOjo.map(punto => [punto.x, punto.y, 1]);
+            heat.data(datosParaCalor);
 
-            let puntoPrevio = null;
-            let contador = 1;
-            let ultimoTiempoDibujado = 0;
-            const INTERVALO_DIBUJO = 0.15; 
+            // Configuración visual (Radio del punto, gradiente de colores)
+            heat.radius(30, 40);
+            heat.gradient({0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'});
+            
+            // Lo dibujamos
+            heat.draw();
 
-            for (let punto of datosOjo) {
-                if (punto.tiempo - ultimoTiempoDibujado >= INTERVALO_DIBUJO) {
-                    if (puntoPrevio) {
-                        ctx.beginPath();
-                        ctx.moveTo(puntoPrevio.x, puntoPrevio.y);
-                        ctx.lineTo(punto.x, punto.y);
-                        ctx.stroke();
-                    }
-
-                    ctx.beginPath();
-                    ctx.arc(punto.x, punto.y, 10, 0, 2 * Math.PI);
-                    ctx.fill();
-
-                    ctx.fillStyle = "#FFFFFF";
-                    ctx.fillText(contador, punto.x, punto.y);
-                    ctx.fillStyle = "#FF0000"; 
-
-                    puntoPrevio = {x: punto.x, y: punto.y};
-                    contador++;
-                    ultimoTiempoDibujado = punto.tiempo;
-                }
-            }
-
+            // Mostramos botón de descarga
             pantallaFin.style.display = 'flex';
         }
 
-        // Función para descargar el dibujo como imagen
         window.descargarImagen = function() {
             const link = document.createElement("a");
-            link.download = 'trayectoria_ojo.png';
+            link.download = 'mapa_de_calor.png';
             link.href = lienzo.toDataURL();
             link.click();
         };
