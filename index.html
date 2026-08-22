@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Tracking con Calibración</title>
+    <title>Eye Tracking Calibrado</title>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
@@ -21,23 +21,19 @@
         
         video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; }
 
-        #punto-mirada {
-            width: 40px; height: 40px; background-color: #ff0000; border-radius: 50%;
-            position: absolute; top: 0px; left: 0px; pointer-events: none; z-index: 999999;
-            box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9); display: none; transform: translate(-50%, -50%);
-        }
-        
-        #punto-calibracion {
+        /* UN SOLO PUNTO ROJO, EMPIEZA OCULTO */
+        #punto-rojo {
             width: 40px; height: 40px; background-color: #ff0000; border-radius: 50%;
             position: absolute; top: 50%; left: 50%; pointer-events: none; z-index: 999999;
-            box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9); transform: translate(-50%, -50%);
+            box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9); 
+            transform: translate(-50%, -50%);
+            display: none; 
         }
     </style>
 </head>
 <body>
 
-    <div id="punto-mirada"></div>
-    <div id="punto-calibracion"></div>
+    <div id="punto-rojo"></div>
     <video id="video" playsinline></video>
     <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba">
     <canvas id="lienzo-calor"></canvas>
@@ -58,14 +54,14 @@
     </div>
 
     <div id="pantalla-calibracion" class="pantalla">
-        <div style="background: rgba(0,0,0,0.8); padding: 30px; border-radius: 10px; border: 2px solid #ffcc00; pointer-events: auto;">
-            <h2 id="texto-calibracion" style="color: #ffcc00; margin: 0;">Preparando cámara...</h2>
+        <div style="background: rgba(0,0,0,0.8); padding: 30px; border-radius: 10px; border: 2px solid #ffcc00; pointer-events: auto; z-index: 1000;">
+            <h2 id="texto-calibracion" style="color: #ffcc00; margin: 0;">Preparando...</h2>
         </div>
     </div>
 
     <div id="pantalla-fin" class="pantalla">
         <h2>¡Estudio terminado!</h2>
-        <p>Se descargó el archivo CSV con la data cruda.</p>
+        <p>Se descargó el archivo CSV.</p>
         <button onclick="descargarImagen()">Descargar Mapa de Calor (PNG)</button>
     </div>
 
@@ -73,8 +69,7 @@
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
         const video = document.getElementById('video');
-        const puntoMirada = document.getElementById('punto-mirada');
-        const puntoCalibracion = document.getElementById('punto-calibracion');
+        const puntoRojo = document.getElementById('punto-rojo');
         const pantallaCarga = document.getElementById('pantalla-carga');
         const textoCarga = document.getElementById('texto-carga');
         const pantallaCalibracion = document.getElementById('pantalla-calibracion');
@@ -91,23 +86,25 @@
         let datosOjo = []; 
         let tiempoInicio = 0;
 
-        // Variables de suavizado
         let posicionAnteriorX = 0;
         let posicionAnteriorY = 0;
         let pesoSuavizado = 0.6; 
 
-        // Variables de calibración matemática
+        // Guardamos los datos crudos del ojo en tiempo real para usarlos al hacer clic
+        let currentRawX = 0.5;
+        let currentRawY = 0.5;
+
+        // Configuración de calibración
         let puntosCalibracionRaw = [];
         let puntosPantalla = [
-            {x: window.innerWidth / 2, y: window.innerHeight / 2}, // Centro
-            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.15}, // Arriba Izq
-            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.15}, // Arriba Der
-            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.85}, // Abajo Izq
-            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.85}  // Abajo Der
+            {x: window.innerWidth / 2, y: window.innerHeight / 2},
+            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.15},
+            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.15},
+            {x: window.innerWidth * 0.15, y: window.innerHeight * 0.85},
+            {x: window.innerWidth * 0.85, y: window.innerHeight * 0.85}
         ];
         let clickCalibracionCount = 0;
         
-        // Factores de mapeo (se calculan solos)
         let mapMinX=0, mapMaxX=1, mapMinY=0, mapMaxY=1;
 
         window.iniciarTodo = async function() {
@@ -122,6 +119,7 @@
                 baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`, delegate: "GPU" },
                 runningMode: "VIDEO", numFaces: 1
             });
+            
             textoCarga.innerText = "Modelo listo. Prendiendo cámara...";
             await prenderCamara();
         };
@@ -131,55 +129,59 @@
             video.srcObject = stream;
             await video.play();
             
+            // 1. Ocultamos carga
             pantallaCarga.style.display = 'none';
-            pantallaCalibracion.style.display = 'flex';
-            puntoMirada.style.display = 'block'; // Mostramos punto para calibrar
-            calibrando = true;
             
+            // 2. Mostramos pantalla de calibración y el punto
+            pantallaCalibracion.style.display = 'flex';
+            puntoRojo.style.display = 'block';
+            
+            // 3. Movemos el punto al primer lugar (Centro)
+            moverPuntoCalibracion(0);
+            textoCalibracion.innerText = "Mire el punto rojo y haga clic (1 de 5)";
+            
+            // 4. Activamos modo calibración
+            calibrando = true;
             procesarVideo();
         };
+
+        function moverPuntoCalibracion(indice) {
+            puntoRojo.style.left = puntosPantalla[indice].x + "px";
+            puntoRojo.style.top = puntosPantalla[indice].y + "px";
+        }
 
         async function procesarVideo() {
             if (!estudioActivo && !calibrando) return;
             let startTime = performance.now();
+            
             if (video.readyState >= 2) {
                 const resultados = await faceLandmarker.detectForVideo(video, startTime);
                 if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
                     const lm = resultados.faceLandmarks[0];
 
-                    // Calculamos los ratios CRUDOS (sin sensibilidad fija)
-                    let ratioXIzq = (lm[468].x - lm[33].x) / (lm[133].x - lm[33].x);
-                    let ratioXDer = (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x);
-                    let promedioX = (ratioXIzq + ratioXDer) / 2; 
+                    let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
+                    let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
 
-                    let ratioYIzq = (lm[468].y - lm[159].y) / (lm[145].y - lm[159].y);
-                    let ratioYDer = (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y);
-                    let promedioY = (ratioYIzq + ratioYDer) / 2; 
+                    // GUARDAMOS LOS DATOS CRUDOS PARA EL CLIC
+                    currentRawX = pX;
+                    currentRawY = pY;
 
-                    if (calibrando) {
-                        // Movemos el punto de calibración para que lo sigan
-                        puntoMirada.style.left = puntosPantalla[clickCalibracionCount].x + "px";
-                        puntoMirada.style.top = puntosPantalla[clickCalibracionCount].y + "px";
-                    } else {
-                        // --- MATEMÁTICA DE MAPEO PERSONALIZADA ---
-                        // Convertimos el ratio crudo de su ojo a píxeles de pantalla
-                        let rawMapeadoX = ((promedioX - mapMinX) / (mapMaxX - mapMinX)) * window.innerWidth;
-                        let rawMapeadoY = ((promedioY - mapMinY) / (mapMaxY - mapMinY)) * window.innerHeight;
+                    if (!calibrando) {
+                        // --- MATEMÁTICA DE MAPEO ---
+                        let rawMapeadoX = ((pX - mapMinX) / (mapMaxX - mapMinX)) * window.innerWidth;
+                        let rawMapeadoY = ((pY - mapMinY) / (mapMaxY - mapMinY)) * window.innerHeight;
 
-                        // Aplicamos suavizado
                         if (posicionAnteriorX === 0) { posicionAnteriorX = rawMapeadoX; posicionAnteriorY = rawMapeadoY; }
                         
                         let smoothX = (posicionAnteriorX * pesoSuavizado) + (rawMapeadoX * (1 - pesoSuavizado));
                         let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawMapeadoY * (1 - pesoSuavizado));
 
-                        // Limitamos pantalla
                         smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
                         smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
 
                         posicionAnteriorX = smoothX;
                         posicionAnteriorY = smoothY;
 
-                        // No movemos punto rojo, solo guardamos data
                         let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
                         datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(smoothX), y: Math.round(smoothY) });
                     }
@@ -188,58 +190,49 @@
             requestAnimationFrame(procesarVideo);
         }
 
-        // Manejador de clics para la calibración
-        document.addEventListener('click', function() {
-            if (!calibrando) return;
+        // CLIC MANEJADOR DE CALIBRACIÓN
+        document.addEventListener('click', function(e) {
+            // Ignoramos clics si no estamos en modo calibración o si hicieron clic en un botón
+            if (!calibrando || e.target.tagName === 'BUTTON') return;
 
-            // Obtenemos los valores RAW actuales de los ojos (tenemos que recalcularlos acá para guardarlos)
-            // Para no repetir código, simulamos lo que hace el bucle
-            faceLandmarker.detectForVideo(video, performance.now()).then(resultados => {
-                if (!resultados.faceLandmarks) return;
-                const lm = resultados.faceLandmarks[0];
-                let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
-                let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
-
-                // Guardamos la relación: "Cuando miraba la pantalla en X/Y, el ojo valía pX/pY"
-                puntosCalibracionRaw.push({rawX: pX, rawY: pY, screenX: puntosPantalla[clickCalibracionCount].x, screenY: puntosPantalla[clickCalibracionCount].y});
-                
-                clickCalibracionCount++;
-                textoCalibracion.innerText = `Mire el punto rojo y haga clic (${clickCalibracionCount} de 5)`;
-
-                // Movemos el punto rojo de calibración al siguiente lugar
-                if(clickCalibracionCount < 5) {
-                    puntoCalibracion.style.left = puntosPantalla[clickCalibracionCount].x + "px";
-                    puntoCalibracion.style.top = puntosPantalla[clickCalibracionCount].y + "px";
-                }
-
-                if (clickCalibracionCount === 5) {
-                    finalizarCalibracion();
-                }
+            // Guardamos el dato crudo que calculó el bucle en este exacto instante
+            puntosCalibracionRaw.push({
+                rawX: currentRawX, 
+                rawY: currentRawY, 
+                screenX: puntosPantalla[clickCalibracionCount].x, 
+                screenY: puntosPantalla[clickCalibracionCount].y
             });
+            
+            clickCalibracionCount++;
+            textoCalibracion.innerText = `Mire el punto rojo y haga clic (${clickCalibracionCount} de 5)`;
+
+            if(clickCalibracionCount < 5) {
+                moverPuntoCalibracion(clickCalibracionCount);
+            }
+
+            if (clickCalibracionCount === 5) {
+                finalizarCalibracion();
+            }
         });
 
         function finalizarCalibracion() {
             calibrando = false;
             
-            // Calculamos los límites mínimos y máximos del ojo de esta persona
             let rawXs = puntosCalibracionRaw.map(p => p.rawX);
             let rawYs = puntosCalibracionRaw.map(p => p.rawY);
             
-            // Pongo un margen de seguridad por si la persona parpadea o se mueve
             mapMinX = Math.min(...rawXs) - 0.05;
             mapMaxX = Math.max(...rawXs) + 0.05;
             mapMinY = Math.min(...rawYs) - 0.05;
             mapMaxY = Math.max(...rawYs) + 0.05;
 
-            // Ocultamos puntos y arrancamos el estudio real
-            puntoMirada.style.display = 'none';
-            puntoCalibracion.style.display = 'none';
+            // Transición limpia al estudio
+            puntoRojo.style.display = 'none';
             pantallaCalibracion.style.display = 'none';
             estimulo.style.display = 'block';
             
             estudioActivo = true;
             tiempoInicio = performance.now();
-            
             iniciarTimer();
         }
 
@@ -293,7 +286,7 @@
             heat.data(datosParaCalor);
             heat.radius(30, 40);
             heat.gradient({0.2: 'blue', 0.4: 'cyan', 0.6: 'lime', 0.8: 'yellow', 1.0: 'red'});
-            heat.draw(0.01); // Intensidad suave
+            heat.draw(0.01);
 
             pantallaFin.style.display = 'flex';
         }
