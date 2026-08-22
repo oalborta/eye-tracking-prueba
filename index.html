@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Tracking Calibrado</title>
+    <title>Eye Tracking Fijación Inteligente</title>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
@@ -21,13 +21,14 @@
         
         video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; }
 
-        /* UN SOLO PUNTO ROJO, EMPIEZA OCULTO */
+        /* Punto de calibración base (Empieza Rojo) */
         #punto-rojo {
             width: 40px; height: 40px; background-color: #ff0000; border-radius: 50%;
             position: absolute; top: 50%; left: 50%; pointer-events: none; z-index: 999999;
             box-shadow: 0 0 30px 10px rgba(255, 0, 0, 0.9); 
             transform: translate(-50%, -50%);
             display: none; 
+            transition: background-color 0.3s, box-shadow 0.3s; /* Transición suave de color */
         }
     </style>
 </head>
@@ -43,7 +44,7 @@
         <p style="max-width: 500px; text-align: center; line-height: 1.6;">
             Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
             <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
-            <br><br>Primero deberá calibrar mirando 5 puntos, y luego verá una imagen durante 15 segundos.
+            <br><br>Para calibrar, <strong>mire fijamente el punto</strong> hasta que se ponga <span style="color:#00ff00">VERDE</span> y luego haga clic.
         </p>
         <br>
         <button onclick="iniciarTodo()">Acepto y comenzar</button>
@@ -90,11 +91,17 @@
         let posicionAnteriorY = 0;
         let pesoSuavizado = 0.6; 
 
-        // Guardamos los datos crudos del ojo en tiempo real para usarlos al hacer clic
+        // VARIABLES DE FIJACIÓN INTELIGENTE
         let currentRawX = 0.5;
         let currentRawY = 0.5;
+        let rawXAnterior = 0;
+        let rawYAnterior = 0;
+        let estadoPunto = 'esperando'; // 'esperando', 'fijando', 'listo'
+        let tiempoFijacionInicio = 0;
+        
+        const DURACION_FIJACION = 1500; // Milisegundos mirando quieto
+        const UMBRAL_MOVIMIENTO = 0.06; // Qué tan permisivo es con el temblor del ojo
 
-        // Configuración de calibración
         let puntosCalibracionRaw = [];
         let puntosPantalla = [
             {x: window.innerWidth / 2, y: window.innerHeight / 2},
@@ -104,7 +111,6 @@
             {x: window.innerWidth * 0.85, y: window.innerHeight * 0.85}
         ];
         let clickCalibracionCount = 0;
-        
         let mapMinX=0, mapMaxX=1, mapMinY=0, mapMaxY=1;
 
         window.iniciarTodo = async function() {
@@ -119,7 +125,6 @@
                 baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`, delegate: "GPU" },
                 runningMode: "VIDEO", numFaces: 1
             });
-            
             textoCarga.innerText = "Modelo listo. Prendiendo cámara...";
             await prenderCamara();
         };
@@ -129,18 +134,18 @@
             video.srcObject = stream;
             await video.play();
             
-            // 1. Ocultamos carga
             pantallaCarga.style.display = 'none';
-            
-            // 2. Mostramos pantalla de calibración y el punto
             pantallaCalibracion.style.display = 'flex';
+            
+            // Iniciamos el punto en Rojo
             puntoRojo.style.display = 'block';
+            puntoRojo.style.backgroundColor = '#ff0000';
+            puntoRojo.style.boxShadow = '0 0 30px 10px rgba(255, 0, 0, 0.9)';
             
-            // 3. Movemos el punto al primer lugar (Centro)
             moverPuntoCalibracion(0);
-            textoCalibracion.innerText = "Mire el punto rojo y haga clic (1 de 5)";
+            textoCalibracion.innerText = "Mire el punto hasta que se ponga VERDE (1 de 5)";
+            textoCalibracion.style.color = '#ffcc00';
             
-            // 4. Activamos modo calibración
             calibrando = true;
             procesarVideo();
         };
@@ -148,6 +153,10 @@
         function moverPuntoCalibracion(indice) {
             puntoRojo.style.left = puntosPantalla[indice].x + "px";
             puntoRojo.style.top = puntosPantalla[indice].y + "px";
+            // Resetear estado para el nuevo punto
+            estadoPunto = 'esperando';
+            puntoRojo.style.backgroundColor = '#ff0000';
+            puntoRojo.style.boxShadow = '0 0 30px 10px rgba(255, 0, 0, 0.9)';
         }
 
         async function procesarVideo() {
@@ -162,12 +171,41 @@
                     let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
                     let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
 
-                    // GUARDAMOS LOS DATOS CRUDOS PARA EL CLIC
                     currentRawX = pX;
                     currentRawY = pY;
 
-                    if (!calibrando) {
-                        // --- MATEMÁTICA DE MAPEO ---
+                    if (calibrando) {
+                        // LÓGICA DE FIJACIÓN INTELIGENTE
+                        let diffX = Math.abs(pX - rawXAnterior);
+                        let diffY = Math.abs(pY - rawYAnterior);
+                        rawXAnterior = pX;
+                        rawYAnterior = pY;
+
+                        // Si el ojo no se movió más del umbral, está fijando
+                        if (diffX < UMBRAL_MOVIMIENTO && diffY < UMBRAL_MOVIMIENTO) {
+                            if (estadoPunto === 'esperando') {
+                                estadoPunto = 'fijando';
+                                tiempoFijacionInicio = performance.now();
+                                // Se pone Amarillo
+                                puntoRojo.style.backgroundColor = '#ffcc00';
+                                puntoRojo.style.boxShadow = '0 0 30px 10px rgba(255, 204, 0, 0.9)';
+                            } else if (estadoPunto === 'fijando') {
+                                // Si ya lleva 1.5 segundos quieto, se pone Verde
+                                if (performance.now() - tiempoFijacionInicio >= DURACION_FIJACION) {
+                                    estadoPunto = 'listo';
+                                    puntoRojo.style.backgroundColor = '#00ff00';
+                                    puntoRojo.style.boxShadow = '0 0 30px 10px rgba(0, 255, 0, 0.9)';
+                                }
+                            }
+                        } else {
+                            // Se movió mucho (parpadeó o miró para otro lado). Resetear
+                            estadoPunto = 'esperando';
+                            puntoRojo.style.backgroundColor = '#ff0000';
+                            puntoRojo.style.boxShadow = '0 0 30px 10px rgba(255, 0, 0, 0.9)';
+                        }
+
+                    } else {
+                        // MATEMÁTICA DE MAPEO
                         let rawMapeadoX = ((pX - mapMinX) / (mapMaxX - mapMinX)) * window.innerWidth;
                         let rawMapeadoY = ((pY - mapMinY) / (mapMaxY - mapMinY)) * window.innerHeight;
 
@@ -190,12 +228,15 @@
             requestAnimationFrame(procesarVideo);
         }
 
-        // CLIC MANEJADOR DE CALIBRACIÓN
         document.addEventListener('click', function(e) {
-            // Ignoramos clics si no estamos en modo calibración o si hicieron clic en un botón
             if (!calibrando || e.target.tagName === 'BUTTON') return;
 
-            // Guardamos el dato crudo que calculó el bucle en este exacto instante
+            // SOLO PERMITE CLIC SI ESTÁ VERDE
+            if (estadoPunto !== 'listo') {
+                textoCalibracion.innerText = "¡Aún no está verde! Mantenga la mirada fija.";
+                return; 
+            }
+
             puntosCalibracionRaw.push({
                 rawX: currentRawX, 
                 rawY: currentRawY, 
@@ -204,7 +245,7 @@
             });
             
             clickCalibracionCount++;
-            textoCalibracion.innerText = `Mire el punto rojo y haga clic (${clickCalibracionCount} de 5)`;
+            textoCalibracion.innerText = `Mire el punto hasta que se ponga VERDE (${clickCalibracionCount + 1} de 5)`;
 
             if(clickCalibracionCount < 5) {
                 moverPuntoCalibracion(clickCalibracionCount);
@@ -226,7 +267,6 @@
             mapMinY = Math.min(...rawYs) - 0.05;
             mapMaxY = Math.max(...rawYs) + 0.05;
 
-            // Transición limpia al estudio
             puntoRojo.style.display = 'none';
             pantallaCalibracion.style.display = 'none';
             estimulo.style.display = 'block';
