@@ -9,7 +9,7 @@
         .pantalla { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
         #pantalla-consentimiento { background: #222; z-index: 100; }
         #pantalla-carga { background: #222; z-index: 100; display: none; }
-        #pantalla-calibracion { background: rgba(10,14,20,0.9); z-index: 150; display: none; pointer-events: none; }
+        #pantalla-calibracion { background: rgba(10,14,20,0.9); z-index: 150; display: none;}
         #pantalla-fin { background: rgba(0,0,0,0.85); z-index: 200; flex-direction: column; gap: 20px; }
         
         #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; }
@@ -149,7 +149,7 @@
             procesarVideo();
         };
 
-        async function procesarVideo() {
+                async function procesarVideo() {
             if (faseActual === 'fin') return;
             let startTime = performance.now();
             
@@ -158,7 +158,6 @@
                 if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
                     const lm = resultados.faceLandmarks[0];
                     
-                    // Calculamos el ojo crudo (igual que antes)
                     let promedioX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2; 
                     let promedioY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2; 
 
@@ -175,6 +174,30 @@
 
                     posicionAnteriorX = smoothX;
                     posicionAnteriorY = smoothY;
+
+                    // SUAVIZAMOS LA LECTURA DEL OJO PARA QUE NO TEMBLE
+                    if (!rawSmoothIniciado) {
+                        rawSmoothX = promedioX;
+                        rawSmoothY = promedioY;
+                        rawSmoothIniciado = true;
+                    } else {
+                        rawSmoothX = rawSmoothX * 0.85 + promedioX * 0.15;
+                        rawSmoothY = rawSmoothY * 0.85 + promedioY * 0.15;
+                    }
+
+                    // LÓGICA SEGÚN LA FASE
+                    if (faseActual === 'calibracion') {
+                        logicaCalibracion(smoothX, smoothY, rawSmoothX, rawSmoothY);
+                    } else if (faseActual === 'estudio') {
+                        puntoMirada.style.left = smoothX + "px";
+                        puntoMirada.style.top = smoothY + "px";
+                        let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
+                        datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(smoothX), y: Math.round(smoothY) });
+                    }
+                }
+            }
+            requestAnimationFrame(procesarVideo);
+        }
 
                     // LÓGICA SEGÚN LA FASE
                     if (faseActual === 'calibracion') {
