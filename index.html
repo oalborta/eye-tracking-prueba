@@ -2,299 +2,991 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mini EyeTracker & UX Test</title>
-    <!-- MediaPipe Face Mesh -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f0f2f5; color: #333; text-align: center; }
-        .screen { display: none; padding: 30px; min-height: 100vh; box-sizing: border-box; }
-        .active { display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        
-        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); width: 450px; max-width: 90%; margin: auto; }
-        h2 { margin-top: 0; color: #1a73e8; }
-        p { color: #5f6368; }
-        
-        input[type="text"], input[type="email"], input[type="password"], input[type="file"], select {
-            width: 100%; padding: 12px; font-size: 15px; margin: 12px 0; border-radius: 6px; border: 1px solid #dadce0; box-sizing: border-box;
+        :root {
+            --bg: #08080d;
+            --bg2: #0e0e16;
+            --card: #12121c;
+            --border: #1c1c2e;
+            --fg: #e4e4ec;
+            --muted: #5e5e76;
+            --accent: #10b981;
+            --accent2: #059669;
+            --warn: #f59e0b;
+            --danger: #ef4444;
         }
-        button {
-            width: 100%; padding: 12px; font-size: 15px; margin: 8px 0; border-radius: 6px; border: none; background-color: #1a73e8; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;
-        }
-        button:hover { background-color: #1557b0; }
-        .btn-secondary { background-color: #5f6368; }
-        .btn-secondary:hover { background-color: #444746; }
-        .btn-success { background-color: #137333; }
-        .btn-success:hover { background-color: #0d5023; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
 
-        /* Pantalla de Calibración */
-        #calibration-screen { position: relative; width: 100vw; height: 100vh; background: #111; cursor: crosshair; display: none; }
-        .calib-point {
-            position: absolute; width: 35px; height: 35px; background-color: #ea4335;
-            border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; box-shadow: 0 0 10px rgba(234, 67, 53, 0.5);
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        .calib-point:hover { transform: translate(-50%, -50%) scale(1.1); }
-        .calib-point.green { background-color: #34a853; box-shadow: 0 0 20px #34a853; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg2); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-        /* Estímulo Activo */
-        #stimulus-area {
-            max-width: 90vw; max-height: 75vh; margin: 15px auto; position: relative; border: 2px solid #dadce0; background: #fff; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .bg-glow {
+            position: fixed; top: -200px; right: -200px; width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
         }
-        #stimulus-img { width: 100%; height: auto; display: block; }
-        
-        #gaze-cursor {
-            position: fixed; width: 15px; height: 15px; background: rgba(26, 115, 232, 0.7);
-            border: 2px solid white; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); display: none; z-index: 9999;
+        .bg-glow-2 {
+            position: fixed; bottom: -300px; left: -200px; width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(245,158,11,0.04) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
         }
+
+        .admin-nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(8,8,13,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .admin-nav .logo { font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
+        .admin-nav .logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 0.25rem; }
+        .nav-links a {
+            padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+            color: var(--muted); font-weight: 600; font-size: 0.875rem;
+            transition: all 0.2s; cursor: pointer;
+        }
+        .nav-links a:hover { color: var(--fg); background: rgba(255,255,255,0.04); }
+        .nav-links a.active { color: var(--accent); background: rgba(16,185,129,0.08); }
+
+        .view { display: none; position: relative; z-index: 1; }
+        .view.active { display: block; }
+
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.5rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+            padding: 1.5rem; position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
+            border-radius: 50%; filter: blur(40px); opacity: 0.15;
+        }
+        .stat-card.green::after { background: var(--accent); }
+        .stat-card.amber::after { background: var(--warn); }
+        .stat-number { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+        .stat-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.65rem 1.25rem; border-radius: 10px; font-family: 'Outfit', sans-serif;
+            font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer;
+            transition: all 0.2s; text-decoration: none;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.06); color: var(--fg); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--muted); }
+        .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+        .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 8px; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-weight: 600; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input, .form-select {
+            width: 100%; padding: 0.75rem 1rem; background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--fg); font-family: 'Outfit', sans-serif; font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+        }
+        .form-input:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+        .form-input::placeholder { color: var(--muted); }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 700;
+            color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(28,28,46,0.5); font-size: 0.9rem; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; }
+        .tab-btn {
+            padding: 0.75rem 1.25rem; background: none; border: none; color: var(--muted);
+            font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.875rem;
+            cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--fg); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast {
+            padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+            display: flex; align-items: center; gap: 0.5rem; min-width: 280px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
+        .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+        .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
+
+        .pantalla-participante {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
+        }
+
+        /* MODIFICADO: Ajustes visuales para el punto de calibración interactivo */
+        #punto-calibracion {
+            width: 50px; height: 50px; border-radius: 50%; position: fixed;
+            z-index: 999999; transform: translate(-50%, -50%);
+            display: none; justify-content: center; align-items: center; 
+            transition: background-color 0.4s, box-shadow 0.4s, transform 0.2s;
+            font-size: 0.75rem; font-weight: 800; color: white; user-select: none;
+        }
+        #punto-calibracion:active { transform: translate(-50%, -50%) scale(0.9); }
+        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 30px 12px rgba(239,68,68,0.7); cursor: not-allowed; }
+        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); cursor: pointer; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16,185,129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129, 0); } }
+
+        .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; }
+        .heatmap-container img { display: block; max-width: 100%; height: auto; }
+        .heatmap-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+        .study-link {
+            display: flex; align-items: center; gap: 0.5rem; background: var(--bg2);
+            border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem;
+            font-size: 0.8rem; color: var(--muted); font-family: monospace; max-width: 220px;
+        }
+        .study-link code { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .estimulo-item-card {
+            background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; position: relative;
+        }
+        .file-upload-box {
+            border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center;
+            cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01);
+        }
+        .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
+
+        #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
+        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
+        .login-container { max-width: 400px; margin: 0 auto; padding: 4rem 1.5rem; }
+        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
     </style>
 </head>
 <body>
 
-    <div id="gaze-cursor"></div>
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+    <div id="toast-container"></div>
 
-    <!-- 1. PANTALLA DE LOGIN -->
-    <div id="login-screen" class="screen active">
-        <div class="card">
-            <h2>EyeTracker UX</h2>
-            <p>Inicia sesión en tu cuenta</p>
-            <input type="email" id="login-email" placeholder="Correo electrónico" value="investigador@ux.com">
-            <input type="password" id="login-pass" placeholder="Contraseña" value="123456">
-            <button onclick="handleLogin()">Entrar al Sistema</button>
-        </div>
-    </div>
-
-    <!-- 2. DASHBOARD / MENÚ PRINCIPAL -->
-    <div id="dashboard-screen" class="screen">
-        <div class="card">
-            <h2>Dashboard</h2>
-            <p>Selecciona una opción para gestionar tus proyectos</p>
-            <button onclick="openConfigScreen('new')" class="btn-success">+ Crear Nuevo Estudio</button>
-            <button onclick="openConfigScreen('load')" class="btn-secondary">Ver Estudio Guardado</button>
-        </div>
-    </div>
-
-    <!-- 3. CONFIGURACIÓN DE ESTUDIO Y ESTÍMULOS -->
-    <div id="config-screen" class="screen">
-        <div class="card" style="width: 550px;">
-            <h2>Configuración del Estudio</h2>
-            <input type="text" id="study-title" placeholder="Título del estudio (ej. Rediseño Checkout)">
-            
-            <div style="text-align: left; margin-top: 15px;">
-                <label style="font-size: 14px; font-weight: 600; color: #5f6368;">Cargar Estímulo (Imagen):</label>
-                <input type="file" id="stimulus-file" accept="image/*" onchange="previewImage(event)">
+    <!-- PANEL ADMINISTRACIÓN -->
+    <div id="admin-section">
+        <nav class="admin-nav" id="admin-nav" style="display:none;">
+            <div class="logo">Eye<span>Track</span> Pro</div>
+            <div class="nav-links">
+                <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
+                <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
             </div>
-            
-            <div id="preview-container" style="margin: 10px 0; max-height: 120px; overflow: hidden; display: none;">
-                <img id="img-preview" style="max-width: 100%; height: auto; border-radius: 4px;" />
+            <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+        </nav>
+
+        <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+
+            <!-- LOGIN -->
+            <div id="view-login" class="view active">
+                <div class="login-container">
+                    <div style="text-align:center; margin-bottom: 2.5rem;">
+                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: -1px;">Eye<span style="color:var(--accent)">Track</span></div>
+                        <p style="color:var(--muted); margin-top: 0.5rem;">Sistema de Eye Tracking para Marketing</p>
+                    </div>
+                    <div class="card">
+                        <div class="form-group">
+                            <label class="form-label">Contraseña de administrador</label>
+                            <input type="password" id="login-pass" class="form-input" placeholder="Ingrese la contraseña" autofocus onkeydown="if(event.key==='Enter') intentarLogin()">
+                        </div>
+                        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="intentarLogin()">
+                            <i class="fas fa-lock"></i> Ingresar
+                        </button>
+                        <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:var(--muted);">
+                            Por defecto: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;">admin2024</code>
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <button onclick="saveStudyAndConfig()">Guardar Estudio</button>
-            <button onclick="startCalibrationProcess()" style="background-color: #fbbc05; color: #202124;">Probar Estudio (Modo Local)</button>
-            <button onclick="showScreen('dashboard-screen')" class="btn-secondary">Volver al Dashboard</button>
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="view">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="stat-card green">
+                        <div class="stat-number" id="stat-estudios">0</div>
+                        <div class="stat-label">Estudios activos</div>
+                    </div>
+                    <div class="stat-card amber">
+                        <div class="stat-number" id="stat-participantes">0</div>
+                        <div class="stat-label">Participantes totales</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                        <h2 style="font-weight:800; font-size:1.25rem;">Estudios de Marketing</h2>
+                        <button class="btn btn-primary btn-sm" onclick="navegarA('create')"><i class="fas fa-plus"></i> Crear estudio</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre del Estudio</th>
+                                    <th>Materiales</th>
+                                    <th>Participantes</th>
+                                    <th>Link Participante</th>
+                                    <th style="text-align:right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-estudios"></tbody>
+                        </table>
+                    </div>
+                    <div id="empty-dashboard" class="empty-state" style="display:none;">
+                        <i class="fas fa-eye"></i>
+                        <p style="font-size:1.1rem; font-weight:600;">No hay estudios creados</p>
+                        <p style="font-size:0.85rem; margin-top:0.5rem;">Crea tu primer estudio para comenzar.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CREAR / EDITAR ESTUDIO -->
+            <div id="view-create" class="view">
+                <div style="max-width: 750px; margin: 0 auto;">
+                    <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
+                    <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos independientes, duraciones y orden.</p>
+
+                    <div class="card">
+                        <input type="hidden" id="edit-estudio-id" value="">
+                        <div class="form-group">
+                            <label class="form-label">Nombre del Estudio</label>
+                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Banners Campaña">
+                        </div>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Intervalo entre estímulos (seg)</label>
+                                <input type="number" id="create-intervalo" class="form-input" value="2" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Estrategia de Orden</label>
+                                <select id="create-orden-modo" class="form-select">
+                                    <option value="fijo-primero">Fijar el 1° material, aleatorios los siguientes</option>
+                                    <option value="secuencial">Estricto secuencial (1, 2, 3...)</option>
+                                    <option value="aleatorio">Totalmente aleatorio</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr style="border-color:var(--border); margin: 1.5rem 0;">
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales (Estímulos)</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
+                        </div>
+
+                        <div id="lista-estimulos-creacion"></div>
+
+                        <div style="display:flex; gap:0.75rem; margin-top:2rem;">
+                            <button class="btn btn-primary" onclick="guardarEstudio()"><i class="fas fa-save"></i> Guardar Estudio</button>
+                            <button class="btn btn-secondary" onclick="navegarA('dashboard')">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div id="view-results" class="view">
+                <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="navegarA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
+                    <div>
+                        <h2 style="font-weight:800; font-size:1.4rem;" id="results-titulo">Resultados</h2>
+                        <p style="color:var(--muted); font-size:0.85rem;" id="results-subtitulo"></p>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
+                    <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
+                        <option value="todos">Todos los géneros</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                    <select id="filtro-edad" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
+                        <option value="todos">Todas las edades</option>
+                        <option value="18-25">18 - 25 años</option>
+                        <option value="26-35">26 - 35 años</option>
+                        <option value="36-50">36 - 50 años</option>
+                        <option value="51+">51+ años</option>
+                    </select>
+                </div>
+
+                <div class="tabs" id="tabs-materiales"></div>
+
+                <div class="card">
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap;">
+                        <div>
+                            <label class="form-label" style="font-size: 0.75rem;">Radio de Fijación</label>
+                            <input type="range" min="10" max="60" value="25" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 0.75rem;">Desenfoque (Blur)</label>
+                            <input type="range" min="5" max="40" value="15" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                        </div>
+                        <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem;"></div>
+                    </div>
+
+                    <div id="heatmap-wrap" style="text-align:center;"></div>
+                    <div id="heatmap-empty" class="empty-state" style="display:none;">
+                        <i class="fas fa-fire"></i>
+                        <p style="font-weight:600;">Sin datos recolectados para este filtro</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SECCIÓN PARTICIPANTE -->
+    <div id="participant-section" style="display:none;">
+        <video id="video-participante" playsinline></video>
+        <img id="estimulo-participante" alt="Estímulo" crossorigin="anonymous">
+        <div id="punto-calibracion" class="rojo"></div>
+
+        <div id="p-demografia" class="pantalla-participante">
+            <div style="max-width:450px; text-align:center;">
+                <div style="font-size:2.5rem; font-weight:900; margin-bottom:1rem;">Eye<span style="color:var(--accent)">Track</span></div>
+                <div class="card" style="text-align:left;">
+                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-user-circle" style="color:var(--accent);margin-right:6px;"></i>Datos del Participante</h3>
+                    
+                    <!-- MODIFICADO: Rango de edades en lugar de input numérico -->
+                    <div class="form-group">
+                        <label class="form-label">Rango de Edad</label>
+                        <select id="part-edad" class="form-select">
+                            <option value="">Selecciona tu edad...</option>
+                            <option value="18-25">18 - 25 años</option>
+                            <option value="26-35">26 - 35 años</option>
+                            <option value="36-50">36 - 50 años</option>
+                            <option value="51+">51+ años</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Género</label>
+                        <select id="part-genero" class="form-select">
+                            <option value="">Selecciona tu género...</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro / Prefiero no decir</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ocupación / Perfil</label>
+                        <select id="part-ocupacion" class="form-select">
+                            <option value="Consumidor Final">Consumidor Final / Comprador</option>
+                            <option value="Especialista Marketing">Especialista / Marketer</option>
+                            <option value="Estudiante / Investigador">Estudiante / Investigador</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:0.5rem;" onclick="validarDemografiaYConsentimiento()">
+                        Continuar <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="p-consentimiento" class="pantalla-participante" style="display:none;">
+            <div style="max-width:500px; text-align:center; padding:2rem;">
+                <div class="card" style="text-align:left;">
+                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
+                    <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
+                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
+                        <br><br>Sigue las instrucciones en pantalla. Para calibrar, <strong>mira fijamente el punto rojo y haz clic sobre él cuando se ponga verde</strong>.
+                    </p>
+                    <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
+                        <i class="fas fa-check"></i> Acepto y calibrar cámara
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="p-carga" class="pantalla-participante" style="display:none;">
+            <div style="text-align:center;">
+                <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
+                <p style="font-weight:600; font-size:1.1rem;">Cargando motor de IA visual...</p>
+            </div>
+        </div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+        <div id="p-pregunta" class="pantalla-participante" style="display:none; background:rgba(8,8,13,0.95);">
+            <div class="card" style="max-width:500px; text-align:center;">
+                <span id="label-num-material" style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
+                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.3rem; margin:1rem 0;">Instrucción</h3>
+                <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="lanzarSiguienteEstimulo()">Ver estímulo ahora</button>
+            </div>
+        </div>
+
+        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:rgba(8,8,13,0.95);">
+            <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
+            <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado!</h2>
+            <p style="color:var(--muted); max-width:400px; text-align:center;">Tus datos de atención ocular han sido guardados correctamente.</p>
+            <button class="btn btn-secondary" onclick="window.location.href = window.location.pathname">Volver al inicio</button>
         </div>
     </div>
 
-    <!-- 4. PANTALLA DE CALIBRACIÓN (Mirada + Clic manual) -->
-    <div id="calibration-screen" class="screen">
-        <h2 style="color: white; position: absolute; top: 30px; width: 100%; text-align: center; font-weight: 400;" id="calib-instruction">
-            Calibración: Mira el punto rojo, hazle clic para validar.
-        </h2>
-        <div id="target-point" class="calib-point" style="top: 50%; left: 50%;" onclick="handleCalibrationClick()"></div>
-    </div>
+    <!-- LÓGICA -->
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
-    <!-- 5. PANTALLA DE ESTÍMULO ACTIVO -->
-    <div id="test-screen" class="screen">
-        <h2 id="active-study-title" style="margin: 5px 0;">Estímulo Activo</h2>
-        <p style="margin: 0 0 10px 0; font-size: 14px;">Interactúa con el estímulo. El sistema está registrando tus interacciones.</p>
-        
-        <div id="stimulus-area" onclick="recordClick(event)">
-            <img id="stimulus-img" src="" alt="Estímulo de prueba">
-        </div>
-        
-        <button onclick="finishTest()" style="width: 250px; margin: 15px auto;">Finalizar Prueba</button>
-    </div>
+        const PASS_DEFAULT = 'admin2024';
+        window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+        window.autenticado = localStorage.getItem('et_auth') === 'true';
+        let estudioActualId = null;
+        let materialActualIndex = 0;
+        let faceLandmarker = null;
 
-    <!-- 6. RESULTADOS -->
-    <div id="results-screen" class="screen">
-        <div class="card">
-            <h2>Resultados de la Sesión</h2>
-            <p id="summary-data"></p>
-            <button onclick="showScreen('dashboard-screen')">Volver al Dashboard</button>
-        </div>
-    </div>
+        let datosGazeActuales = [];
+        let tiempoInicioEstimulo = 0;
+        let rafId = null;
+        let streamCamara = null;
+        let estimulosOrdenadosActuales = [];
+        let datosDemograficosTemp = {};
 
-    <!-- Video oculto para la webcam -->
-    <video id="webcam" autoplay playsinline style="display:none;"></video>
+        // Validar si entra por enlace de participante
+        const urlParams = new URLSearchParams(window.location.search);
+        const estudioParam = urlParams.get('estudio');
 
-<script>
-    let currentStudy = { title: "", id: null, stimulusDataUrl: null };
-    let calibStep = 0;
-    const calibCoords = [
-        {top: '50%', left: '50%'},
-        {top: '20%', left: '20%'},
-        {top: '20%', left: '80%'},
-        {top: '80%', left: '20%'},
-        {top: '80%', left: '80%'}
-    ];
-    let sessionData = { clicks: [] };
-    let temporaryImageBase64 = null;
+        if (estudioParam) {
+            document.getElementById('admin-section').style.display = 'none';
+            document.getElementById('participant-section').style.display = 'block';
+            estudioActualId = estudioParam;
+        } else if (window.autenticado) {
+            document.getElementById('view-login').classList.remove('active');
+            document.getElementById('view-dashboard').classList.add('active');
+            document.getElementById('admin-nav').style.display = 'flex';
+            actualizarDashboard();
+        }
 
-    function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(screenId).classList.add('active');
-    }
-
-    function handleLogin() {
-        const email = document.getElementById('login-email').value;
-        if (!email) { alert("Ingresa un correo."); return; }
-        showScreen('dashboard-screen');
-    }
-
-    function openConfigScreen(mode) {
-        if (mode === 'load') {
-            const saved = localStorage.getItem('active_study');
-            if (saved) {
-                currentStudy = JSON.parse(saved);
-                document.getElementById('study-title').value = currentStudy.title;
-                if (currentStudy.stimulusDataUrl) {
-                    document.getElementById('img-preview').src = currentStudy.stimulusDataUrl;
-                    document.getElementById('preview-container').style.display = 'block';
-                    temporaryImageBase64 = currentStudy.stimulusDataUrl;
-                }
-                alert(`Estudio cargado: "${currentStudy.title}"`);
+        window.intentarLogin = () => {
+            const pass = document.getElementById('login-pass').value;
+            if (pass === PASS_DEFAULT) {
+                localStorage.setItem('et_auth', 'true');
+                autenticado = true;
+                document.getElementById('view-login').classList.remove('active');
+                document.getElementById('view-dashboard').classList.add('active');
+                document.getElementById('admin-nav').style.display = 'flex';
+                actualizarDashboard();
+                mostrarToast('Bienvenido', 'success');
             } else {
-                alert("No hay estudios guardados. Crea uno nuevo.");
+                mostrarToast('Contraseña incorrecta', 'error');
+            }
+        };
+
+        window.cerrarSesion = () => {
+            localStorage.removeItem('et_auth');
+            location.reload();
+        };
+
+        window.navegarA = (vista, idEdicion = null) => {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.admin-nav .nav-links a').forEach(a => a.classList.remove('active'));
+            
+            if (vista === 'dashboard') {
+                document.getElementById('view-dashboard').classList.add('active');
+                document.getElementById('nav-link-dashboard').classList.add('active');
+                actualizarDashboard();
+            } else if (vista === 'create') {
+                document.getElementById('view-create').classList.add('active');
+                document.getElementById('nav-link-create').classList.add('active');
+                inicializarFormularioEstudio(idEdicion);
+            } else if (vista === 'results') {
+                document.getElementById('view-results').classList.add('active');
+            }
+        };
+
+        function actualizarDashboard() {
+            const tbody = document.getElementById('tabla-estudios');
+            tbody.innerHTML = '';
+            document.getElementById('stat-estudios').textContent = estudios.length;
+            
+            let totalPart = estudios.reduce((acc, e) => acc + (e.participantes ? e.participantes.length : 0), 0);
+            document.getElementById('stat-participantes').textContent = totalPart;
+
+            if (estudios.length === 0) {
+                document.getElementById('empty-dashboard').style.display = 'block';
                 return;
             }
-        } else {
-            // Limpiar para nuevo
-            document.getElementById('study-title').value = "";
-            document.getElementById('stimulus-file').value = "";
-            document.getElementById('preview-container').style.display = 'none';
-            temporaryImageBase64 = null;
-        }
-        showScreen('config-screen');
-    }
+            document.getElementById('empty-dashboard').style.display = 'none';
 
-    function previewImage(event) {
-        const file = event.target.files[0];
-        if (file) {
+            estudios.forEach(est => {
+                const tr = document.createElement('tr');
+                const linkParticipante = `${window.location.origin}${window.location.pathname}?estudio=${est.id}`;
+                
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${est.nombre}</td>
+                    <td><span style="background:var(--bg2); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${est.estimulos ? est.estimulos.length : 0} materiales</span></td>
+                    <td>${est.participantes ? est.participantes.length : 0}</td>
+                    <td>
+                        <div class="study-link">
+                            <code>${linkParticipante}</code>
+                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); mostrarToast('Link copiado', 'success');" title="Copiar link">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
+                        <button class="btn btn-primary btn-sm" onclick="window.open('${linkParticipante}', '_blank')" title="Probar / Simular prueba"><i class="fas fa-play"></i> Probar</button>
+                        <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Dashboard Resultados"><i class="fas fa-chart-bar"></i></button>
+                        <button class="btn btn-secondary btn-sm" onclick="navegarA('create', '${est.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarEstudio('${est.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function inicializarFormularioEstudio(idEdicion = null) {
+            document.getElementById('lista-estimulos-creacion').innerHTML = '';
+            document.getElementById('edit-estudio-id').value = '';
+            
+            if (idEdicion) {
+                const est = estudios.find(e => e.id === idEdicion);
+                if (est) {
+                    document.getElementById('form-titulo-modo').textContent = 'Editar Estudio de Eye Tracking';
+                    document.getElementById('edit-estudio-id').value = est.id;
+                    document.getElementById('create-nombre').value = est.nombre;
+                    document.getElementById('create-intervalo').value = est.intervalo || 2;
+                    document.getElementById('create-orden-modo').value = est.ordenModo || 'fijo-primero';
+                    
+                    if (est.estimulos && est.estimulos.length > 0) {
+                        est.estimulos.forEach(mat => {
+                            agregarCampoEstimulo(mat.nombre, mat.imagen, mat.pregunta, mat.duracion);
+                        });
+                        return;
+                    }
+                }
+            }
+            
+            document.getElementById('form-titulo-modo').textContent = 'Nuevo Estudio de Eye Tracking';
+            document.getElementById('create-nombre').value = '';
+            agregarCampoEstimulo('Banner Principal', '', '¿Qué elementos llaman tu atención primero?', 10);
+        }
+
+        // MODIFICADO: Agregado input para URL en la interfaz de creación
+        window.agregarCampoEstimulo = (nombre = '', img = '', pregunta = '', duracion = 10) => {
+            const container = document.getElementById('lista-estimulos-creacion');
+            const index = container.children.length;
+            const div = document.createElement('div');
+            div.className = 'estimulo-item-card';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <span style="font-weight:700; font-size:0.85rem; color:var(--accent);">Material #${index + 1} ${index === 0 ? '(Fijado como Primero)' : ''}</span>
+                    ${index > 0 ? `<button class="btn btn-danger btn-sm" onclick="this.closest('.estimulo-item-card').remove()"><i class="fas fa-times"></i></button>` : ''}
+                </div>
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                    <div>
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <label class="form-label">Nombre del Material</label>
+                            <input type="text" class="form-input est-nombre" value="${nombre}" placeholder="Ej: Opción A">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <label class="form-label">Pregunta o Instrucción</label>
+                            <input type="text" class="form-input est-pregunta" value="${pregunta}" placeholder="Ej: ¿Qué atrae más tu vista?">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Duración (segundos)</label>
+                            <input type="number" class="form-input est-duracion" value="${duracion}" min="3" max="60">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Imagen del Estímulo</label>
+                        <div class="file-upload-box" ondragover="event.preventDefault(); this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="manejarDrop(event, this)" onclick="this.querySelector('input[type=file]').click()">
+                            <input type="file" accept="image/*" style="display:none" onchange="cargarImagenLocal(this)">
+                            <div class="preview-txt" style="font-size:0.8rem; color:var(--muted); display:${img ? 'none' : 'block'};"><i class="fas fa-upload" style="font-size:1.2rem; margin-bottom:0.4rem; display:block; color:var(--accent);"></i>Sube, arrastra o usa URL</div>
+                            <img class="preview-img" src="${img || ''}" style="max-height:85px; margin:0 auto; display:${img ? 'block' : 'none'}; border-radius:4px; object-fit:contain;">
+                        </div>
+                        <input type="text" class="form-input" style="margin-top: 0.5rem; font-size: 0.8rem; padding: 0.5rem;" placeholder="O pega una URL de imagen..." onchange="cargarImagenURL(this)">
+                        <input type="hidden" class="est-img-base64" value="${img}">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        };
+
+        window.cargarImagenLocal = (input) => {
+            const file = input.files[0];
+            if (file) procesarArchivoImagen(file, input.closest('.estimulo-item-card'));
+        };
+
+        window.manejarDrop = (e, box) => {
+            e.preventDefault();
+            box.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                procesarArchivoImagen(file, box.closest('.estimulo-item-card'));
+            } else {
+                mostrarToast('Por favor suelta un archivo de imagen válido', 'error');
+            }
+        };
+
+        function procesarArchivoImagen(file, card) {
             const reader = new FileReader();
-            reader.onload = function(e) {
-                temporaryImageBase64 = e.target.result;
-                document.getElementById('img-preview').src = temporaryImageBase64;
-                document.getElementById('preview-container').style.display = 'block';
+            reader.onload = (e) => {
+                actualizarPreviewImagen(card, e.target.result);
+                mostrarToast('Imagen cargada con éxito', 'success');
             };
             reader.readAsDataURL(file);
         }
-    }
 
-    function saveStudyAndConfig() {
-        const title = document.getElementById('study-title').value;
-        if (!title.trim()) {
-            alert("Por favor ingresa un título para el estudio.");
-            return;
-        }
-
-        currentStudy = { 
-            title, 
-            id: 'study_' + Date.now(),
-            stimulusDataUrl: temporaryImageBase64 || "https://via.placeholder.com/800x450?text=Estimulo+por+Defecto"
-        };
-        
-        localStorage.setItem('active_study', JSON.stringify(currentStudy));
-        alert("¡Estudio y estímulos guardados correctamente!");
-    }
-
-    function startCalibrationProcess() {
-        const saved = localStorage.getItem('active_study');
-        if (saved) {
-            currentStudy = JSON.parse(saved);
-        } else if (!currentStudy.title) {
-            currentStudy = { 
-                title: "Estudio Rápido", 
-                id: 'temp_' + Date.now(), 
-                stimulusDataUrl: temporaryImageBase64 || "https://via.placeholder.com/800x450?text=Mockup+Prueba" 
-            };
-        }
-
-        calibStep = 0;
-        initWebcam();
-        showScreen('calibration-screen');
-        setupCalibrationPoint();
-    }
-
-    function setupCalibrationPoint() {
-        const point = document.getElementById('target-point');
-        if (calibStep < calibCoords.length) {
-            point.style.top = calibCoords[calibStep].top;
-            point.style.left = calibCoords[calibStep].left;
-            point.classList.remove('green');
-            document.getElementById('calib-instruction').innerText = `Calibración (${calibStep + 1}/5): Mira fijamente el punto rojo y hazle clic.`;
-        } else {
-            // Fin de calibración, pasar al estímulo activo
-            showScreen('test-screen');
-            document.getElementById('gaze-cursor').style.display = 'block';
-            document.getElementById('active-study-title').innerText = currentStudy.title;
-            document.getElementById('stimulus-img').src = currentStudy.stimulusDataUrl;
-        }
-    }
-
-    function handleCalibrationClick() {
-        const point = document.getElementById('target-point');
-        point.classList.add('green');
-        setTimeout(() => {
-            calibStep++;
-            setupCalibrationPoint();
-        }, 300);
-    }
-
-    function recordClick(event) {
-        const rect = event.target.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-        sessionData.clicks.push({ x, y, time: Date.now() });
-    }
-
-    function finishTest() {
-        document.getElementById('gaze-cursor').style.display = 'none';
-        showScreen('results-screen');
-        document.getElementById('summary-data').innerHTML = `
-            <strong>Estudio:</strong> ${currentStudy.title}<br>
-            <strong>Clicks registrados:</strong> ${sessionData.clicks.length}
-        `;
-    }
-
-    function initWebcam() {
-        const videoElement = document.getElementById('webcam');
-        const faceMesh = new FaceMesh({
-            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-        });
-        faceMesh.setOptions({
-            maxNumFaces: 1,
-            refineLandmarks: true,
-            minDetectionConfidence: 0.5,
-            minTrackingConfidence: 0.5
-        });
-        faceMesh.onResults((results) => {
-            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                // Posicionamiento opcional del cursor de depuración con la nariz (landmark 1)
-                const landmarks = results.multiFaceLandmarks[0];
-                const nose = landmarks[1];
-                const cursor = document.getElementById('gaze-cursor');
-                // Mapeo básico aproximado a la pantalla
-                cursor.style.left = (window.innerWidth - (nose.x * window.innerWidth)) + 'px';
-                cursor.style.top = (nose.y * window.innerHeight) + 'px';
+        // MODIFICADO: Nueva función para procesar la subida vía URL
+        window.cargarImagenURL = (input) => {
+            const url = input.value.trim();
+            if(url) {
+                const card = input.closest('.estimulo-item-card');
+                actualizarPreviewImagen(card, url);
+                mostrarToast('Imagen vinculada por URL', 'info');
             }
-        });
+        };
 
-        const camera = new Camera(videoElement, {
-            onFrame: async () => { await faceMesh.send({image: videoElement}); },
-            width: 640, height: 480
-        });
-        camera.start();
-    }
-</script>
+        function actualizarPreviewImagen(card, src) {
+            card.querySelector('.est-img-base64').value = src;
+            const imgPrev = card.querySelector('.preview-img');
+            imgPrev.src = src;
+            imgPrev.style.display = 'block';
+            card.querySelector('.preview-txt').style.display = 'none';
+        }
+
+        window.guardarEstudio = () => {
+            const idEdit = document.getElementById('edit-estudio-id').value;
+            const nombre = document.getElementById('create-nombre').value.trim();
+            const intervalo = Number(document.getElementById('create-intervalo').value) || 2;
+            const ordenModo = document.getElementById('create-orden-modo').value;
+            
+            const tarjetas = document.querySelectorAll('.estimulo-item-card');
+            let estimulos = [];
+
+            tarjetas.forEach(t => {
+                estimulos.push({
+                    id: 'mat_' + Math.random().toString(36).substr(2, 9),
+                    nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
+                    imagen: t.querySelector('.est-img-base64').value.trim(),
+                    pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen',
+                    duracion: Number(t.querySelector('.est-duracion').value) || 10
+                });
+            });
+
+            if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
+                mostrarToast('Asigna un nombre al estudio y asegúrate de cargar imagen en los materiales.', 'error');
+                return;
+            }
+
+            if (idEdit) {
+                const idx = estudios.findIndex(e => e.id === idEdit);
+                if (idx !== -1) {
+                    estudios[idx].nombre = nombre;
+                    estudios[idx].intervalo = intervalo;
+                    estudios[idx].ordenModo = ordenModo;
+                    estudios[idx].estimulos = estimulos;
+                }
+            } else {
+                const nuevoEstudio = {
+                    id: 'est_' + Math.random().toString(36).substr(2, 9),
+                    nombre,
+                    intervalo,
+                    ordenModo,
+                    creado: Date.now(),
+                    estimulos,
+                    participantes: []
+                };
+                estudios.push(nuevoEstudio);
+            }
+
+            localStorage.setItem('et_estudios', JSON.stringify(estudios));
+            mostrarToast('Estudio guardado correctamente', 'success');
+            navegarA('dashboard');
+        };
+
+        window.eliminarEstudio = (id) => {
+            if (confirm('¿Estás seguro de eliminar este estudio?')) {
+                estudios = estudios.filter(e => e.id !== id);
+                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                actualizarDashboard();
+                mostrarToast('Estudio eliminado', 'info');
+            }
+        };
+
+        window.verResultados = (id) => {
+            estudioActualId = id;
+            const est = estudios.find(e => e.id === id);
+            if (!est) return;
+
+            document.getElementById('results-titulo').textContent = est.nombre;
+            document.getElementById('results-subtitulo').textContent = `${est.participantes.length} participantes registrados`;
+
+            const tabsContainer = document.getElementById('tabs-materiales');
+            tabsContainer.innerHTML = '';
+
+            est.estimulos.forEach((mat, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
+                btn.innerHTML = `<i class="fas fa-image"></i> ${mat.nombre}`;
+                btn.onclick = () => {
+                    document.querySelectorAll('#tabs-materiales .tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderizarMapaCalor(id, idx);
+                };
+                tabsContainer.appendChild(btn);
+            });
+
+            navegarA('results');
+            if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
+        };
+
+        window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
+            const estudio = estudios.find(e => e.id === estudioId);
+            const wrap = document.getElementById('heatmap-wrap');
+            wrap.innerHTML = '';
+
+            if (!estudio || !estudio.estimulos[materialIndex]) return;
+            const material = estudio.estimulos[materialIndex];
+            document.getElementById('instruccion-badge').textContent = `Instrucción: "${material.pregunta}"`;
+
+            let puntos = [];
+            if (estudio.participantes) {
+                estudio.participantes.forEach(p => {
+                    if (filtroGenero !== 'todos' && p.genero !== filtroGenero) return;
+                    if (filtroEdad !== 'todos' && p.edadRango !== filtroEdad) return;
+                    if (p.gazePorMaterial && p.gazePorMaterial[material.id]) {
+                        puntos = puntos.concat(p.gazePorMaterial[material.id]);
+                    }
+                });
+            }
+
+            if (puntos.length === 0) {
+                document.getElementById('heatmap-empty').style.display = 'block';
+                return;
+            }
+            document.getElementById('heatmap-empty').style.display = 'none';
+
+            const container = document.createElement('div');
+            container.className = 'heatmap-container';
+            const img = document.createElement('img');
+            img.crossOrigin = "anonymous"; // Ayuda con CORS en heatmaps
+            img.src = material.imagen;
+            const canvas = document.createElement('canvas');
+            container.appendChild(img);
+            container.appendChild(canvas);
+            wrap.appendChild(container);
+
+            img.onload = () => {
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const heat = simpleheat(canvas);
+                heat.radius(Number(document.getElementById('heatmap-radius').value));
+                heat.blur(Number(document.getElementById('heatmap-blur').value));
+                heat.data(puntos.map(p => [p.x, p.y, p.intensity || 1]));
+                heat.draw();
+            };
+        };
+
+        window.actualizarSensibilidadHeatmap = () => {
+            const activeTab = document.querySelector('#tabs-materiales .tab-btn.active');
+            if (activeTab && estudioActualId) {
+                const index = Array.from(activeTab.parentNode.children).indexOf(activeTab);
+                renderizarMapaCalor(estudioActualId, index, document.getElementById('filtro-genero').value, document.getElementById('filtro-edad').value);
+            }
+        };
+
+        window.filtrarResultadosDemografia = () => actualizarSensibilidadHeatmap();
+
+        window.mostrarToast = (mensaje, tipo = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i> ${mensaje}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        };
+
+        // PARTICIPANTE FLUJOS
+        
+        // MODIFICADO: Validación adaptada para rangos de edad en string
+        window.validarDemografiaYConsentimiento = () => {
+            const edadRango = document.getElementById('part-edad').value;
+            const genero = document.getElementById('part-genero').value;
+            const ocupacion = document.getElementById('part-ocupacion').value;
+
+            if (!edadRango || !genero) {
+                mostrarToast('Por favor selecciona tu rango de edad y género', 'error');
+                return;
+            }
+
+            datosDemograficosTemp = { edadRango, genero, ocupacion };
+            document.getElementById('p-demografia').style.display = 'none';
+            document.getElementById('p-consentimiento').style.display = 'flex';
+        };
+
+        window.participanteAceptar = async () => {
+            document.getElementById('p-consentimiento').style.display = 'none';
+            document.getElementById('p-carga').style.display = 'flex';
+
+            try {
+                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+                faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numFaces: 1
+                });
+
+                streamCamara = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                const video = document.getElementById('video-participante');
+                video.srcObject = streamCamara;
+                await video.play();
+
+                document.getElementById('p-carga').style.display = 'none';
+                iniciarCalibracionPasoAPaso();
+            } catch (e) {
+                console.error(e);
+                alert('No se pudo acceder a la cámara o cargar la IA. Asegúrate de dar permisos en tu navegador.');
+                location.reload();
+            }
+        };
+
+        // MODIFICADO: Lógica de calibración con espera de Clic
+        function iniciarCalibracionPasoAPaso() {
+            const punto = document.getElementById('punto-calibracion');
+            punto.style.display = 'flex';
+            punto.style.top = '50vh';
+            punto.style.left = '50vw';
+            punto.className = 'rojo';
+            punto.innerHTML = ''; // Vacío en rojo
+            punto.onclick = null; // Prevenir clics antes de tiempo
+
+            // Simular el tiempo que toma el usuario en fijar la vista
+            setTimeout(() => {
+                punto.className = 'verde';
+                punto.innerHTML = 'CLIC'; // Texto indicativo
+                
+                // Ahora sí escuchamos el clic para avanzar
+                punto.onclick = () => {
+                    punto.style.display = 'none';
+                    punto.onclick = null;
+                    iniciarSecuenciaEstimulos();
+                };
+            }, 2500); // 2.5 segundos de "fijación" requerida antes de permitir clic
+        }
+
+        let estudioParticipanteObj = null;
+        let resultadosParticipanteGaze = {};
+
+        function iniciarSecuenciaEstimulos() {
+            estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
+            if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos.length) {
+                alert('Estudio no encontrado.');
+                return;
+            }
+
+            let arr = [...estudioParticipanteObj.estimulos];
+            if (estudioParticipanteObj.ordenModo === 'fijo-primero' && arr.length > 1) {
+                estimulosOrdenadosActuales = [arr[0], ...arr.slice(1).sort(() => Math.random() - 0.5)];
+            } else if (estudioParticipanteObj.ordenModo === 'aleatorio') {
+                estimulosOrdenadosActuales = arr.sort(() => Math.random() - 0.5);
+            } else {
+                estimulosOrdenadosActuales = arr;
+            }
+
+            materialActualIndex = 0;
+            mostrarPreguntaMaterial();
+        }
+
+        window.mostrarPreguntaMaterial = () => {
+            const mat = estimulosOrdenadosActuales[materialActualIndex];
+            document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
+            document.getElementById('texto-pregunta-material').textContent = mat.pregunta;
+            document.getElementById('p-pregunta').style.display = 'flex';
+        };
+
+        window.lanzarSiguienteEstimulo = () => {
+            document.getElementById('p-pregunta').style.display = 'none';
+            const mat = estimulosOrdenadosActuales[materialActualIndex];
+            const imgEl = document.getElementById('estimulo-participante');
+            imgEl.src = mat.imagen;
+            imgEl.style.display = 'block';
+
+            datosGazeActuales = [];
+            tiempoInicioEstimulo = Date.now();
+            const duracionMs = (mat.duracion || 10) * 1000;
+            const video = document.getElementById('video-participante');
+
+            function loopTracking() {
+                if (faceLandmarker && video.readyState >= 2) {
+                    const results = faceLandmarker.detectForVideo(video, performance.now());
+                    if (results.faceLandmarks?.[0]) {
+                        const nose = results.faceLandmarks[0][1];
+                        datosGazeActuales.push({
+                            x: Math.round((1 - nose.x) * window.innerWidth),
+                            y: Math.round(nose.y * window.innerHeight),
+                            time: Date.now() - tiempoInicioEstimulo,
+                            intensity: 1
+                        });
+                    }
+                }
+                rafId = requestAnimationFrame(loopTracking);
+            }
+            loopTracking();
+
+            setTimeout(() => {
+                cancelAnimationFrame(rafId);
+                imgEl.style.display = 'none';
+                if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
+                resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
+
+                materialActualIndex++;
+                if (materialActualIndex < estimulosOrdenadosActuales.length) {
+                    setTimeout(() => mostrarPreguntaMaterial(), (estudioParticipanteObj.intervalo || 2) * 1000);
+                } else {
+                    finalizarParticipacion();
+                }
+            }, duracionMs);
+        };
+
+        function finalizarParticipacion() {
+            if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
+            if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
+            
+            estudioParticipanteObj.participantes.push({
+                id: 'part_' + Math.random().toString(36).substr(2, 9),
+                fecha: Date.now(),
+                ...datosDemograficosTemp,
+                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial
+            });
+
+            const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
+            if (idx !== -1) {
+                estudios[idx] = estudioParticipanteObj;
+                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+            }
+
+            document.getElementById('p-fin').style.display = 'flex';
+        }
+    </script>
 </body>
 </html>
