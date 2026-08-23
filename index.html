@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #08080d;
+            --bg2: #0e0e16;
+            --card: #12121c;
+            --border: #1c1c2e;
+            --fg: #e4e4ec;
+            --muted: #5e5e76;
+            --accent: #10b981;
+            --accent2: #059669;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg2); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+        .bg-glow {
+            position: fixed; top: -200px; right: -200px; width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        .bg-glow-2 {
+            position: fixed; bottom: -300px; left: -200px; width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(245,158,11,0.04) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+
+        .admin-nav {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(8,8,13,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem; height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .admin-nav .logo { font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
+        .admin-nav .logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 0.25rem; }
+        .nav-links a {
+            padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
+            color: var(--muted); font-weight: 600; font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover { color: var(--fg); background: rgba(255,255,255,0.04); }
+        .nav-links a.active { color: var(--accent); background: rgba(16,185,129,0.08); }
+
+        .view { display: none; position: relative; z-index: 1; }
+        .view.active { display: block; }
+
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 1.5rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .card:hover { border-color: rgba(16,185,129,0.2); box-shadow: 0 0 30px rgba(16,185,129,0.03); }
+
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+            padding: 1.5rem; position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
+            border-radius: 50%; filter: blur(40px); opacity: 0.15;
+        }
+        .stat-card.green::after { background: var(--accent); }
+        .stat-card.amber::after { background: var(--warn); }
+        .stat-card.red::after { background: var(--danger); }
+        .stat-number { font-size: 2.5rem; font-weight: 900; line-height: 1; }
+        .stat-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.65rem 1.25rem; border-radius: 10px; font-family: 'Outfit', sans-serif;
+            font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer;
+            transition: all 0.2s; text-decoration: none;
+        }
+        .btn-primary { background: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.06); color: var(--fg); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--muted); }
+        .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); }
+        .btn-danger:hover { background: rgba(239,68,68,0.2); }
+        .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 8px; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-label { display: block; font-weight: 600; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input {
+            width: 100%; padding: 0.75rem 1rem; background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 10px; color: var(--fg); font-family: 'Outfit', sans-serif; font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s; outline: none;
+        }
+        .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+        .form-input::placeholder { color: var(--muted); }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 700;
+            color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+            border-bottom: 1px solid var(--border);
+        }
+        tbody td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(28,28,46,0.5); font-size: 0.9rem; }
+        tbody tr { transition: background 0.15s; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+        .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .tab-btn {
+            padding: 0.75rem 1.25rem; background: none; border: none; color: var(--muted);
+            font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.875rem;
+            cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+        }
+        .tab-btn:hover { color: var(--fg); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast {
+            padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+            display: flex; align-items: center; gap: 0.5rem; min-width: 280px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
+        .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+        .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
+
+        .pantalla-participante {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; background: var(--bg);
+        }
+
+        #punto-calibracion {
+            width: 44px; height: 44px; border-radius: 50%; position: fixed;
+            pointer-events: none; z-index: 999999; transform: translate(-50%, -50%);
+            display: none; transition: background-color 0.25s, box-shadow 0.25s;
+        }
+        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 30px 12px rgba(239,68,68,0.7); }
+        #punto-calibracion.amarillo { background: #f59e0b; box-shadow: 0 0 30px 12px rgba(245,158,11,0.7); }
+        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); }
+
+        .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; }
+        .heatmap-container img { display: block; max-width: 100%; height: auto; }
+        .heatmap-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
+        .study-link {
+            display: flex; align-items: center; gap: 0.5rem; background: var(--bg2);
+            border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem;
+            font-size: 0.8rem; color: var(--muted); font-family: monospace; max-width: 250px;
+        }
+        .study-link code { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-up { animation: fadeUp 0.5s ease forwards; }
+
+        #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
+        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
+
+        .login-container { max-width: 400px; margin: 0 auto; padding: 4rem 1.5rem; }
+        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+
+        .import-area {
+            width: 100%; min-height: 120px; padding: 0.75rem; background: var(--bg2);
+            border: 1px solid var(--border); border-radius: 10px; color: var(--fg);
+            font-family: monospace; font-size: 0.8rem; resize: vertical; outline: none;
+        }
+        .import-area:focus { border-color: var(--accent); }
+
+        .estimulo-item-card {
+            background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; position: relative;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="bg-glow-2"></div>
+    <div id="toast-container"></div>
+
+    <!-- PANEL ADMINISTRACIÓN -->
+    <div id="admin-section">
+        <nav class="admin-nav" id="admin-nav" style="display:none;">
+            <div class="logo">Eye<span>Track</span> Pro</div>
+            <div class="nav-links">
+                <a href="#dashboard" data-nav="dashboard" class="active" onclick="navegarA('dashboard')"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
+                <a href="#create" data-nav="create" onclick="navegarA('create')"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+        </nav>
+
+        <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+
+            <!-- LOGIN -->
+            <div id="view-login" class="view active">
+                <div class="login-container fade-up">
+                    <div style="text-align:center; margin-bottom: 2.5rem;">
+                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: -1px;">Eye<span style="color:var(--accent)">Track</span></div>
+                        <p style="color:var(--muted); margin-top: 0.5rem;">Sistema de Eye Tracking para Marketing</p>
+                    </div>
+                    <div class="card">
+                        <div class="form-group">
+                            <label class="form-label">Contraseña de administrador</label>
+                            <input type="password" id="login-pass" class="form-input" placeholder="Ingrese la contraseña" autofocus>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="intentarLogin()">
+                            <i class="fas fa-lock"></i> Ingresar
+                        </button>
+                        <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:var(--muted);">
+                            Contraseña por defecto: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;">admin2024</code>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="view">
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div class="stat-card green">
+                        <div class="stat-number" id="stat-estudios">0</div>
+                        <div class="stat-label">Estudios activos</div>
+                    </div>
+                    <div class="stat-card amber">
+                        <div class="stat-number" id="stat-participantes">0</div>
+                        <div class="stat-label">Participantes totales</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                        <h2 style="font-weight:800; font-size:1.25rem;">Estudios de Marketing</h2>
+                        <button class="btn btn-primary btn-sm" onclick="navegarA('create')"><i class="fas fa-plus"></i> Crear estudio</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nombre del Estudio</th>
+                                    <th>Materiales</th>
+                                    <th>Participantes</th>
+                                    <th>Creado</th>
+                                    <th>Link Participante</th>
+                                    <th style="text-align:right;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-estudios"></tbody>
+                        </table>
+                    </div>
+                    <div id="empty-dashboard" class="empty-state" style="display:none;">
+                        <i class="fas fa-eye"></i>
+                        <p style="font-size:1.1rem; font-weight:600;">No hay estudios creados</p>
+                        <p style="font-size:0.85rem; margin-top:0.5rem;">Crea tu primer estudio para comenzar a evaluar tus creatividades.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CREAR ESTUDIO -->
+            <div id="view-create" class="view">
+                <div style="max-width: 700px; margin: 0 auto;">
+                    <h2 style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
+                    <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos múltiples, preguntas e intervalos.</p>
+
+                    <div class="card">
+                        <div class="form-group">
+                            <label class="form-label">Nombre del Estudio</label>
+                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Banners Campaña Verano">
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Duración por estímulo (segundos)</label>
+                                <input type="number" id="create-duracion" class="form-input" value="10" min="3" max="60">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Intervalo entre estímulos (segundos)</label>
+                                <input type="number" id="create-intervalo" class="form-input" value="2" min="1" max="10">
+                            </div>
+                        </div>
+
+                        <hr style="border-color:var(--border); margin: 1.5rem 0;">
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales (Estímulos)</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
+                        </div>
+
+                        <div id="lista-estimulos-creacion">
+                            <!-- Se inyectan dinámicamente -->
+                        </div>
+
+                        <div style="display:flex; gap:0.75rem; margin-top:2rem;">
+                            <button class="btn btn-primary" onclick="guardarEstudio()"><i class="fas fa-save"></i> Guardar Estudio Completo</button>
+                            <button class="btn btn-secondary" onclick="navegarA('dashboard')">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div id="view-results" class="view">
+                <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+                    <button class="btn btn-secondary btn-sm" onclick="navegarA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
+                    <div>
+                        <h2 style="font-weight:800; font-size:1.4rem;" id="results-titulo">Resultados</h2>
+                        <p style="color:var(--muted); font-size:0.85rem;" id="results-subtitulo"></p>
+                    </div>
+                </div>
+
+                <div class="tabs" id="tabs-materiales">
+                    <!-- Se generan tabs dinámicamente por cada material -->
+                </div>
+
+                <!-- Contenedor del mapa y controles -->
+                <div class="card">
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap;">
+                        <div>
+                            <label class="form-label" style="font-size: 0.75rem;">Radio de Fijación</label>
+                            <input type="range" min="10" max="60" value="25" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                        </div>
+                        <div>
+                            <label class="form-label" style="font-size: 0.75rem;">Desenfoque (Blur)</label>
+                            <input type="range" min="5" max="40" value="15" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                        </div>
+                        <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem;"></div>
+                    </div>
+
+                    <div id="heatmap-wrap" style="text-align:center;"></div>
+                    <div id="heatmap-empty" class="empty-state" style="display:none;">
+                        <i class="fas fa-fire"></i>
+                        <p style="font-weight:600;">Sin datos recolectados todavía</p>
+                        <p style="font-size:0.85rem; margin-top:0.5rem;">Comparte el link del estudio para que los participantes realicen el test.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SECCIÓN PARTICIPANTE -->
+    <div id="participant-section" style="display:none;">
+        <video id="video-participante" playsinline></video>
+        <img id="estimulo-participante" alt="Estímulo">
+        <div id="punto-calibracion" class="rojo"></div>
+
+        <!-- Consentimiento -->
+        <div id="p-consentimiento" class="pantalla-participante">
+            <div style="max-width:500px; text-align:center; padding:2rem;">
+                <div style="font-size:2.5rem; font-weight:900; margin-bottom:1rem;">Eye<span style="color:var(--accent)">Track</span></div>
+                <div class="card" style="text-align:left;">
+                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
+                    <p style="line-height:1.7; color:var(--muted); font-size:0.92rem;">
+                        Utilizaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear el movimiento de tus ojos en tiempo real.</strong>
+                        <br><br>
+                        <span style="color:var(--danger); font-weight:700;">No se grabará ni almacenará ningún video o fotografía de tu rostro.</span>
+                        <br><br>
+                        Para calibrar, <strong style="color:var(--fg);">mira fijamente el punto rojo</strong> hasta que se ponga <span style="color:var(--accent); font-weight:700;">VERDE</span>.
+                    </p>
+                    <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1.5rem;" onclick="participanteAceptar()">
+                        <i class="fas fa-check"></i> Acepto y comenzar prueba
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Carga de IA -->
+        <div id="p-carga" class="pantalla-participante" style="display:none;">
+            <div style="text-align:center;">
+                <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
+                <p id="texto-carga-p" style="font-weight:600; font-size:1.1rem;">Cargando motor de IA visual...</p>
+            </div>
+        </div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+        <!-- Pregunta previa a cada estímulo -->
+        <div id="p-pregunta" class="pantalla-participante" style="display:none; background:rgba(8,8,13,0.95);">
+            <div class="card" style="max-width:500px; text-align:center;">
+                <span id="label-num-material" style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Material 1 de 3</span>
+                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.3rem; margin:1rem 0;">¿Cuál de estas opciones te parece más atractiva?</h3>
+                <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;">Haz clic cuando estés listo para visualizar la imagen y analizar tu atención.</p>
+                <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="lanzarSiguienteEstimulo()">Ver imagen</button>
+            </div>
+        </div>
+
+        <!-- Fin -->
+        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:rgba(8,8,13,0.95);">
+            <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
+            <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado con éxito!</h2>
+            <p style="color:var(--muted); max-width:400px; text-align:center; line-height:1.6;">Tus datos de atención ocular han sido guardados. Gracias por participar.</p>
+        </div>
+    </div>
+
+    <!-- LÓGICA GENERAL -->
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+        const PASS_DEFAULT = 'admin2024';
+        window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+        window.autenticado = localStorage.getItem('et_auth') === 'true';
+        let estudioActualId = null;
+        let materialActualIndex = 0;
+        let faceLandmarker = null;
+
+        // Variables participante
+        let datosGazeActuales = [];
+        let tiempoInicioEstimulo = 0;
+        let rafId = null;
+        let streamCamara = null;
+
+        window.intentarLogin = () => {
+            const pass = document.getElementById('login-pass').value;
+            if (pass === PASS_DEFAULT) {
+                localStorage.setItem('et_auth', 'true');
+                autenticado = true;
+                document.getElementById('view-login').classList.remove('active');
+                document.getElementById('view-dashboard').classList.add('active');
+                document.getElementById('admin-nav').style.display = 'flex';
+                actualizarDashboard();
+                mostrarToast('Bienvenido al panel', 'success');
+            } else {
+                mostrarToast('Contraseña incorrecta', 'error');
+            }
+        };
+
+        window.cerrarSesion = () => {
+            localStorage.removeItem('et_auth');
+            location.reload();
+        };
+
+        window.navegarA = (vista) => {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.admin-nav .nav-links a').forEach(a => a.classList.remove('active'));
+            
+            if (vista === 'dashboard') {
+                document.getElementById('view-dashboard').classList.add('active');
+                document.querySelector('[data-nav="dashboard"]').classList.add('active');
+                actualizarDashboard();
+            } else if (vista === 'create') {
+                document.getElementById('view-create').classList.add('active');
+                document.querySelector('[data-nav="create"]').classList.add('active');
+                inicializarCamposCreacion();
+            } else if (vista === 'results') {
+                document.getElementById('view-results').classList.add('active');
+            }
+        };
+
+        function actualizarDashboard() {
+            const tbody = document.getElementById('tabla-estudios');
+            tbody.innerHTML = '';
+            document.getElementById('stat-estudios').textContent = estudios.length;
+            
+            let totalPart = estudios.reduce((acc, e) => acc + (e.participantes ? e.participantes.length : 0), 0);
+            document.getElementById('stat-participantes').textContent = totalPart;
+
+            if (estudios.length === 0) {
+                document.getElementById('empty-dashboard').style.display = 'block';
+                return;
+            }
+            document.getElementById('empty-dashboard').style.display = 'none';
+
+            estudios.forEach(est => {
+                const tr = document.createElement('tr');
+                const linkParticipante = `${window.location.origin}${window.location.pathname}?estudio=${est.id}`;
+                
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${est.nombre}</td>
+                    <td><span style="background:var(--bg2); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${est.estimulos ? est.estimulos.length : 0} materiales</span></td>
+                    <td>${est.participantes ? est.participantes.length : 0}</td>
+                    <td style="color:var(--muted);">${new Date(est.creado || Date.now()).toLocaleDateString()}</td>
+                    <td>
+                        <div class="study-link">
+                            <code>${linkParticipante}</code>
+                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); mostrarToast('Link copiado', 'success');" title="Copiar link">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td style="text-align:right; display:flex; gap:0.5rem; justify-content:flex-end;">
+                        <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Ver Resultados"><i class="fas fa-chart-bar"></i></button>
+                        <button class="btn btn-primary btn-sm" onclick="window.open('${linkParticipante}', '_blank')" title="Ejecutar prueba"><i class="fas fa-play"></i></button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarEstudio('${est.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.agregarCampoEstimulo = (nombre = '', img = '', pregunta = '') => {
+            const container = document.getElementById('lista-estimulos-creacion');
+            const index = container.children.length;
+            const div = document.createElement('div');
+            div.className = 'estimulo-item-card';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                    <span style="font-weight:700; font-size:0.85rem; color:var(--accent);">Material #${index + 1}</span>
+                    ${index > 0 ? `<button class="btn btn-danger btn-sm" onclick="this.closest('.estimulo-item-card').remove()"><i class="fas fa-times"></i></button>` : ''}
+                </div>
+                <div class="form-group" style="margin-bottom:0.75rem;">
+                    <label class="form-label">Nombre del Material</label>
+                    <input type="text" class="form-input est-nombre" value="${nombre}" placeholder="Ej: Opción A - Minimalista">
+                </div>
+                <div class="form-group" style="margin-bottom:0.75rem;">
+                    <label class="form-label">URL de la Imagen</label>
+                    <input type="text" class="form-input est-img" value="${img}" placeholder="https://dominio.com/imagen.jpg">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Pregunta o Instrucción para el participante</label>
+                    <input type="text" class="form-input est-pregunta" value="${pregunta}" placeholder="Ej: ¿Cuál de los dos anuncios te transmite mayor confianza?">
+                </div>
+            `;
+            container.appendChild(div);
+        };
+
+        function inicializarCamposCreacion() {
+            document.getElementById('create-nombre').value = '';
+            document.getElementById('lista-estimulos-creacion').innerHTML = '';
+            window.agregarCampoEstimulo('Banner Principal', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=80', '¿Qué elementos llaman tu atención primero?');
+        }
+
+        window.guardarEstudio = () => {
+            const nombre = document.getElementById('create-nombre').value.trim();
+            const duracion = Number(document.getElementById('create-duracion').value) || 10;
+            const intervalo = Number(document.getElementById('create-intervalo').value) || 2;
+            
+            const tarjetas = document.querySelectorAll('.estimulo-item-card');
+            let estimulos = [];
+
+            tarjetas.forEach(t => {
+                estimulos.push({
+                    id: 'mat_' + Math.random().toString(36).substr(2, 9),
+                    nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
+                    imagen: t.querySelector('.est-img').value.trim(),
+                    pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen'
+                });
+            });
+
+            if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
+                mostrarToast('Por favor completa el nombre del estudio y al menos una imagen válida.', 'error');
+                return;
+            }
+
+            const nuevoEstudio = {
+                id: 'est_' + Math.random().toString(36).substr(2, 9),
+                nombre,
+                duracion,
+                intervalo,
+                creado: Date.now(),
+                estimulos,
+                participantes: []
+            };
+
+            estudios.push(nuevoEstudio);
+            localStorage.setItem('et_estudios', JSON.stringify(estudios));
+            mostrarToast('Estudio guardado correctamente', 'success');
+            navegarA('dashboard');
+        };
+
+        window.eliminarEstudio = (id) => {
+            if (confirm('¿Estás seguro de eliminar este estudio?')) {
+                estudios = estudios.filter(e => e.id !== id);
+                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                actualizarDashboard();
+                mostrarToast('Estudio eliminado', 'info');
+            }
+        };
+
+        window.verResultados = (id) => {
+            estudioActualId = id;
+            const est = estudios.find(e => e.id === id);
+            if (!est) return;
+
+            document.getElementById('results-titulo').textContent = est.nombre;
+            document.getElementById('results-subtitulo').textContent = `${est.participantes.length} participantes registrados`;
+
+            // Generar pestañas de materiales
+            const tabsContainer = document.getElementById('tabs-materiales');
+            tabsContainer.innerHTML = '';
+
+            est.estimulos.forEach((mat, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
+                btn.innerHTML = `<i class="fas fa-image"></i> ${mat.nombre}`;
+                btn.onclick = () => {
+                    document.querySelectorAll('#tabs-materiales .tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderizarMapaCalor(id, idx);
+                };
+                tabsContainer.appendChild(btn);
+            });
+
+            navegarA('results');
+            if (est.estimulos.length > 0) {
+                renderizarMapaCalor(id, 0);
+            }
+        };
+
+        window.renderizarMapaCalor = (estudioId, materialIndex) => {
+            const estudio = estudios.find(e => e.id === estudioId);
+            const wrap = document.getElementById('heatmap-wrap');
+            wrap.innerHTML = '';
+
+            if (!estudio || !estudio.estimulos[materialIndex]) return;
+            const material = estudio.estimulos[materialIndex];
+
+            document.getElementById('instruccion-badge').textContent = `Instrucción dada: "${material.pregunta}"`;
+
+            // Recopilar puntos de todos los participantes para este material específico
+            let puntos = [];
+            if (estudio.participantes) {
+                estudio.participantes.forEach(p => {
+                    if (p.gazePorMaterial && p.gazePorMaterial[material.id]) {
+                        puntos = puntos.concat(p.gazePorMaterial[material.id]);
+                    }
+                });
+            }
+
+            if (puntos.length === 0) {
+                document.getElementById('heatmap-empty').style.display = 'block';
+                return;
+            }
+            document.getElementById('heatmap-empty').style.display = 'none';
+
+            const container = document.createElement('div');
+            container.className = 'heatmap-container';
+            
+            const img = document.createElement('img');
+            img.src = material.imagen;
+            
+            const canvas = document.createElement('canvas');
+            container.appendChild(img);
+            container.appendChild(canvas);
+            wrap.appendChild(container);
+
+            img.onload = () => {
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                
+                const heat = simpleheat(canvas);
+                heat.radius(Number(document.getElementById('heatmap-radius').value));
+                heat.blur(Number(document.getElementById('heatmap-blur').value));
+
+                const dataHeat = puntos.map(p => [p.x, p.y, p.intensity || 1]);
+                heat.data(dataHeat);
+                heat.draw();
+            };
+        };
+
+        window.actualizarSensibilidadHeatmap = () => {
+            const activeTab = document.querySelector('#tabs-materiales .tab-btn.active');
+            if (activeTab && estudioActualId) {
+                const index = Array.from(activeTab.parentNode.children).indexOf(activeTab);
+                renderizarMapaCalor(estudioActualId, index);
+            }
+        };
+
+        window.mostrarToast = (mensaje, tipo = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i> ${mensaje}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        };
+
+        // ==========================================
+        // FLUJO DEL PARTICIPANTE
+        // ==========================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const estudioParam = urlParams.get('estudio');
+
+        if (estudioParam) {
+            document.getElementById('admin-section').style.display = 'none';
+            document.getElementById('participant-section').style.display = 'block';
+            estudioActualId = estudioParam;
+        }
+
+        window.participanteAceptar = async () => {
+            document.getElementById('p-consentimiento').style.display = 'none';
+            document.getElementById('p-carga').style.display = 'flex';
+
+            try {
+                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+                faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numFaces: 1
+                });
+
+                streamCamara = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                const video = document.getElementById('video-participante');
+                video.srcObject = streamCamara;
+                await video.play();
+
+                document.getElementById('p-carga').style.display = 'none';
+                iniciarCalibracionPasoAPaso();
+            } catch (e) {
+                console.error(e);
+                alert('No se pudo acceder a la cámara o cargar la IA. Asegúrate de dar permisos.');
+                location.reload();
+            }
+        };
+
+        function iniciarCalibracionPasoAPaso() {
+            const punto = document.getElementById('punto-calibracion');
+            punto.style.display = 'block';
+            
+            // Posición de calibración en el centro
+            punto.style.top = '50vh';
+            punto.style.left = '50vw';
+            punto.className = 'amarillo';
+
+            let tiempoInicio = Date.now();
+            const interval = setInterval(() => {
+                if (Date.now() - tiempoInicio > 2000) {
+                    clearInterval(interval);
+                    punto.className = 'verde';
+                    setTimeout(() => {
+                        punto.style.display = 'none';
+                        iniciarSecuenciaEstimulos();
+                    }, 800);
+                }
+            }, 100);
+        }
+
+        let estudioParticipanteObj = null;
+        let resultadosParticipanteGaze = {};
+
+        function iniciarSecuenciaEstimulos() {
+            estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
+            if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos || estudioParticipanteObj.estimulos.length === 0) {
+                alert('Estudio no encontrado o sin materiales.');
+                return;
+            }
+            materialActualIndex = 0;
+            mostrarPreguntaMaterial();
+        }
+
+        window.mostrarPreguntaMaterial = () => {
+            const mat = estudioParticipanteObj.estimulos[materialActualIndex];
+            document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estudioParticipanteObj.estimulos.length}`;
+            document.getElementById('texto-pregunta-material').textContent = mat.pregunta;
+            document.getElementById('p-pregunta').style.display = 'flex';
+        };
+
+        window.lanzarSiguienteEstimulo = () => {
+            document.getElementById('p-pregunta').style.display = 'none';
+            const mat = estudioParticipanteObj.estimulos[materialActualIndex];
+            
+            const imgEl = document.getElementById('estimulo-participante');
+            imgEl.src = mat.imagen;
+            imgEl.style.display = 'block';
+
+            datosGazeActuales = [];
+            tiempoInicioEstimulo = Date.now();
+
+            const duracionMs = (estudioParticipanteObj.duracion || 10) * 1000;
+
+            // Bucle de tracking ocular
+            const video = document.getElementById('video-participante');
+            function loopTracking() {
+                if (faceLandmarker && video.readyState >= 2) {
+                    const results = faceLandmarker.detectForVideo(video, performance.now());
+                    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                        const landmarks = results.faceLandmarks[0];
+                        // Estimación sencilla basada en la punta de la nariz (Landmarker 1)
+                        const nose = landmarks[1];
+                        const x = (1 - nose.x) * window.innerWidth;
+                        const y = nose.y * window.innerHeight;
+
+                        datosGazeActuales.push({
+                            x: Math.round(x),
+                            y: Math.round(y),
+                            time: Date.now() - tiempoInicioEstimulo,
+                            intensity: 1
+                        });
+                    }
+                }
+                rafId = requestAnimationFrame(loopTracking);
+            }
+            loopTracking();
+
+            setTimeout(() => {
+                cancelAnimationFrame(rafId);
+                imgEl.style.display = 'none';
+                
+                if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
+                resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
+
+                materialActualIndex++;
+                if (materialActualIndex < estudioParticipanteObj.estimulos.length) {
+                    setTimeout(() => mostrarPreguntaMaterial(), (estudioParticipanteObj.intervalo || 2) * 1000);
+                } else {
+                    finalizarParticipacion();
+                }
+            }, duracionMs);
+        };
+
+        function finalizarParticipacion() {
+            if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
+            
+            if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
+            estudioParticipanteObj.participantes.push({
+                id: 'part_' + Math.random().toString(36).substr(2, 9),
+                fecha: Date.now(),
+                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial
+            });
+
+            localStorage.setItem('et_estudios', JSON.stringify(estudios));
+            document.getElementById('p-fin').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
