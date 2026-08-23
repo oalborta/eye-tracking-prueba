@@ -191,9 +191,7 @@
                 if (!mirandoFijo) {
                     mirandoFijo = true;
                     tiempoFijacionInicio = performance.now();
-                } else if (performance.now() - tiempoFijacionInicio > 600) { 
-                    puntoMirada.classList.add('listo'); 
-                }
+                
             } else {
                 mirandoFijo = false;
                 puntoMirada.classList.remove('listo');
