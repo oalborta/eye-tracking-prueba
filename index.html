@@ -3,1412 +3,763 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
+    <title>EyeTrack Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        :root {
-            --bg: #08080d;
-            --bg2: #0e0e16;
-            --card: #12121c;
-            --border: #1c1c2e;
-            --fg: #e4e4ec;
-            --muted: #5e5e76;
-            --accent: #10b981;
-            --accent2: #059669;
-            --warn: #f59e0b;
-            --danger: #ef4444;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
+        :root{--bg:#07070b;--bg2:#0d0d15;--card:#11111b;--border:#1a1a2c;--fg:#e2e2ea;--muted:#5a5a72;--accent:#10b981;--accent2:#059669;--warn:#f59e0b;--danger:#ef4444;--info:#3b82f6}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden}
+        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+        .glow1{position:fixed;top:-250px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.05) 0%,transparent 70%);pointer-events:none}
+        .glow2{position:fixed;bottom:-300px;left:-150px;width:500px;height:500px;background:radial-gradient(circle,rgba(245,158,11,.03) 0%,transparent 70%);pointer-events:none}
 
-        /* Scrollbar personalizado */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg2); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+        /* NAV */
+        .anav{position:sticky;top:0;z-index:100;background:rgba(7,7,11,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:60px;display:flex;align-items:center;justify-content:space-between}
+        .anav .logo{font-weight:900;font-size:1.15rem;letter-spacing:-.5px}.anav .logo span{color:var(--accent)}
+        .anav-links{display:flex;gap:2px}.anav-links a{padding:.45rem .85rem;border-radius:7px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.82rem;transition:.2s}.anav-links a:hover{color:var(--fg);background:rgba(255,255,255,.03)}.anav-links a.act{color:var(--accent);background:rgba(16,185,129,.07)}
 
-        /* Fondo atmosférico */
-        .bg-glow {
-            position: fixed; top: -200px; right: -200px; width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(16,185,129,0.06) 0%, transparent 70%);
-            pointer-events: none; z-index: 0;
-        }
-        .bg-glow-2 {
-            position: fixed; bottom: -300px; left: -200px; width: 700px; height: 700px;
-            background: radial-gradient(circle, rgba(245,158,11,0.04) 0%, transparent 70%);
-            pointer-events: none; z-index: 0;
-        }
+        /* VIEWS */
+        .v{display:none;position:relative;z-index:1}.v.act{display:block}
 
-        /* Navegación admin */
-        .admin-nav {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(8,8,13,0.85); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem; height: 64px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .admin-nav .logo { font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
-        .admin-nav .logo span { color: var(--accent); }
-        .nav-links { display: flex; gap: 0.25rem; }
-        .nav-links a {
-            padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none;
-            color: var(--muted); font-weight: 600; font-size: 0.875rem;
-            transition: all 0.2s;
-        }
-        .nav-links a:hover { color: var(--fg); background: rgba(255,255,255,0.04); }
-        .nav-links a.active { color: var(--accent); background: rgba(16,185,129,0.08); }
+        /* CARDS */
+        .cd{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:.25s}
+        .cd:hover{border-color:rgba(16,185,129,.15)}
 
-        /* Vistas */
-        .view { display: none; position: relative; z-index: 1; }
-        .view.active { display: block; }
+        /* STAT */
+        .sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.15rem;position:relative;overflow:hidden}
+        .sc .sc-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem;margin-bottom:.75rem}
+        .sc .sc-num{font-size:2rem;font-weight:900;line-height:1}
+        .sc .sc-lbl{color:var(--muted);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:.35rem}
 
-        /* Cards */
-        .card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 14px; padding: 1.5rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-        .card:hover { border-color: rgba(16,185,129,0.2); box-shadow: 0 0 30px rgba(16,185,129,0.03); }
+        /* BUTTONS */
+        .b{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1rem;border-radius:9px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.82rem;border:none;cursor:pointer;transition:.2s;text-decoration:none;white-space:nowrap}
+        .bp{background:var(--accent);color:#fff}.bp:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 18px rgba(16,185,129,.25)}
+        .bs{background:rgba(255,255,255,.05);color:var(--fg);border:1px solid var(--border)}.bs:hover{background:rgba(255,255,255,.08);border-color:var(--muted)}
+        .bd{background:rgba(239,68,68,.1);color:var(--danger)}.bd:hover{background:rgba(239,68,68,.18)}
+        .bw{background:rgba(245,158,11,.1);color:var(--warn)}.bw:hover{background:rgba(245,158,11,.18)}
+        .bi{background:rgba(59,130,246,.1);color:var(--info)}.bi:hover{background:rgba(59,130,246,.18)}
+        .bsm{padding:.35rem .65rem;font-size:.75rem;border-radius:7px}
 
-        /* Stat cards */
-        .stat-card {
-            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-            padding: 1.5rem; position: relative; overflow: hidden;
-        }
-        .stat-card::after {
-            content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
-            border-radius: 50%; filter: blur(40px); opacity: 0.15;
-        }
-        .stat-card.green::after { background: var(--accent); }
-        .stat-card.amber::after { background: var(--warn); }
-        .stat-card.red::after { background: var(--danger); }
-        .stat-number { font-size: 2.5rem; font-weight: 900; line-height: 1; }
-        .stat-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
+        /* FORM */
+        .fg{margin-bottom:1rem}.fl{display:block;font-weight:700;font-size:.75rem;color:var(--muted);margin-bottom:.3rem;text-transform:uppercase;letter-spacing:.5px}
+        .fi{width:100%;padding:.65rem .85rem;background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--fg);font-family:'Outfit',sans-serif;font-size:.9rem;outline:none;transition:.2s}
+        .fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.08)}.fi::placeholder{color:var(--muted)}
 
-        /* Botones */
-        .btn {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            padding: 0.65rem 1.25rem; border-radius: 10px; font-family: 'Outfit', sans-serif;
-            font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer;
-            transition: all 0.2s; text-decoration: none;
-        }
-        .btn-primary { background: var(--accent); color: #fff; }
-        .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
-        .btn-secondary { background: rgba(255,255,255,0.06); color: var(--fg); border: 1px solid var(--border); }
-        .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--muted); }
-        .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); }
-        .btn-danger:hover { background: rgba(239,68,68,0.2); }
-        .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 8px; }
+        /* TABLE */
+        .tw{overflow-x:auto}table{width:100%;border-collapse:collapse}
+        thead th{text-align:left;padding:.6rem .75rem;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
+        tbody td{padding:.7rem .75rem;border-bottom:1px solid rgba(26,26,44,.4);font-size:.85rem}
+        tbody tr{transition:.12s}tbody tr:hover{background:rgba(255,255,255,.015)}
 
-        /* Formularios */
-        .form-group { margin-bottom: 1.25rem; }
-        .form-label { display: block; font-weight: 600; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-input {
-            width: 100%; padding: 0.75rem 1rem; background: var(--bg2); border: 1px solid var(--border);
-            border-radius: 10px; color: var(--fg); font-family: 'Outfit', sans-serif; font-size: 0.95rem;
-            transition: border-color 0.2s, box-shadow 0.2s; outline: none;
-        }
-        .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-        .form-input::placeholder { color: var(--muted); }
+        /* TABS */
+        .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:1.25rem;flex-wrap:wrap}
+        .tb{padding:.6rem 1rem;background:none;border:none;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+        .tb:hover{color:var(--fg)}.tb.act{color:var(--accent);border-bottom-color:var(--accent)}
+        .tc{display:none}.tc.act{display:block}
 
-        /* Tabla */
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; }
-        thead th {
-            text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 700;
-            color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
-            border-bottom: 1px solid var(--border);
-        }
-        tbody td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(28,28,46,0.5); font-size: 0.9rem; }
-        tbody tr { transition: background 0.15s; }
-        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        /* TOAST */
+        #toasts{position:fixed;top:75px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:.4rem}
+        .toast{padding:.7rem 1rem;border-radius:9px;font-size:.82rem;font-weight:600;animation:tIn .3s ease,tOut .3s ease 2.7s forwards;display:flex;align-items:center;gap:.4rem;box-shadow:0 6px 25px rgba(0,0,0,.4)}
+        .toast.ok{background:#065f46;color:#a7f3d0;border:1px solid #10b981}
+        .toast.er{background:#7f1d1d;color:#fca5a5;border:1px solid #ef4444}
+        .toast.in{background:#1e3a5f;color:#93c5fd;border:1px solid #3b82f6}
+        @keyframes tIn{from{opacity:0;transform:translateX(80px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes tOut{from{opacity:1}to{opacity:0;transform:translateY(-15px)}}
 
-        /* Tabs */
-        .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
-        .tab-btn {
-            padding: 0.75rem 1.25rem; background: none; border: none; color: var(--muted);
-            font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.875rem;
-            cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
-        }
-        .tab-btn:hover { color: var(--fg); }
-        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* PROGRESS BAR */
+        .pbar{height:6px;background:var(--bg2);border-radius:3px;overflow:hidden;position:relative}
+        .pbar-fill{height:100%;border-radius:3px;transition:width .5s ease}
 
-        /* Toast */
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
-        .toast {
-            padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600;
-            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
-            display: flex; align-items: center; gap: 0.5rem; min-width: 280px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-        }
-        .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
-        .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
-        .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+        /* HEATMAP CONTAINER */
+        .hm-wrap{position:relative;display:inline-block;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#000}
+        .hm-wrap canvas{display:block}
 
-        @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
+        /* AOI GRID */
+        .aoi-g{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:540px}
+        .aoi-c{aspect-ratio:16/9;border-radius:7px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:900;font-size:1.3rem;transition:.2s;cursor:default}
+        .aoi-c:hover{transform:scale(1.04)}
+        .aoi-c .al{font-size:.6rem;font-weight:600;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-top:.2rem}
 
-        /* Pantalla completa participante */
-        .pantalla-participante {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000; background: var(--bg);
-        }
+        /* PARTICIPANTE */
+        .pp{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1000;background:var(--bg)}
+        #punto-cal{width:42px;height:42px;border-radius:50%;position:fixed;pointer-events:none;z-index:999999;transform:translate(-50%,-50%);display:none;transition:background .25s,box-shadow .25s}
+        #punto-cal.rojo{background:#ef4444;box-shadow:0 0 28px 10px rgba(239,68,68,.65)}
+        #punto-cal.amarillo{background:#f59e0b;box-shadow:0 0 28px 10px rgba(245,158,11,.65)}
+        #punto-cal.verde{background:#10b981;box-shadow:0 0 28px 10px rgba(16,185,129,.65)}
+        @keyframes pulseR{0%{transform:translate(-50%,-50%) scale(1);opacity:.5}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+        #punto-cal::before{content:'';position:absolute;top:50%;left:50%;width:42px;height:42px;border-radius:50%;border:2px solid currentColor;animation:pulseR 1.5s ease-out infinite;pointer-events:none}
+        #vid-p{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;opacity:0;pointer-events:none}
+        #est-p{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:contain;z-index:1;display:none;background:#000}
+        .import-ta{width:100%;min-height:100px;padding:.6rem;background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--fg);font-family:monospace;font-size:.75rem;resize:vertical;outline:none}
+        .import-ta:focus{border-color:var(--accent)}
+        .img-prev{width:100%;max-height:200px;object-fit:contain;border-radius:9px;background:var(--bg2);border:1px solid var(--border);display:none}
 
-        /* Punto de calibración */
-        #punto-calibracion {
-            width: 44px; height: 44px; border-radius: 50%; position: fixed;
-            pointer-events: none; z-index: 999999; transform: translate(-50%, -50%);
-            display: none; transition: background-color 0.25s, box-shadow 0.25s;
-        }
-        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 30px 12px rgba(239,68,68,0.7); }
-        #punto-calibracion.amarillo { background: #f59e0b; box-shadow: 0 0 30px 12px rgba(245,158,11,0.7); }
-        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); }
+        /* ESTIMULO ITEM en crear */
+        .est-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1rem;position:relative;margin-bottom:.75rem}
+        .est-item .est-num{position:absolute;top:-.5rem;left:1rem;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:0 .5rem;font-size:.7rem;font-weight:800;color:var(--accent)}
 
-        /* Heatmap contenedor */
-        .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        .heatmap-container img { display: block; max-width: 100%; height: auto; }
-        .heatmap-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        /* SCANPATH CANVAS */
+        .viz-canvas{border-radius:10px;border:1px solid var(--border);display:block;max-width:100%;background:#000}
 
-        /* AOI Grid */
-        .aoi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; max-width: 600px; }
-        .aoi-cell {
-            aspect-ratio: 16/9; border-radius: 8px; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; font-weight: 800; font-size: 1.5rem;
-            position: relative; transition: transform 0.2s;
-        }
-        .aoi-cell:hover { transform: scale(1.03); }
-        .aoi-cell .aoi-label { font-size: 0.65rem; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.25rem; }
-
-        /* Link de estudio */
-        .study-link {
-            display: flex; align-items: center; gap: 0.5rem; background: var(--bg2);
-            border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem;
-            font-size: 0.8rem; color: var(--muted); font-family: monospace;
-        }
-        .study-link code { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        /* Animaciones de entrada */
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-up { animation: fadeUp 0.5s ease forwards; }
-        .fade-up-d1 { animation-delay: 0.1s; opacity: 0; }
-        .fade-up-d2 { animation-delay: 0.2s; opacity: 0; }
-        .fade-up-d3 { animation-delay: 0.3s; opacity: 0; }
-        .fade-up-d4 { animation-delay: 0.4s; opacity: 0; }
-
-        /* Video oculto */
-        #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
-
-        /* Imagen estímulo participante */
-        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
-
-        /* Login centrado */
-        .login-container { max-width: 400px; margin: 0 auto; padding: 4rem 1.5rem; }
-
-        /* Empty state */
-        .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
-        .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
-
-        /* Import textarea */
-        .import-area {
-            width: 100%; min-height: 120px; padding: 0.75rem; background: var(--bg2);
-            border: 1px solid var(--border); border-radius: 10px; color: var(--fg);
-            font-family: monospace; font-size: 0.8rem; resize: vertical; outline: none;
-        }
-        .import-area:focus { border-color: var(--accent); }
-
-        /* Preview imagen en crear estudio */
-        .img-preview {
-            width: 100%; max-height: 250px; object-fit: contain; border-radius: 10px;
-            background: var(--bg2); border: 1px solid var(--border); display: none;
-        }
-
-        /* Pulse animation para el punto */
-        @keyframes pulse-ring {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-            100% { transform: translate(-50%, -50%) scale(2.5); opacity: 0; }
-        }
-        #punto-calibracion::before {
-            content: ''; position: absolute; top: 50%; left: 50%; width: 44px; height: 44px;
-            border-radius: 50%; border: 2px solid currentColor;
-            animation: pulse-ring 1.5s ease-out infinite; pointer-events: none;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+        .fu{animation:fadeUp .45s ease forwards}
+        .fu1{animation-delay:.08s;opacity:0}.fu2{animation-delay:.16s;opacity:0}.fu3{animation-delay:.24s;opacity:0}.fu4{animation-delay:.32s;opacity:0}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
     </style>
 </head>
 <body>
+<div class="glow1"></div><div class="glow2"></div>
+<div id="toasts"></div>
 
-    <!-- Fondos atmosféricos -->
-    <div class="bg-glow"></div>
-    <div class="bg-glow-2"></div>
+<!-- ========== ADMIN ========== -->
+<div id="sec-admin">
+    <nav class="anav" id="anav" style="display:none">
+        <div class="logo">Eye<span>Track</span> Pro</div>
+        <div class="anav-links">
+            <a href="#dashboard" data-n="dashboard" class="act"><i class="fas fa-chart-pie" style="margin-right:3px"></i> Dashboard</a>
+            <a href="#create" data-n="create"><i class="fas fa-flask" style="margin-right:3px"></i> Nuevo Estudio</a>
+        </div>
+        <button class="b bsm bs" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+    </nav>
+    <main style="max-width:1140px;margin:0 auto;padding:1.5rem">
 
-    <!-- Toast container -->
-    <div id="toast-container"></div>
-
-    <!-- ============================================ -->
-    <!-- SECCIÓN ADMINISTRACIÓN                       -->
-    <!-- ============================================ -->
-    <div id="admin-section">
-        <!-- Navegación -->
-        <nav class="admin-nav" id="admin-nav" style="display:none;">
-            <div class="logo">Eye<span>Track</span> Pro</div>
-            <div class="nav-links">
-                <a href="#dashboard" data-nav="dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
-                <a href="#create" data-nav="create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir</button>
-        </nav>
-
-        <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
-
-            <!-- VISTA: LOGIN -->
-            <div id="view-login" class="view active">
-                <div class="login-container fade-up">
-                    <div style="text-align:center; margin-bottom: 2.5rem;">
-                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: -1px;">Eye<span style="color:var(--accent)">Track</span></div>
-                        <p style="color:var(--muted); margin-top: 0.5rem;">Sistema de Eye Tracking para Marketing</p>
-                    </div>
-                    <div class="card">
-                        <div class="form-group">
-                            <label class="form-label">Contraseña de administrador</label>
-                            <input type="password" id="login-pass" class="form-input" placeholder="Ingrese la contraseña" autofocus>
-                        </div>
-                        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="intentarLogin()">
-                            <i class="fas fa-lock"></i> Ingresar
-                        </button>
-                        <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:var(--muted);">
-                            Contraseña por defecto: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;">admin2024</code>
-                        </p>
-                    </div>
+        <!-- LOGIN -->
+        <div id="v-login" class="v act">
+            <div style="max-width:380px;margin:0 auto;padding:3rem 1rem" class="fu">
+                <div style="text-align:center;margin-bottom:2rem">
+                    <div style="font-size:2.8rem;font-weight:900;letter-spacing:-1px">Eye<span style="color:var(--accent)">Track</span></div>
+                    <p style="color:var(--muted);margin-top:.4rem;font-size:.9rem">Plataforma de Eye Tracking para Marketing</p>
                 </div>
-            </div>
-
-            <!-- VISTA: DASHBOARD -->
-            <div id="view-dashboard" class="view">
-                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-                    <div class="stat-card green fade-up fade-up-d1">
-                        <div class="stat-number" id="stat-estudios">0</div>
-                        <div class="stat-label">Estudios activos</div>
-                    </div>
-                    <div class="stat-card amber fade-up fade-up-d2">
-                        <div class="stat-number" id="stat-participantes">0</div>
-                        <div class="stat-label">Participantes totales</div>
-                    </div>
-                    <div class="stat-card red fade-up fade-up-d3">
-                        <div class="stat-number" id="stat-puntos">0</div>
-                        <div class="stat-label">Puntos de datos</div>
-                    </div>
-                    <div class="stat-card green fade-up fade-up-d4">
-                        <div class="stat-number" id="stat-tiempo">0s</div>
-                        <div class="stat-label">Tiempo total</div>
-                    </div>
-                </div>
-
-                <div class="card fade-up fade-up-d2">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-                        <h2 style="font-weight:800; font-size:1.25rem;">Estudios</h2>
-                        <button class="btn btn-primary btn-sm" onclick="navegarA('create')"><i class="fas fa-plus"></i> Crear estudio</button>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Duración</th>
-                                    <th>Participantes</th>
-                                    <th>Creado</th>
-                                    <th>Link</th>
-                                    <th style="text-align:right;">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-estudios"></tbody>
-                        </table>
-                    </div>
-                    <div id="empty-dashboard" class="empty-state" style="display:none;">
-                        <i class="fas fa-eye"></i>
-                        <p style="font-size:1.1rem; font-weight:600;">No hay estudios creados</p>
-                        <p style="font-size:0.85rem; margin-top:0.5rem;">Crea tu primer estudio para comenzar a rastrear la mirada</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA: CREAR ESTUDIO -->
-            <div id="view-create" class="view">
-                <div style="max-width: 600px; margin: 0 auto;">
-                    <h2 style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;" class="fade-up">Nuevo Estudio</h2>
-                    <p style="color:var(--muted); margin-bottom:2rem;" class="fade-up fade-up-d1">Configura el estímulo visual y los parámetros de captura.</p>
-
-                    <div class="card fade-up fade-up-d2">
-                        <div class="form-group">
-                            <label class="form-label">Nombre del estudio</label>
-                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Banner promocional verano">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">URL de la imagen de estímulo</label>
-                            <input type="text" id="create-imagen" class="form-input" placeholder="https://ejemplo.com/imagen.jpg" oninput="previsualizarImagen()">
-                            <img id="create-preview" class="img-preview" alt="Vista previa">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Duración de captura (segundos)</label>
-                            <input type="number" id="create-duracion" class="form-input" value="15" min="5" max="120">
-                        </div>
-                        <div style="display:flex; gap:0.75rem; margin-top:1.5rem;">
-                            <button class="btn btn-primary" onclick="crearEstudio()"><i class="fas fa-save"></i> Guardar estudio</button>
-                            <button class="btn btn-secondary" onclick="navegarA('dashboard')">Cancelar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VISTA: RESULTADOS -->
-            <div id="view-results" class="view">
-                <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="navegarA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
-                    <div>
-                        <h2 style="font-weight:800; font-size:1.4rem;" id="results-titulo">Resultados</h2>
-                        <p style="color:var(--muted); font-size:0.85rem;" id="results-subtitulo"></p>
-                    </div>
-                </div>
-
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="heatmap" onclick="cambiarTab(this,'heatmap')"><i class="fas fa-fire"></i> Mapa de Calor</button>
-                    <button class="tab-btn" data-tab="aoi" onclick="cambiarTab(this,'aoi')"><i class="fas fa-th"></i> Cuadrantes (AOI)</button>
-                    <button class="tab-btn" data-tab="participantes" onclick="cambiarTab(this,'participantes')"><i class="fas fa-users"></i> Participantes</button>
-                    <button class="tab-btn" data-tab="exportar" onclick="cambiarTab(this,'exportar')"><i class="fas fa-download"></i> Exportar</button>
-                </div>
-
-                <!-- Tab: Mapa de Calor -->
-                <div id="tab-heatmap" class="tab-content active">
-                    <div class="card">
-                        <div id="heatmap-wrap" style="text-align:center;"></div>
-                        <div id="heatmap-empty" class="empty-state" style="display:none;">
-                            <i class="fas fa-fire"></i>
-                            <p style="font-weight:600;">Sin datos para generar el mapa</p>
-                            <p style="font-size:0.85rem; margin-top:0.5rem;">Comparta el link del estudio para recolectar datos de participantes.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab: AOI -->
-                <div id="tab-aoi" class="tab-content">
-                    <div class="card">
-                        <h3 style="font-weight:700; margin-bottom:1rem;">Distribución de atención por cuadrante</h3>
-                        <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.25rem;">Porcentaje del tiempo total de fijación en cada zona de la imagen.</p>
-                        <div id="aoi-grid-container"></div>
-                        <div id="aoi-empty" class="empty-state" style="display:none;">
-                            <i class="fas fa-th"></i>
-                            <p style="font-weight:600;">Sin datos de cuadrantes</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab: Participantes -->
-                <div id="tab-participantes" class="tab-content">
-                    <div class="card">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Fecha/Hora</th>
-                                        <th>Puntos</th>
-                                        <th>Duración</th>
-                                        <th>Pantalla</th>
-                                        <th style="text-align:right;">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-participantes"></tbody>
-                            </table>
-                        </div>
-                        <div id="participantes-empty" class="empty-state" style="display:none;">
-                            <i class="fas fa-users"></i>
-                            <p style="font-weight:600;">Aún no hay participantes</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab: Exportar -->
-                <div id="tab-exportar" class="tab-content">
-                    <div class="card" style="max-width:600px;">
-                        <h3 style="font-weight:700; margin-bottom:1rem;">Exportar datos</h3>
-                        <div style="display:flex; flex-direction:column; gap:0.75rem; margin-bottom:2rem;">
-                            <button class="btn btn-primary" onclick="exportarCSV()"><i class="fas fa-file-csv"></i> Descargar CSV agregado</button>
-                            <button class="btn btn-secondary" onclick="exportarHeatmapPNG()"><i class="fas fa-image"></i> Descargar Mapa de Calor (PNG)</button>
-                        </div>
-                        <hr style="border-color:var(--border); margin-bottom:1.5rem;">
-                        <h3 style="font-weight:700; margin-bottom:0.75rem;">Importar datos de participante</h3>
-                        <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1rem;">Si un participante completó el estudio en otro dispositivo, pegue aquí su código de datos.</p>
-                        <textarea id="import-textarea" class="import-area" placeholder="Pegue el código JSON aquí..."></textarea>
-                        <button class="btn btn-secondary" style="margin-top:0.75rem;" onclick="importarDatos()"><i class="fas fa-upload"></i> Importar datos</button>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-    </div>
-
-    <!-- ============================================ -->
-    <!-- SECCIÓN PARTICIPANTE                         -->
-    <!-- ============================================ -->
-    <div id="participant-section" style="display:none;">
-        <video id="video-participante" playsinline></video>
-        <img id="estimulo-participante" alt="Estímulo">
-        <div id="punto-calibracion" class="rojo"></div>
-
-        <!-- Consentimiento -->
-        <div id="p-consentimiento" class="pantalla-participante" style="background:var(--bg);">
-            <div style="max-width:500px; text-align:center; padding:2rem;">
-                <div style="font-size:2.5rem; font-weight:900; margin-bottom:1rem;">Eye<span style="color:var(--accent)">Track</span></div>
-                <div class="card" style="text-align:left;">
-                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
-                    <p style="line-height:1.7; color:var(--muted); font-size:0.92rem;">
-                        Utilizaremos su cámara web <strong style="color:var(--fg);">exclusivamente para trazar el movimiento de sus ojos en tiempo real.</strong>
-                        <br><br>
-                        <span style="color:var(--danger); font-weight:700;">No se grabará ningún video ni fotografía de su rostro.</span>
-                        <br><br>
-                        Para calibrar, <strong style="color:var(--fg);">mire fijamente el punto</strong> hasta que se ponga <span style="color:var(--accent); font-weight:700;">VERDE</span> y luego haga clic en cualquier lugar.
-                    </p>
-                    <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1.5rem;" onclick="participanteAceptar()">
-                        <i class="fas fa-check"></i> Acepto y comenzar
-                    </button>
+                <div class="cd">
+                    <div class="fg"><label class="fl">Contraseña de administrador</label>
+                    <input type="password" id="inp-pass" class="fi" placeholder="Ingrese la contraseña" autofocus></div>
+                    <button class="b bp" style="width:100%;justify-content:center" onclick="login()"><i class="fas fa-lock"></i> Ingresar</button>
+                    <p style="text-align:center;margin-top:.85rem;font-size:.75rem;color:var(--muted)">Por defecto: <code style="background:var(--bg2);padding:1px 5px;border-radius:3px">admin2024</code></p>
                 </div>
             </div>
         </div>
 
-        <!-- Carga -->
-        <div id="p-carga" class="pantalla-participante" style="background:var(--bg); display:none;">
-            <div style="text-align:center;">
-                <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p id="texto-carga-p" style="font-weight:600; font-size:1.1rem;">Descargando modelo de IA...</p>
+        <!-- DASHBOARD -->
+        <div id="v-dashboard" class="v">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-bottom:1.5rem">
+                <div class="sc fu fu1"><div class="sc-icon" style="background:rgba(16,185,129,.1);color:var(--accent)"><i class="fas fa-flask"></i></div><div class="sc-num" id="s1">0</div><div class="sc-lbl">Estudios</div></div>
+                <div class="sc fu fu2"><div class="sc-icon" style="background:rgba(245,158,11,.1);color:var(--warn)"><i class="fas fa-users"></i></div><div class="sc-num" id="s2">0</div><div class="sc-lbl">Participantes</div></div>
+                <div class="sc fu fu3"><div class="sc-icon" style="background:rgba(59,130,246,.1);color:var(--info)"><i class="fas fa-database"></i></div><div class="sc-num" id="s3">0</div><div class="sc-lbl">Puntos de datos</div></div>
+                <div class="sc fu fu4"><div class="sc-icon" style="background:rgba(239,68,68,.1);color:var(--danger)"><i class="fas fa-clock"></i></div><div class="sc-num" id="s4">0s</div><div class="sc-lbl">Tiempo total</div></div>
+            </div>
+            <div class="cd fu fu2">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+                    <h2 style="font-weight:800;font-size:1.15rem">Estudios</h2>
+                    <button class="b bp bsm" onclick="nav('create')"><i class="fas fa-plus"></i> Nuevo</button>
+                </div>
+                <div class="tw"><table><thead><tr><th>Estudio</th><th>Estímulos</th><th>Progreso</th><th>Creado</th><th>Link colaborador</th><th style="text-align:right">Acciones</th></tr></thead>
+                <tbody id="tb-est"></tbody></table></div>
+                <div id="empty-dash" class="empty-state" style="display:none;text-align:center;padding:3rem 1rem;color:var(--muted)">
+                    <i class="fas fa-eye" style="font-size:2.5rem;opacity:.2;display:block;margin-bottom:.75rem"></i>
+                    <p style="font-weight:600">Sin estudios todavia</p>
+                    <p style="font-size:.82rem;margin-top:.3rem">Crea tu primer estudio para empezar a rastrear miradas</p>
+                </div>
             </div>
         </div>
-        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-        <!-- Calibración -->
-        <div id="p-calibracion" class="pantalla-participante" style="background:transparent; display:none; pointer-events:none;">
-            <div style="background:rgba(8,8,13,0.9); backdrop-filter:blur(12px); padding:1.5rem 2rem; border-radius:12px; border:1px solid var(--border); pointer-events:auto;">
-                <p id="texto-calibracion-p" style="color:var(--warn); font-weight:700; font-size:1rem; white-space:nowrap;">Preparando...</p>
+        <!-- CREAR -->
+        <div id="v-create" class="v">
+            <div style="max-width:640px;margin:0 auto">
+                <h2 style="font-weight:900;font-size:1.4rem;margin-bottom:.3rem" class="fu">Nuevo Estudio</h2>
+                <p style="color:var(--muted);margin-bottom:1.5rem;font-size:.88rem" class="fu fu1">Agregue uno o mas estimulos visuales y configure los parametros.</p>
+                <div class="cd fu fu2">
+                    <div class="fg"><label class="fl">Nombre del estudio</label><input type="text" id="c-nombre" class="fi" placeholder="Ej: Campaña verano 2025"></div>
+                    <div class="fg"><label class="fl">Participantes objetivo (por estimulo)</label><input type="number" id="c-obj" class="fi" value="10" min="1" max="500"></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+                        <label class="fl" style="margin:0">Estimulos visuales</label>
+                        <button class="b bp bsm" onclick="agregarEstimulo()"><i class="fas fa-plus"></i> Agregar estimulo</button>
+                    </div>
+                    <div id="est-lista"></div>
+                    <div style="display:flex;gap:.6rem;margin-top:1.25rem">
+                        <button class="b bp" onclick="crearEstudio()"><i class="fas fa-save"></i> Guardar estudio</button>
+                        <button class="b bs" onclick="nav('dashboard')">Cancelar</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Fin -->
-        <div id="p-fin" class="pantalla-participante" style="background:rgba(8,8,13,0.95); display:none; flex-direction:column; gap:1.25rem;">
-            <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
-            <h2 style="font-weight:900; font-size:1.8rem;">Estudio completado</h2>
-            <p style="color:var(--muted); max-width:400px; text-align:center; line-height:1.6;">Sus datos de seguimiento ocular han sido registrados correctamente. Gracias por su participacion.</p>
-            <div class="card" style="max-width:500px; width:90%;">
-                <p style="font-size:0.8rem; color:var(--muted); margin-bottom:0.5rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Codigo de datos (copie y envie al investigador)</p>
-                <textarea id="codigo-datos" class="import-area" readonly style="min-height:80px; font-size:0.7rem;"></textarea>
-                <button class="btn btn-primary btn-sm" style="margin-top:0.5rem;" onclick="copiarCodigo()"><i class="fas fa-copy"></i> Copiar codigo</button>
+        <!-- RESULTADOS -->
+        <div id="v-results" class="v">
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap">
+                <button class="b bs bsm" onclick="nav('dashboard')"><i class="fas fa-arrow-left"></i></button>
+                <div style="flex:1;min-width:200px">
+                    <h2 style="font-weight:900;font-size:1.3rem" id="r-titulo">Resultados</h2>
+                    <p style="color:var(--muted);font-size:.8rem" id="r-sub"></p>
+                </div>
+            </div>
+            <!-- Selector de estímulo -->
+            <div id="r-est-sel" style="display:flex;gap:.35rem;margin-bottom:1.25rem;flex-wrap:wrap"></div>
+            <!-- Tabs de visualización -->
+            <div class="tabs" id="r-tabs">
+                <button class="tb act" data-t="heatmap" onclick="setTab(this,'heatmap')"><i class="fas fa-fire"></i> Mapa de Calor</button>
+                <button class="tb" data-t="scanpath" onclick="setTab(this,'scanpath')"><i class="fas fa-route"></i> Scanpath</button>
+                <button class="tb" data-t="aoi" onclick="setTab(this,'aoi')"><i class="fas fa-th"></i> Cuadrantes AOI</button>
+                <button class="tb" data-t="timeline" onclick="setTab(this,'timeline')"><i class="fas fa-chart-line"></i> Timeline</button>
+                <button class="tb" data-t="datos" onclick="setTab(this,'datos')"><i class="fas fa-users"></i> Participantes</button>
+                <button class="tb" data-t="exportar" onclick="setTab(this,'exportar')"><i class="fas fa-share-alt"></i> Compartir</button>
+            </div>
+            <div id="tc-heatmap" class="tc act"><div class="cd" id="hm-box"></div></div>
+            <div id="tc-scanpath" class="tc"><div class="cd" id="sp-box"></div></div>
+            <div id="tc-aoi" class="tc"><div class="cd" id="aoi-box"></div></div>
+            <div id="tc-timeline" class="tc"><div class="cd" id="tl-box"></div></div>
+            <div id="tc-datos" class="tc"><div class="cd"><div class="tw"><table><thead><tr><th>ID</th><th>Fecha</th><th>Puntos</th><th>Duración</th><th>Pantalla</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="tb-part"></tbody></table></div><div id="empty-part" style="display:none;text-align:center;padding:2.5rem;color:var(--muted)"><i class="fas fa-users" style="font-size:2rem;opacity:.2;display:block;margin-bottom:.5rem"></i><p style="font-weight:600">Sin participantes</p></div></div></div>
+            <div id="tc-exportar" class="tc"><div class="cd" style="max-width:560px"><h3 style="font-weight:700;margin-bottom:.75rem">Exportar e importar datos</h3><div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem"><button class="b bp" onclick="expCSV()"><i class="fas fa-file-csv"></i> Descargar CSV agregado</button><button class="b bs" onclick="expPNG()"><i class="fas fa-image"></i> Descargar Mapa de Calor PNG</button></div><hr style="border-color:var(--border);margin-bottom:1.25rem"><h3 style="font-weight:700;margin-bottom:.6rem">Importar datos de colaborador</h3><p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">Si un colaborador completo el estudio en otro dispositivo, pegue aqui su codigo de datos.</p><textarea id="imp-ta" class="import-ta" placeholder="Pegue el codigo JSON aqui..."></textarea><button class="b bs" style="margin-top:.6rem" onclick="importarDatos()"><i class="fas fa-upload"></i> Importar</button></div></div>
+        </div>
+    </main>
+</div>
+
+<!-- ========== PARTICIPANTE ========== -->
+<div id="sec-part" style="display:none">
+    <video id="vid-p" playsinline></video>
+    <img id="est-p" alt="Estimulo">
+    <div id="punto-cal" class="rojo"></div>
+
+    <div id="p-bienvenida" class="pp" style="background:var(--bg)">
+        <div style="max-width:460px;text-align:center;padding:2rem">
+            <div style="font-size:2.5rem;font-weight:900;margin-bottom:.75rem">Eye<span style="color:var(--accent)">Track</span></div>
+            <div class="cd" style="text-align:left">
+                <h3 style="font-weight:700;margin-bottom:.75rem"><i class="fas fa-flask" style="color:var(--accent);margin-right:5px"></i> <span id="bw-nombre">Estudio</span></h3>
+                <p style="color:var(--muted);font-size:.88rem;line-height:1.6">Usted fue invitado a participar en un estudio de seguimiento ocular. Se le mostrarán <strong style="color:var(--fg)" id="bw-cant">0</strong> imagen(es) y debera mirarlas con naturalidad.</p>
+                <hr style="border-color:var(--border);margin:1rem 0">
+                <p style="line-height:1.7;color:var(--muted);font-size:.85rem">Su cámara web se usara <strong style="color:var(--fg)">exclusivamente para trazar sus ojos en tiempo real</strong>. <span style="color:var(--danger);font-weight:700">No se grabara ningun video ni foto.</span></p>
+                <button class="b bp" style="width:100%;justify-content:center;margin-top:1.25rem" onclick="partAceptar()"><i class="fas fa-play"></i> Comenzar</button>
             </div>
         </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- LÓGICA PRINCIPAL                             -->
-    <!-- ============================================ -->
-    <script type="module">
-        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
-
-        // ==========================================
-        // 1. ESTADO Y CONFIGURACIÓN
-        // ==========================================
-        const PASS_DEFAULT = 'admin2024';
-        let estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-        let autenticado = localStorage.getItem('et_auth') === 'true';
-        let estudioActualId = null; // ID del estudio que ve el participante
-        let faceLandmarker = null;
-
-        // Estado del participante
-        let faseParticipante = 'idle'; // 'idle' | 'calibrando' | 'rastreando' | 'fin'
-        let datosGaze = [];
-        let tiempoInicioGaze = 0;
-        let primeraVez = true;
-        let posXAnterior = 0, posYAnterior = 0;
-        let pesoSuavizado = 0.6;
-
-        // Calibración
-        let estadoPuntoCal = 'esperando'; // 'esperando' | 'fijando' | 'listo'
-        let tiempoFijacionInicio = 0;
-        const DURACION_FIJACION = 1500;
-        const UMBRAL_MOVIMIENTO = 0.15;
-        let clickCalCount = 0;
-        let datosRawCal = [];
-        let currentRawX = 0.5, currentRawY = 0.5;
-
-        // Parámetros de mapeo (se calculan tras calibración)
-        let sensX = 4.5, sensY = 9.0, offsetX = 0, offsetY = 0;
-
-        // Puntos de calibración
-        function getPuntosCalibracion() {
-            const w = window.innerWidth, h = window.innerHeight;
-            return [
-                { x: w / 2, y: h / 2, tipo: 'centro' },
-                { x: w * 0.15, y: h * 0.15, tipo: 'arriba-izq' },
-                { x: w * 0.85, y: h * 0.15, tipo: 'arriba-der' },
-                { x: w * 0.15, y: h * 0.85, tipo: 'abajo-izq' },
-                { x: w * 0.85, y: h * 0.85, tipo: 'abajo-der' }
-            ];
-        }
-
-        // ==========================================
-        // 2. UTILIDADES
-        // ==========================================
-        function generarId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
-
-        function guardarEstudios() { localStorage.setItem('et_estudios', JSON.stringify(estudios)); }
-
-        function toast(msg, tipo = 'success') {
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast ' + tipo;
-            const icon = tipo === 'success' ? 'fa-check-circle' : tipo === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            t.innerHTML = `<i class="fas ${icon}"></i> ${msg}`;
-            c.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
-        }
-
-        function fechaFormateada(iso) {
-            const d = new Date(iso);
-            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-        }
-
-        function obtenerEstudio(id) { return estudios.find(e => e.id === id); }
-
-        // ==========================================
-        // 3. ROUTER
-        // ==========================================
-        function navegarA(vista) {
-            // Ocultar todas las vistas admin
-            document.querySelectorAll('#admin-section .view').forEach(v => v.classList.remove('active'));
-            const target = document.getElementById('view-' + vista);
-            if (target) target.classList.add('active');
-
-            // Actualizar nav activo
-            document.querySelectorAll('.nav-links a').forEach(a => {
-                a.classList.toggle('active', a.dataset.nav === vista);
-            });
-
-            // Acciones específicas por vista
-            if (vista === 'dashboard') renderDashboard();
-            if (vista === 'create') limpiarFormCrear();
-
-            window.location.hash = vista;
-        }
-
-        function manejarHash() {
-            const hash = window.location.hash.replace('#', '');
-
-            // Si es ruta de participante (#study/ID)
-            if (hash.startsWith('study/')) {
-                const id = hash.split('/')[1];
-                iniciarParticipante(id);
-                return;
-            }
-
-            // Si es ruta de resultados (#results/ID)
-            if (hash.startsWith('results/')) {
-                const id = hash.split('/')[1];
-                if (!autenticado) { navegarA('login'); return; }
-                mostrarResultados(id);
-                return;
-            }
-
-            // Rutas admin
-            document.getElementById('admin-section').style.display = '';
-            document.getElementById('participant-section').style.display = 'none';
-            document.getElementById('admin-nav').style.display = autenticado ? 'flex' : 'none';
-
-            if (!autenticado) {
-                navegarA('login');
-            } else if (['dashboard', 'create', 'results'].includes(hash)) {
-                navegarA(hash);
-            } else {
-                navegarA('dashboard');
-            }
-        }
-
-        window.addEventListener('hashchange', manejarHash);
-
-        // ==========================================
-        // 4. ADMIN: LOGIN
-        // ==========================================
-        window.intentarLogin = function() {
-            const pass = document.getElementById('login-pass').value;
-            const savedPass = localStorage.getItem('et_pass') || PASS_DEFAULT;
-            if (pass === savedPass) {
-                autenticado = true;
-                localStorage.setItem('et_auth', 'true');
-                document.getElementById('login-pass').value = '';
-                manejarHash();
-                toast('Bienvenido al sistema');
-            } else {
-                toast('Contraseña incorrecta', 'error');
-            }
-        };
-
-        // Enter para login
-        document.getElementById('login-pass').addEventListener('keydown', e => {
-            if (e.key === 'Enter') window.intentarLogin();
-        });
-
-        window.cerrarSesion = function() {
-            autenticado = false;
-            localStorage.removeItem('et_auth');
-            navegarA('login');
-            document.getElementById('admin-nav').style.display = 'none';
-            toast('Sesión cerrada', 'info');
-        };
-
-        // ==========================================
-        // 5. ADMIN: DASHBOARD
-        // ==========================================
-        function renderDashboard() {
-            const tbody = document.getElementById('tabla-estudios');
-            const empty = document.getElementById('empty-dashboard');
-
-            // Stats
-            let totalParticipantes = 0, totalPuntos = 0, totalTiempo = 0;
-            estudios.forEach(e => {
-                totalParticipantes += e.participantes.length;
-                e.participantes.forEach(p => {
-                    totalPuntos += p.gazeData.length;
-                    if (p.gazeData.length > 0) {
-                        totalTiempo += p.gazeData[p.gazeData.length - 1].tiempo;
-                    }
-                });
-            });
-
-            document.getElementById('stat-estudios').textContent = estudios.length;
-            document.getElementById('stat-participantes').textContent = totalParticipantes;
-            document.getElementById('stat-puntos').textContent = totalPuntos > 1000 ? (totalPuntos / 1000).toFixed(1) + 'k' : totalPuntos;
-            document.getElementById('stat-tiempo').textContent = Math.round(totalTiempo) + 's';
-
-            if (estudios.length === 0) {
-                tbody.innerHTML = '';
-                empty.style.display = '';
-                return;
-            }
-            empty.style.display = 'none';
-
-            tbody.innerHTML = estudios.map(e => {
-                const link = window.location.origin + window.location.pathname + '#study/' + e.id;
-                return `<tr>
-                    <td style="font-weight:600;">${e.nombre}</td>
-                    <td style="color:var(--muted);">${e.duracion}s</td>
-                    <td><span style="background:rgba(16,185,129,0.12);color:var(--accent);padding:2px 10px;border-radius:20px;font-weight:600;font-size:0.85rem;">${e.participantes.length}</span></td>
-                    <td style="color:var(--muted);font-size:0.85rem;">${fechaFormateada(e.createdAt)}</td>
-                    <td>
-                        <div class="study-link">
-                            <code>${link}</code>
-                            <button class="btn btn-sm btn-secondary" style="padding:4px 8px;flex-shrink:0;" onclick="copiarLink('${link}')"><i class="fas fa-copy"></i></button>
-                        </div>
-                    </td>
-                    <td style="text-align:right; white-space:nowrap;">
-                        <button class="btn btn-sm btn-secondary" onclick="window.location.hash='results/${e.id}'"><i class="fas fa-chart-bar"></i> Resultados</button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarEstudio('${e.id}')"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
-
-        window.copiarLink = function(link) {
-            navigator.clipboard.writeText(link).then(() => toast('Link copiado al portapapeles'));
-        };
-
-        window.eliminarEstudio = function(id) {
-            // Confirmación inline con modal simple
-            const estudio = obtenerEstudio(id);
-            if (!estudio) return;
-            // Usar un toast de confirmación en vez de confirm()
-            const c = document.getElementById('toast-container');
-            const t = document.createElement('div');
-            t.className = 'toast error';
-            t.style.animation = 'toastIn 0.3s ease';
-            t.innerHTML = `
-                <span>Eliminar "${estudio.nombre}"?</span>
-                <button class="btn btn-sm btn-danger" style="margin-left:auto;" id="confirm-del-yes">Si</button>
-                <button class="btn btn-sm btn-secondary" id="confirm-del-no">No</button>
-            `;
-            c.appendChild(t);
-            document.getElementById('confirm-del-yes').onclick = () => {
-                estudios = estudios.filter(e => e.id !== id);
-                guardarEstudios();
-                renderDashboard();
-                t.remove();
-                toast('Estudio eliminado', 'info');
-            };
-            document.getElementById('confirm-del-no').onclick = () => t.remove();
-            setTimeout(() => { if (t.parentNode) t.remove(); }, 8000);
-        };
-
-        // ==========================================
-        // 6. ADMIN: CREAR ESTUDIO
-        // ==========================================
-        function limpiarFormCrear() {
-            document.getElementById('create-nombre').value = '';
-            document.getElementById('create-imagen').value = '';
-            document.getElementById('create-duracion').value = '15';
-            document.getElementById('create-preview').style.display = 'none';
-        }
-
-        window.previsualizarImagen = function() {
-            const url = document.getElementById('create-imagen').value.trim();
-            const img = document.getElementById('create-preview');
-            if (url) {
-                img.src = url;
-                img.style.display = 'block';
-                img.onerror = () => { img.style.display = 'none'; };
-            } else {
-                img.style.display = 'none';
-            }
-        };
-
-        window.crearEstudio = function() {
-            const nombre = document.getElementById('create-nombre').value.trim();
-            const imagen = document.getElementById('create-imagen').value.trim();
-            const duracion = parseInt(document.getElementById('create-duracion').value) || 15;
-
-            if (!nombre) { toast('Ingrese un nombre para el estudio', 'error'); return; }
-            if (!imagen) { toast('Ingrese la URL de la imagen de estímulo', 'error'); return; }
-            if (duracion < 5 || duracion > 120) { toast('La duración debe ser entre 5 y 120 segundos', 'error'); return; }
-
-            const estudio = {
-                id: generarId(),
-                nombre, imagen, duracion,
-                createdAt: new Date().toISOString(),
-                participantes: []
-            };
-            estudios.push(estudio);
-            guardarEstudios();
-            toast('Estudio creado exitosamente');
-            navegarA('dashboard');
-        };
-
-        // ==========================================
-        // 7. ADMIN: RESULTADOS
-        // ==========================================
-        function mostrarResultados(id) {
-            const estudio = obtenerEstudio(id);
-            if (!estudio) { toast('Estudio no encontrado', 'error'); navegarA('dashboard'); return; }
-            estudioActualId = id;
-
-            // Mostrar vista resultados
-            document.querySelectorAll('#admin-section .view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-results').classList.add('active');
-            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-
-            document.getElementById('results-titulo').textContent = estudio.nombre;
-            document.getElementById('results-subtitulo').textContent = `${estudio.participantes.length} participantes — ${estudio.duracion}s de captura — Creado ${fechaFormateada(estudio.createdAt)}`;
-
-            // Resetear tabs
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.tab-btn[data-tab="heatmap"]').classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-heatmap').classList.add('active');
-
-            renderHeatmap(estudio);
-            renderAOI(estudio);
-            renderParticipantes(estudio);
-        }
-
-        window.cambiarTab = function(btn, tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-        };
-
-        // --- Heatmap ---
-        function renderHeatmap(estudio) {
-            const wrap = document.getElementById('heatmap-wrap');
-            const empty = document.getElementById('heatmap-empty');
-
-            // Recolectar todos los puntos de todos los participantes
-            let todosLosPuntos = [];
-            estudio.participantes.forEach(p => {
-                const vw = p.viewportWidth || window.innerWidth;
-                const vh = p.viewportHeight || window.innerHeight;
-                p.gazeData.forEach(d => {
-                    todosLosPuntos.push({ x: d.x / vw, y: d.y / vh });
-                });
-            });
-
-            if (todosLosPuntos.length === 0) {
-                wrap.innerHTML = '';
-                empty.style.display = '';
-                return;
-            }
-            empty.style.display = 'none';
-
-            // Crear contenedor con imagen + canvas
-            const CANVAS_W = 960, CANVAS_H = 540;
-            wrap.innerHTML = `
-                <div class="heatmap-container" id="hm-container">
-                    <img src="${estudio.imagen}" alt="Estímulo" id="hm-img" style="width:${CANVAS_W}px; height:auto;" onerror="this.style.display='none'">
-                    <canvas id="hm-canvas" width="${CANVAS_W}" height="${CANVAS_H}" style="width:${CANVAS_W}px; height:auto;"></canvas>
-                </div>
-                <p style="color:var(--muted); font-size:0.8rem; margin-top:0.75rem;">${todosLosPuntos.length.toLocaleString()} puntos de datos agregados de ${estudio.participantes.length} participantes</p>
-            `;
-
-            // Esperar a que la imagen cargue para saber la altura real
-            const img = document.getElementById('hm-img');
-            const render = () => {
-                const realH = img.naturalHeight ? (img.naturalHeight / img.naturalWidth * CANVAS_W) : CANVAS_H;
-                const canvas = document.getElementById('hm-canvas');
-                canvas.width = CANVAS_W;
-                canvas.height = Math.round(realH);
-
-                const heat = simpleheat('hm-canvas');
-                const datos = todosLosPuntos.map(p => [p.x * CANVAS_W, p.y * Math.round(realH), 1]);
-                heat.data(datos);
-                heat.radius(25, 35);
-                heat.gradient({ 0.15: '#000033', 0.3: '#0000ff', 0.45: '#00ccff', 0.6: '#00ff66', 0.75: '#ffff00', 0.9: '#ff6600', 1.0: '#ff0000' });
-                heat.draw(0.02);
-            };
-
-            if (img.complete) render();
-            else img.onload = render;
-        }
-
-        // --- AOI Grid ---
-        function renderAOI(estudio) {
-            const container = document.getElementById('aoi-grid-container');
-            const empty = document.getElementById('aoi-empty');
-
-            // Calcular tiempo en cada celda 3x3
-            let celdas = Array(9).fill(0); // Tiempo total en cada celda
-            let totalTiempo = 0;
-
-            const nombres = ['Sup-Izq', 'Sup-Cen', 'Sup-Der', 'Med-Izq', 'Med-Cen', 'Med-Der', 'Inf-Izq', 'Inf-Cen', 'Inf-Der'];
-
-            estudio.participantes.forEach(p => {
-                const vw = p.viewportWidth || window.innerWidth;
-                const vh = p.viewportHeight || window.innerHeight;
-                for (let i = 0; i < p.gazeData.length; i++) {
-                    const d = p.gazeData[i];
-                    const nx = d.x / vw; // 0 a 1
-                    const ny = d.y / vh;
-                    const col = Math.min(2, Math.floor(nx * 3));
-                    const row = Math.min(2, Math.floor(ny * 3));
-                    const idx = row * 3 + col;
-
-                    // Calcular delta de tiempo
-                    let dt = 0.033; // ~30fps por defecto
-                    if (i > 0) dt = d.tiempo - p.gazeData[i - 1].tiempo;
-                    if (dt <= 0 || dt > 0.5) dt = 0.033; // Sanitizar
-
-                    celdas[idx] += dt;
-                    totalTiempo += dt;
-                }
-            });
-
-            if (totalTiempo === 0) {
-                container.innerHTML = '';
-                empty.style.display = '';
-                return;
-            }
-            empty.style.display = 'none';
-
-            const porcentajes = celdas.map(c => totalTiempo > 0 ? (c / totalTiempo * 100) : 0);
-            const maxPct = Math.max(...porcentajes, 1);
-
-            container.innerHTML = `<div class="aoi-grid">
-                ${porcentajes.map((p, i) => {
-                    const intensidad = p / maxPct;
-                    const r = Math.round(16 + intensidad * (239 - 16));
-                    const g = Math.round(185 - intensidad * (185 - 68));
-                    const b = Math.round(129 - intensidad * (129 - 68));
-                    const bg = `rgba(${r},${g},${b},${0.15 + intensidad * 0.55})`;
-                    const border = `rgba(${r},${g},${b},${0.3 + intensidad * 0.5})`;
-                    return `<div class="aoi-cell" style="background:${bg};border:1px solid ${border};">
-                        <span>${p.toFixed(1)}%</span>
-                        <span class="aoi-label">${nombres[i]}</span>
-                    </div>`;
-                }).join('')}
-            </div>`;
-        }
-
-        // --- Participantes ---
-        function renderParticipantes(estudio) {
-            const tbody = document.getElementById('tabla-participantes');
-            const empty = document.getElementById('participantes-empty');
-
-            if (estudio.participantes.length === 0) {
-                tbody.innerHTML = '';
-                empty.style.display = '';
-                return;
-            }
-            empty.style.display = 'none';
-
-            tbody.innerHTML = estudio.participantes.map((p, i) => {
-                const duracion = p.gazeData.length > 0 ? p.gazeData[p.gazeData.length - 1].tiempo.toFixed(1) + 's' : '—';
-                return `<tr>
-                    <td style="font-family:monospace;font-size:0.8rem;color:var(--muted);">${p.id.substr(0, 12)}...</td>
-                    <td style="font-size:0.85rem;">${fechaFormateada(p.timestamp)}</td>
-                    <td>${p.gazeData.length.toLocaleString()}</td>
-                    <td>${duracion}</td>
-                    <td style="font-size:0.85rem;color:var(--muted);">${p.viewportWidth || '?'}x${p.viewportHeight || '?'}</td>
-                    <td style="text-align:right;">
-                        <button class="btn btn-sm btn-secondary" onclick="verParticipanteIndividual('${estudio.id}', ${i})"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarParticipante('${estudio.id}', ${i})"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
-
-        window.verParticipanteIndividual = function(estudioId, idx) {
-            const estudio = obtenerEstudio(estudioId);
-            if (!estudio || !estudio.participantes[idx]) return;
-            const p = estudio.participantes[idx];
-
-            // Generar heatmap individual en una nueva pestaña
-            const CANVAS_W = 960;
-            const vw = p.viewportWidth || window.innerWidth;
-            const vh = p.viewportHeight || window.innerHeight;
-            const realH = Math.round(CANVAS_W * vh / vw);
-
-            const html = `<!DOCTYPE html><html><head><title>Participante ${p.id.substr(0,8)}</title>
-                <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"><\/script>
-                <style>body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;color:#fff;}
-                .wrap{position:relative;display:inline-block;}canvas{position:absolute;top:0;left:0;}img{display:block;}
-                p{margin-top:1rem;color:#888;font-size:0.85rem;}</style></head><body>
-                <div class="wrap"><img src="${estudio.imagen}" style="width:${CANVAS_W}px;height:auto;" onerror="this.style.display='none'">
-                <canvas id="c" width="${CANVAS_W}" height="${realH}" style="width:${CANVAS_W}px;height:auto;"></canvas></div>
-                <p>${p.gazeData.length} puntos — ${p.gazeData.length > 0 ? p.gazeData[p.gazeData.length-1].tiempo.toFixed(1) : 0}s de datos</p>
-                <script>var heat=simpleheat('c');heat.data(${JSON.stringify(p.gazeData.map(d => [d.x / vw * CANVAS_W, d.y / vh * realH, 1]))});
-                heat.radius(20,30);heat.gradient({0.15:'#000033',0.3:'#0000ff',0.45:'#00ccff',0.6:'#00ff66',0.75:'#ffff00',0.9:'#ff6600',1.0:'#ff0000'});heat.draw(0.03);<\/script></body></html>`;
-
-            const blob = new Blob([html], { type: 'text/html' });
-            window.open(URL.createObjectURL(blob), '_blank');
-        };
-
-        window.eliminarParticipante = function(estudioId, idx) {
-            const estudio = obtenerEstudio(estudioId);
-            if (!estudio) return;
-            estudio.participantes.splice(idx, 1);
-            guardarEstudios();
-            renderParticipantes(estudio);
-            // Actualizar stats del subtitle
-            document.getElementById('results-subtitulo').textContent = `${estudio.participantes.length} participantes — ${estudio.duracion}s de captura`;
-            toast('Participante eliminado', 'info');
-        };
-
-        // --- Exportar ---
-        window.exportarCSV = function() {
-            const estudio = obtenerEstudio(estudioActualId);
-            if (!estudio || estudio.participantes.length === 0) { toast('No hay datos para exportar', 'error'); return; }
-
-            let csv = 'Participante_ID;Tiempo_Segundos;X_Pantalla;Y_Pantalla;X_Normalizado;Y_Normalizado\n';
-            estudio.participantes.forEach(p => {
-                const vw = p.viewportWidth || 1;
-                const vh = p.viewportHeight || 1;
-                p.gazeData.forEach(d => {
-                    csv += `${p.id};${d.tiempo.toFixed(3)};${d.x};${d.y};${(d.x/vw).toFixed(4)};${(d.y/vh).toFixed(4)}\n`;
-                });
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `eyetrack_${estudio.nombre.replace(/\s+/g, '_')}.csv`;
-            link.click();
-            URL.revokeObjectURL(link.href);
-            toast('CSV descargado');
-        };
-
-        window.exportarHeatmapPNG = function() {
-            const canvas = document.getElementById('hm-canvas');
-            if (!canvas) { toast('Genere el mapa de calor primero', 'error'); return; }
-            const link = document.createElement('a');
-            link.download = 'mapa_de_calor.png';
-            link.href = canvas.toDataURL();
-            link.click();
-            toast('PNG descargado');
-        };
-
-        window.importarDatos = function() {
-            const textarea = document.getElementById('import-textarea');
-            const texto = textarea.value.trim();
-            if (!texto) { toast('Pegue el código de datos primero', 'error'); return; }
-
-            try {
-                const datos = JSON.parse(texto);
-                if (!datos.studyId || !datos.participantId || !datos.gazeData) {
-                    throw new Error('Formato inválido');
-                }
-                const estudio = obtenerEstudio(datos.studyId);
-                if (!estudio) { toast('El ID del estudio no coincide con ninguno existente', 'error'); return; }
-
-                // Verificar que no esté duplicado
-                if (estudio.participantes.some(p => p.id === datos.participantId)) {
-                    toast('Este participante ya fue importado', 'error'); return;
-                }
-
-                estudio.participantes.push({
-                    id: datos.participantId,
-                    timestamp: datos.timestamp,
-                    gazeData: datos.gazeData,
-                    viewportWidth: datos.viewportWidth,
-                    viewportHeight: datos.viewportHeight
-                });
-                guardarEstudios();
-                textarea.value = '';
-                mostrarResultados(estudio.id);
-                toast('Datos importados correctamente');
-            } catch (e) {
-                toast('Error al interpretar los datos: ' + e.message, 'error');
-            }
-        };
-
-        // ==========================================
-        // 8. PARTICIPANTE: FLUJO COMPLETO
-        // ==========================================
-        async function iniciarParticipante(id) {
-            const estudio = obtenerEstudio(id);
-            if (!estudio) {
-                document.getElementById('admin-section').style.display = '';
-                document.getElementById('participant-section').style.display = 'none';
-                toast('Estudio no encontrado. Puede que haya sido eliminado.', 'error');
-                navegarA('dashboard');
-                return;
-            }
-
-            estudioActualId = id;
-            faseParticipante = 'idle';
-            datosGaze = [];
-            clickCalCount = 0;
-            datosRawCal = [];
-            primeraVez = true;
-            posXAnterior = 0;
-            posYAnterior = 0;
-            estadoPuntoCal = 'esperando';
-
-            // Mostrar sección participante, ocultar admin
-            document.getElementById('admin-section').style.display = 'none';
-            document.getElementById('participant-section').style.display = '';
-
-            // Mostrar consentimiento
-            document.getElementById('p-consentimiento').style.display = 'flex';
-            document.getElementById('p-carga').style.display = 'none';
-            document.getElementById('p-calibracion').style.display = 'none';
-            document.getElementById('p-fin').style.display = 'none';
-            document.getElementById('estimulo-participante').style.display = 'none';
-            document.getElementById('punto-calibracion').style.display = 'none';
-        }
-
-        window.participanteAceptar = async function() {
-            document.getElementById('p-consentimiento').style.display = 'none';
-            document.getElementById('p-carga').style.display = 'flex';
-            document.getElementById('texto-carga-p').textContent = 'Descargando modelo de IA...';
-
-            try {
-                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
-                faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-                    baseOptions: {
-                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-                        delegate: "GPU"
-                    },
-                    runningMode: "VIDEO", numFaces: 1
-                });
-
-                document.getElementById('texto-carga-p').textContent = 'Activando cámara...';
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
-                const video = document.getElementById('video-participante');
-                video.srcObject = stream;
-                await video.play();
-
-                // Iniciar calibración
-                document.getElementById('p-carga').style.display = 'none';
-                document.getElementById('p-calibracion').style.display = 'flex';
-                document.getElementById('punto-calibracion').style.display = 'block';
-                setPuntoColor('rojo');
-                moverPuntoCal(0);
-                document.getElementById('texto-calibracion-p').textContent = 'Mire el punto hasta que se ponga VERDE (1 de 5)';
-
-                faseParticipante = 'calibrando';
-                procesarVideoParticipante();
-
-            } catch (err) {
-                document.getElementById('p-carga').style.display = 'flex';
-                document.getElementById('texto-carga-p').innerHTML = `<span style="color:var(--danger);">Error: ${err.message}</span><br><br><button class="btn btn-secondary" onclick="location.reload()">Reintentar</button>`;
-            }
-        };
-
-        function setPuntoColor(color) {
-            const punto = document.getElementById('punto-calibracion');
-            punto.className = color;
-        }
-
-        function moverPuntoCal(idx) {
-            const pts = getPuntosCalibracion();
-            const punto = document.getElementById('punto-calibracion');
-            punto.style.left = pts[idx].x + 'px';
-            punto.style.top = pts[idx].y + 'px';
-            estadoPuntoCal = 'esperando';
-            setPuntoColor('rojo');
-        }
-
-        async function procesarVideoParticipante() {
-            if (faseParticipante === 'idle' || faseParticipante === 'fin') return;
-
-            const startTime = performance.now();
-            const video = document.getElementById('video-participante');
-
-            if (video.readyState >= 2 && faceLandmarker) {
-                const resultados = await faceLandmarker.detectForVideo(video, startTime);
-                if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
-                    const lm = resultados.faceLandmarks[0];
-
-                    // === CÁLCULO DE POSICIÓN DEL OJO (CORREGIDO) ===
-                    let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
-                    // FIX: faltaba ] después de 386
-                    let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
-
-                    currentRawX = pX;
-                    currentRawY = pY;
-
-                    if (faseParticipante === 'calibrando') {
-                        // Inicialización en primer frame
-                        if (primeraVez) {
-                            posXAnterior = pX;
-                            posYAnterior = pY;
-                            primeraVez = false;
-                        }
-
-                        // Suavizado
-                        let smoothX = (posXAnterior * pesoSuavizado) + (pX * (1 - pesoSuavizado));
-                        let smoothY = (posYAnterior * pesoSuavizado) + (pY * (1 - pesoSuavizado));
-
-                        // FIX: Medir diferencia ANTES de actualizar
-                        let diffX = Math.abs(smoothX - posXAnterior);
-                        let diffY = Math.abs(smoothY - posYAnterior);
-
-                        // Actualizar para próximo frame
-                        posXAnterior = smoothX;
-                        posYAnterior = smoothY;
-
-                        // Lógica de estado del punto
-                        if (diffX < UMBRAL_MOVIMIENTO && diffY < UMBRAL_MOVIMIENTO) {
-                            if (estadoPuntoCal === 'esperando') {
-                                estadoPuntoCal = 'fijando';
-                                tiempoFijacionInicio = performance.now();
-                                setPuntoColor('amarillo');
-                            } else if (estadoPuntoCal === 'fijando') {
-                                if (performance.now() - tiempoFijacionInicio >= DURACION_FIJACION) {
-                                    estadoPuntoCal = 'listo';
-                                    setPuntoColor('verde');
-                                }
-                            }
-                        } else {
-                            estadoPuntoCal = 'esperando';
-                            setPuntoColor('rojo');
-                        }
-
-                    } else if (faseParticipante === 'rastreando') {
-                        // Mapeo con parámetros de calibración
-                        let mapeadoX = offsetX - (pX * sensX);
-                        let mapeadoY = offsetY - (pY * sensY);
-
-                        if (primeraVez) {
-                            posXAnterior = mapeadoX;
-                            posYAnterior = mapeadoY;
-                            primeraVez = false;
-                        }
-
-                        let finalX = (posXAnterior * pesoSuavizado) + (mapeadoX * (1 - pesoSuavizado));
-                        let finalY = (posYAnterior * pesoSuavizado) + (mapeadoY * (1 - pesoSuavizado));
-
-                        finalX = Math.max(0, Math.min(window.innerWidth, finalX));
-                        finalY = Math.max(0, Math.min(window.innerHeight, finalY));
-
-                        posXAnterior = finalX;
-                        posYAnterior = finalY;
-
-                        let t = (startTime - tiempoInicioGaze) / 1000;
-                        datosGaze.push({ tiempo: t, x: Math.round(finalX), y: Math.round(finalY) });
-                    }
-                }
-            }
-
-            requestAnimationFrame(procesarVideoParticipante);
-        }
-
-        // Click durante calibración
-        document.addEventListener('click', function(e) {
-            if (faseParticipante !== 'calibrando') return;
-            if (e.target.tagName === 'BUTTON' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
-
-            if (estadoPuntoCal !== 'listo') {
-                document.getElementById('texto-calibracion-p').textContent = 'Aun no esta verde. Mantenga la mirada fija.';
-                return;
-            }
-
-            const pts = getPuntosCalibracion();
-            datosRawCal.push({
-                rawX: currentRawX,
-                rawY: currentRawY,
-                screenX: pts[clickCalCount].x,
-                screenY: pts[clickCalCount].y,
-                tipo: pts[clickCalCount].tipo
-            });
-
-            clickCalCount++;
-
-            // FIX: Verificar límite ANTES de actualizar el texto
-            if (clickCalCount < 5) {
-                document.getElementById('texto-calibracion-p').textContent = `Mire el punto hasta que se ponga VERDE (${clickCalCount + 1} de 5)`;
-                moverPuntoCal(clickCalCount);
-            }
-
-            if (clickCalCount === 5) {
-                finalizarCalibracion();
-            }
-        });
-
-        function finalizarCalibracion() {
-            faseParticipante = 'calibrando'; // Se cambia a 'rastreando' más abajo
-            primeraVez = true;
-
-            // Filtrar datos por tipo
-            let rawIzq = datosRawCal.filter(p => p.tipo.includes('izq'));
-            let rawDer = datosRawCal.filter(p => p.tipo.includes('der'));
-            let rawArriba = datosRawCal.filter(p => p.tipo.includes('arriba'));
-            let rawAbajo = datosRawCal.filter(p => p.tipo.includes('abajo'));
-
-            // Promedios crudos del ojo
-            let promRawIzqX = rawIzq.reduce((s, p) => s + p.rawX, 0) / rawIzq.length;
-            let promRawDerX = rawDer.reduce((s, p) => s + p.rawX, 0) / rawDer.length;
-            let promRawArribaY = rawArriba.reduce((s, p) => s + p.rawY, 0) / rawArriba.length;
-            let promRawAbajoY = rawAbajo.reduce((s, p) => s + p.rawY, 0) / rawAbajo.length;
-
-            // FIX: Calcular promedios de pantalla que antes faltaban
-            let promScrIzqX = rawIzq.reduce((s, p) => s + p.screenX, 0) / rawIzq.length;
-            let promScrDerX = rawDer.reduce((s, p) => s + p.screenX, 0) / rawDer.length;
-            let promScrArribaY = rawArriba.reduce((s, p) => s + p.screenY, 0) / rawArriba.length;
-            let promScrAbajoY = rawAbajo.reduce((s, p) => s + p.screenY, 0) / rawAbajo.length;
-
-            // Sensibilidad
-            let deltaXOjo = promRawDerX - promRawIzqX;
-            let deltaXPantalla = promScrDerX - promScrIzqX;
-            if (Math.abs(deltaXOjo) > 0.001) sensX = deltaXPantalla / deltaXOjo;
-
-            let deltaYOjo = promRawAbajoY - promRawArribaY;
-            let deltaYPantalla = promScrAbajoY - promScrArribaY;
-            if (Math.abs(deltaYOjo) > 0.001) sensY = deltaYPantalla / deltaYOjo;
-
-            // Offset usando el punto central
-            let rawCentro = datosRawCal.find(p => p.tipo === 'centro');
-            let scrCentroX = window.innerWidth / 2;
-            let scrCentroY = window.innerHeight / 2;
-            offsetX = scrCentroX - (rawCentro.rawX * sensX);
-            offsetY = scrCentroY - (rawCentro.rawY * sensY);
-
-            // Pasar a fase de rastreo
-            document.getElementById('punto-calibracion').style.display = 'none';
-            document.getElementById('p-calibracion').style.display = 'none';
-
-            const estudio = obtenerEstudio(estudioActualId);
-            const estimulo = document.getElementById('estimulo-participante');
-            estimulo.src = estudio.imagen;
-            estimulo.style.display = 'block';
-
-            // Esperar a que cargue la imagen
-            estimulo.onload = () => {
-                faseParticipante = 'rastreando';
-                primeraVez = true;
-                tiempoInicioGaze = performance.now();
-                iniciarTimerParticipante(estudio.duracion);
-            };
-            // Si ya estaba cargada (cache)
-            if (estimulo.complete) {
-                faseParticipante = 'rastreando';
-                primeraVez = true;
-                tiempoInicioGaze = performance.now();
-                iniciarTimerParticipante(estudio.duracion);
+    <div id="p-carga" class="pp" style="background:var(--bg);display:none">
+        <div style="text-align:center"><div style="width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1.25rem"></div><p id="txt-carga" style="font-weight:600;font-size:1rem">Descargando modelo de IA...</p></div>
+    </div>
+
+    <div id="p-cal" class="pp" style="background:transparent;display:none;pointer-events:none">
+        <div style="background:rgba(7,7,11,.92);backdrop-filter:blur(10px);padding:1.2rem 1.75rem;border-radius:11px;border:1px solid var(--border);pointer-events:auto">
+            <p id="txt-cal" style="color:var(--warn);font-weight:700;font-size:.95rem;white-space:nowrap">Preparando...</p>
+        </div>
+    </div>
+
+    <div id="p-trans" class="pp" style="background:var(--bg);display:none;flex-direction:column;gap:.5rem">
+        <div style="width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div>
+        <p style="font-weight:700;font-size:1.1rem">Preparando siguiente imagen...</p>
+        <p style="color:var(--muted);font-size:.85rem" id="txt-trans"></p>
+    </div>
+
+    <div id="p-fin" class="pp" style="background:rgba(7,7,11,.96);display:none;flex-direction:column;gap:1rem">
+        <div style="font-size:2.5rem;color:var(--accent)"><i class="fas fa-check-circle"></i></div>
+        <h2 style="font-weight:900;font-size:1.6rem">Estudio completado</h2>
+        <p style="color:var(--muted);max-width:380px;text-align:center;line-height:1.5;font-size:.88rem">Sus datos fueron registrados. Copie el siguiente codigo y envielo al investigador.</p>
+        <div class="cd" style="max-width:480px;width:92%">
+            <p style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Codigo de datos</p>
+            <textarea id="codigo-d" class="import-ta" readonly style="min-height:70px;font-size:.65rem"></textarea>
+            <button class="b bp bsm" style="margin-top:.4rem" onclick="copiarCodigo()"><i class="fas fa-copy"></i> Copiar codigo</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import{FaceLandmarker,FilesetResolver}from"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+// ===== ESTADO =====
+const PASS_DEF='admin2024';
+let estudios=JSON.parse(localStorage.getItem('et2_est')||'[]');
+let auth=localStorage.getItem('et2_auth')==='true';
+let estActualId=null, estIdxActual=0; // estudio actual y índice de estímulo
+let faceLM=null;
+
+// Estado participante
+let fase='idle'; // idle|calibrando|rastreando|transicion|fin
+let datosPorEstimulo={}; // {estimuloIdx: [{tiempo,x,y},...]}
+let datosGazeActual=[];
+let tInicioGaze=0;
+let primeraVez=true, pXA=0, pYA=0, peso=0.6;
+let estadoCal='esperando', tFijInicio=0;
+const DUR_FIJ=1500, UMB_MOV=0.15;
+let calCount=0, datosRawCal=[], curRX=0.5, curRY=0.5;
+let sensX=4.5, sensY=9.0, offX=0, offY=0;
+
+// ===== UTILS =====
+const gid=()=>Date.now().toString(36)+Math.random().toString(36).substr(2,5);
+const save=()=>localStorage.setItem('et2_est',JSON.stringify(estudios));
+function toast(m,t='ok'){const c=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+t;const ic=t==='ok'?'fa-check-circle':t==='er'?'fa-exclamation-circle':'fa-info-circle';e.innerHTML=`<i class="fas ${ic}"></i> ${m}`;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function fDate(iso){const d=new Date(iso);return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}
+function getEst(id){return estudios.find(e=>e.id===id)}
+function ptsCal(){const w=innerWidth,h=innerHeight;return[{x:w/2,y:h/2,t:'centro'},{x:w*.15,y:h*.15,t:'arriba-izq'},{x:w*.85,y:h*.15,t:'arriba-der'},{x:w*.15,y:h*.85,t:'abajo-izq'},{x:w*.85,y:h*.85,t:'abajo-der'}]}
+
+// ===== ROUTER =====
+function nav(v){
+    document.querySelectorAll('#sec-admin .v').forEach(e=>e.classList.remove('act'));
+    const t=document.getElementById('v-'+v);if(t)t.classList.add('act');
+    document.querySelectorAll('.anav-links a').forEach(a=>{a.classList.toggle('act',a.dataset.n===v)});
+    if(v==='dashboard')renderDash();
+    if(v==='create')limpiarCrear();
+    location.hash=v;
+}
+function handleHash(){
+    const h=location.hash.replace('#','');
+    if(h.startsWith('collab/')){iniciarPart(h.split('/')[1]);return}
+    if(h.startsWith('results/')){if(!auth){nav('login');return}mostrarRes(h.split('/')[1]);return}
+    document.getElementById('sec-admin').style.display='';
+    document.getElementById('sec-part').style.display='none';
+    document.getElementById('anav').style.display=auth?'flex':'none';
+    if(!auth)nav('login');
+    else if(['dashboard','create','results'].includes(h))nav(h);
+    else nav('dashboard');
+}
+addEventListener('hashchange',handleHash);
+
+// ===== LOGIN =====
+window.login=function(){
+    const p=document.getElementById('inp-pass').value;
+    if(p===(localStorage.getItem('et2_pass')||PASS_DEF)){auth=true;localStorage.setItem('et2_auth','true');document.getElementById('inp-pass').value='';handleHash();toast('Bienvenido')}
+    else toast('Contraseña incorrecta','er');
+};
+document.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')window.login()});
+window.cerrarSesion=function(){auth=false;localStorage.removeItem('et2_auth');document.getElementById('anav').style.display='none';nav('login');toast('Sesion cerrada','in')};
+
+// ===== DASHBOARD =====
+function renderDash(){
+    let tp=0,td=0,tt=0;
+    estudios.forEach(e=>{tp+=e.participantes.length;e.participantes.forEach(p=>{p.datos.forEach(d=>{td+=d.gazeData.length;if(d.gazeData.length>0)tt+=d.gazeData[d.gazeData.length-1].tiempo})})});
+    document.getElementById('s1').textContent=estudios.length;
+    document.getElementById('s2').textContent=tp;
+    document.getElementById('s3').textContent=td>1000?(td/1000).toFixed(1)+'k':td;
+    document.getElementById('s4').textContent=Math.round(tt)+'s';
+    const tb=document.getElementById('tb-est'),em=document.getElementById('empty-dash');
+    if(!estudios.length){tb.innerHTML='';em.style.display='';return}
+    em.style.display='none';
+    tb.innerHTML=estudios.map(e=>{
+        const link=location.origin+location.pathname+'#collab/'+e.id;
+        const np=e.participantes.length, obj=e.participantesObjetivo||10;
+        const pct=Math.min(100,Math.round(np/obj*100));
+        const color=pct>=100?'var(--accent)':pct>=50?'var(--warn)':'var(--danger)';
+        return `<tr>
+            <td style="font-weight:600">${e.nombre}</td>
+            <td style="color:var(--muted)">${e.estimulos.length} imagen(es)</td>
+            <td style="min-width:140px"><div style="display:flex;align-items:center;gap:.5rem"><span style="font-size:.82rem;font-weight:600;white-space:nowrap">${np}/${obj}</span><div class="pbar" style="flex:1"><div class="pbar-fill" style="width:${pct}%;background:${color}"></div></div></div></td>
+            <td style="color:var(--muted);font-size:.82rem">${fDate(e.createdAt)}</td>
+            <td><div style="display:flex;align-items:center;gap:.3rem;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.3rem .5rem;max-width:200px"><code style="font-size:.7rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${link}</code><button class="b bsm bs" style="padding:2px 6px;flex-shrink:0" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link copiado'))"><i class="fas fa-copy"></i></button></div></td>
+            <td style="text-align:right;white-space:nowrap">
+                <button class="b bsm bi" onclick="location.hash='results/${e.id}'"><i class="fas fa-chart-bar"></i></button>
+                <button class="b bsm bd" onclick="delEst('${e.id}')"><i class="fas fa-trash"></i></button>
+            </td></tr>`}).join('');
+}
+window.delEst=function(id){const e=getEst(id);if(!e)return;const c=document.getElementById('toasts'),t=document.createElement('div');t.className='toast er';t.style.animation='tIn .3s ease';t.innerHTML=`<span>Eliminar "${e.nombre}"?</span><button class="b bsm bd" style="margin-left:auto" id="dy">Si</button><button class="b bsm bs" id="dn">No</button>`;c.appendChild(t);document.getElementById('dy').onclick=()=>{estudios=estudios.filter(x=>x.id!==id);save();renderDash();t.remove();toast('Eliminado','in')};document.getElementById('dn').onclick=()=>t.remove();setTimeout(()=>{if(t.parentNode)t.remove()},8000)};
+
+// ===== CREAR =====
+let estCounter=0;
+function limpiarCrear(){
+    document.getElementById('c-nombre').value='';
+    document.getElementById('c-obj').value='10';
+    document.getElementById('est-lista').innerHTML='';
+    estCounter=0;agregarEstimulo();
+}
+window.agregarEstimulo=function(){
+    estCounter++;
+    const d=document.createElement('div');d.className='est-item';d.id='est-'+estCounter;
+    d.innerHTML=`<div class="est-num">Estimulo ${estCounter}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 100px;gap:.6rem;margin-top:.5rem">
+            <div class="fg" style="margin:0"><label class="fl">URL de imagen</label><input type="text" class="fi est-url" placeholder="https://..." oninput="prevImg(this)"><img class="img-prev est-prev" alt=""></div>
+            <div class="fg" style="margin:0"><label class="fl">Nombre</label><input type="text" class="fi est-nom" placeholder="Banner principal"></div>
+            <div class="fg" style="margin:0"><label class="fl">Duracion (s)</label><input type="number" class="fi est-dur" value="15" min="3" max="120"></div>
+        </div>
+        <button class="b bsm bd" style="position:absolute;top:.5rem;right:.5rem" onclick="this.closest('.est-item').remove()"><i class="fas fa-times"></i></button>`;
+    document.getElementById('est-lista').appendChild(d);
+};
+window.prevImg=function(inp){const img=inp.parentElement.querySelector('.est-prev');if(inp.value.trim()){img.src=inp.value.trim();img.style.display='block';img.onerror=()=>img.style.display='none'}else img.style.display='none'};
+window.crearEstudio=function(){
+    const nombre=document.getElementById('c-nombre').value.trim();
+    const obj=parseInt(document.getElementById('c-obj').value)||10;
+    if(!nombre){toast('Ingrese nombre del estudio','er');return}
+    const items=document.querySelectorAll('.est-item');
+    if(!items.length){toast('Agregue al menos un estimulo','er');return}
+    const estimulos=[];
+    let ok=true;
+    items.forEach(it=>{
+        const url=it.querySelector('.est-url').value.trim();
+        const nom=it.querySelector('.est-nom').value.trim()||'Sin nombre';
+        const dur=parseInt(it.querySelector('.est-dur').value)||15;
+        if(!url){toast('Complete la URL de todos los estimulos','er');ok=false;return}
+        estimulos.push({id:gid(),imageUrl:url,nombre:nom,duracion:Math.max(3,Math.min(120,dur))});
+    });
+    if(!ok)return;
+    estudios.push({id:gid(),nombre,estimulos,participantesObjetivo:obj,createdAt:new Date().toISOString(),participantes:[]});
+    save();toast('Estudio creado');nav('dashboard');
+};
+
+// ===== RESULTADOS =====
+let resEstIdx=0; // índice del estímulo seleccionado en resultados
+function mostrarRes(id){
+    const e=getEst(id);if(!e){toast('No encontrado','er');nav('dashboard');return}
+    estActualId=id;resEstIdx=0;
+    document.querySelectorAll('#sec-admin .v').forEach(v=>v.classList.remove('act'));
+    document.getElementById('v-results').classList.add('act');
+    document.querySelectorAll('.anav-links a').forEach(a=>a.classList.remove('act'));
+    const np=e.participantes.length,obj=e.participantesObjetivo;
+    document.getElementById('r-titulo').textContent=e.nombre;
+    document.getElementById('r-sub').textContent=`${np}/${obj} participantes — ${e.estimulos.length} estimulo(s) — ${fDate(e.createdAt)}`;
+    // Selector de estímulos
+    const sel=document.getElementById('r-est-sel');
+    sel.innerHTML=e.estimulos.map((es,i)=>`<button class="b bsm ${i===0?'bp':'bs'}" id="esel-${i}" onclick="selEstimulo(${i})">${es.nombre||'Estimulo '+(i+1)}</button>`).join('');
+    renderAllViz(e,0);
+}
+window.selEstimulo=function(idx){
+    resEstIdx=idx;
+    const e=getEst(estActualId);if(!e)return;
+    document.querySelectorAll('#r-est-sel button').forEach((b,i)=>{b.className='b bsm '+(i===idx?'bp':'bs')});
+    renderAllViz(e,idx);
+};
+window.setTab=function(btn,t){
+    document.querySelectorAll('#r-tabs .tb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');
+    document.querySelectorAll('.tc').forEach(c=>c.classList.remove('act'));document.getElementById('tc-'+t).classList.add('act');
+};
+function getAllPts(e,idx){
+    let pts=[];
+    e.participantes.forEach(p=>{
+        const d=p.datos[idx];if(!d)return;
+        const vw=d.viewportWidth||innerWidth,vh=d.viewportHeight||innerHeight;
+        d.gazeData.forEach(g=>pts.push({x:g.x/vw,y:g.y/vh}));
+    });return pts;
+}
+function renderAllViz(e,idx){
+    const pts=getAllPts(e,idx);
+    renderHeatmap(e,idx,pts);
+    renderScanpath(e,idx,pts);
+    renderAOI(e,idx);
+    renderTimeline(e,idx);
+    renderPartTable(e,idx);
+}
+
+// --- HEATMAP ---
+function renderHeatmap(e,idx,pts){
+    const box=document.getElementById('hm-box');
+    if(!pts.length){box.innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--muted)"><i class="fas fa-fire" style="font-size:2rem;opacity:.2;display:block;margin-bottom:.5rem"></i><p style="font-weight:600">Sin datos para mapa de calor</p></div>';return}
+    const CW=800;
+    box.innerHTML=`<div class="hm-wrap" id="hm-w"><canvas id="hm-c" width="${CW}" height="${CW}"></canvas></div><p style="color:var(--muted);font-size:.75rem;margin-top:.5rem">${pts.length.toLocaleString()} puntos de ${e.participantes.length} participantes</p>`;
+    // Cargar imagen para obtener aspect ratio
+    const img=new Image();img.crossOrigin='anonymous';
+    img.onload=()=>{
+        const ch=Math.round(CW*img.naturalHeight/img.naturalWidth);
+        const canvas=document.getElementById('hm-c');if(!canvas)return;
+        canvas.width=CW;canvas.height=ch;canvas.style.width=CW+'px';canvas.style.height=ch+'px';
+        const ctx=canvas.getContext('2d');
+        // Dibujar imagen de fondo
+        ctx.drawImage(img,0,0,CW,ch);
+        // Crear heatmap
+        const heat=simpleheat('hm-c');
+        heat.data(pts.map(p=>[p.x*CW,p.y*ch,1]));
+        heat.radius(22,32);
+        heat.gradient({0.1:'#000044',0.25:'#0000cc',0.4:'#0088ff',0.55:'#00ddaa',0.7:'#88ff00',0.85:'#ffcc00',1:'#ff2200'});
+        heat.draw(0.015);
+    };
+    img.onerror=()=>{
+        // Sin imagen, dibujar sobre fondo negro
+        const canvas=document.getElementById('hm-c');if(!canvas)return;
+        const ctx=canvas.getContext('2d');ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CW);
+        const heat=simpleheat('hm-c');
+        heat.data(pts.map(p=>[p.x*CW,p.y*CW,1]));
+        heat.radius(22,32);
+        heat.gradient({0.1:'#000044',0.25:'#0000cc',0.4:'#0088ff',0.55:'#00ddaa',0.7:'#88ff00',0.85:'#ffcc00',1:'#ff2200'});
+        heat.draw(0.015);
+    };
+    img.src=e.estimulos[idx].imageUrl;
+}
+
+// --- SCANPATH ---
+function renderScanpath(e,idx,pts){
+    const box=document.getElementById('sp-box');
+    if(!pts.length){box.innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--muted)"><i class="fas fa-route" style="font-size:2rem;opacity:.2;display:block;margin-bottom:.5rem"></i><p style="font-weight:600">Sin datos para scanpath</p></div>';return}
+    const CW=800;
+    box.innerHTML=`<canvas id="sp-c" class="viz-canvas" width="${CW}" height="${CW}"></canvas><p style="color:var(--muted);font-size:.75rem;margin-top:.5rem">Trayectoria de la mirada — los numeros indican orden temporal</p>`;
+    const img=new Image();img.crossOrigin='anonymous';
+    img.onload=()=>drawScanpath(e,idx,pts,CW,Math.round(CW*img.naturalHeight/img.naturalWidth),img);
+    img.onerror=()=>drawScanpath(e,idx,pts,CW,CW,null);
+    img.src=e.estimulos[idx].imageUrl;
+}
+function drawScanpath(e,idx,pts,CW,CH,bgImg){
+    const canvas=document.getElementById('sp-c');if(!canvas)return;
+    canvas.width=CW;canvas.height=CH;canvas.style.width=CW+'px';canvas.style.height='auto';
+    const ctx=canvas.getContext('2d');
+    if(bgImg){ctx.globalAlpha=0.25;ctx.drawImage(bgImg,0,0,CW,CH);ctx.globalAlpha=1}
+    else{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CH)}
+    // Muestrear puntos (cada ~30 para no saturar)
+    const step=Math.max(1,Math.floor(pts.length/80));
+    const sampled=pts.filter((_,i)=>i%step===0);
+    if(sampled.length<2)return;
+    // Dibujar líneas
+    ctx.lineWidth=1.5;ctx.lineJoin='round';
+    for(let i=1;i<sampled.length;i++){
+        const t=i/(sampled.length-1);
+        const r=Math.round(16+t*223),g=Math.round(185-t*117),b=Math.round(129-t*61);
+        ctx.strokeStyle=`rgba(${r},${g},${b},0.7)`;
+        ctx.beginPath();ctx.moveTo(sampled[i-1].x*CW,sampled[i-1].y*CH);ctx.lineTo(sampled[i].x*CW,sampled[i].y*CH);ctx.stroke();
+    }
+    // Dibujar puntos con números
+    ctx.font='bold 10px Outfit';ctx.textAlign='center';ctx.textBaseline='middle';
+    const numStep=Math.max(1,Math.floor(sampled.length/20));
+    sampled.forEach((p,i)=>{
+        if(i%numStep!==0&&i!==sampled.length-1)return;
+        const t=i/(sampled.length-1);
+        const r=Math.round(16+t*223),g=Math.round(185-t*117),b=Math.round(129-t*61);
+        ctx.fillStyle=`rgb(${r},${g},${b})`;
+        ctx.beginPath();ctx.arc(p.x*CW,p.y*CH,6,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#fff';ctx.fillText(i+1,p.x*CW,p.y*CH);
+    });
+}
+
+// --- AOI ---
+function renderAOI(e,idx){
+    const box=document.getElementById('aoi-box');
+    const nombres=['Sup-Izq','Sup-Cen','Sup-Der','Med-Izq','Med-Cen','Med-Der','Inf-Izq','Inf-Cen','Inf-Der'];
+    let celdas=Array(9).fill(0),total=0;
+    e.participantes.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;
+        for(let i=0;i<d.gazeData.length;i++){const g=d.gazeData[i];const col=Math.min(2,Math.floor(g.x/vw*3)),row=Math.min(2,Math.floor(g.y/vh*3));
+            let dt=0.033;if(i>0)dt=g.tiempo-d.gazeData[i-1].tiempo;if(dt<=0||dt>.5)dt=0.033;celdas[row*3+col]+=dt;total+=dt}});
+    if(!total){box.innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--muted)"><i class="fas fa-th" style="font-size:2rem;opacity:.2;display:block;margin-bottom:.5rem"></i><p style="font-weight:600">Sin datos</p></div>';return}
+    const pcts=celdas.map(c=>c/total*100),mx=Math.max(...pcts,1);
+    box.innerHTML=`<h3 style="font-weight:700;margin-bottom:.75rem;font-size:.95rem">Distribucion por cuadrante</h3><p style="color:var(--muted);font-size:.82rem;margin-bottom:1rem">Porcentaje del tiempo de fijacion en cada zona.</p><div class="aoi-g">${pcts.map((p,i)=>{
+        const t=p/mx;const r=Math.round(16+t*223),g=Math.round(185-t*117),b=Math.round(129-t*61);
+        return`<div class="aoi-c" style="background:rgba(${r},${g},${b},${.12+t*.5});border:1px solid rgba(${r},${g},${b},${.25+t*.45})"><span>${p.toFixed(1)}%</span><span class="al">${nombres[i]}</span></div>`}).join('')}</div>`;
+}
+
+// --- TIMELINE ---
+function renderTimeline(e,idx){
+    const box=document.getElementById('tl-box');
+    let allData=[];
+    e.participantes.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;
+        d.gazeData.forEach(g=>allData.push({t:g.tiempo,x:g.x/vw,y:g.y/vh}))});
+    if(!allData.length){box.innerHTML='<div style="text-align:center;padding:2.5rem;color:var(--muted)"><i class="fas fa-chart-line" style="font-size:2rem;opacity:.2;display:block;margin-bottom:.5rem"></i><p style="font-weight:600">Sin datos</p></div>';return}
+    const CW=800,CH=300,pad={t:20,r:20,b:35,l:45};
+    box.innerHTML=`<canvas id="tl-c" class="viz-canvas" width="${CW}" height="${CH}"></canvas><p style="color:var(--muted);font-size:.75rem;margin-top:.5rem">Posicion horizontal (verde) y vertical (naranja) a lo largo del tiempo</p>`;
+    const canvas=document.getElementById('tl-c');if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    const w=CW-pad.l-pad.r,h=CH-pad.t-pad.b;
+    const maxT=allData[allData.length-1].t||1;
+    // Grid
+    ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=1;
+    for(let i=0;i<=5;i++){const y=pad.t+h*(i/5);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+w,y);ctx.stroke()}
+    for(let i=0;i<=10;i++){const x=pad.l+w*(i/10);ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+h);ctx.stroke()}
+    // Ejes
+    ctx.strokeStyle='rgba(255,255,255,.15)';ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+h);ctx.lineTo(pad.l+w,pad.t+h);ctx.stroke();
+    // Labels
+    ctx.fillStyle='var(--muted)';ctx.font='10px Outfit';ctx.textAlign='center';
+    for(let i=0;i<=10;i++){const x=pad.l+w*(i/10);ctx.fillText((maxT*i/10).toFixed(1)+'s',x,pad.t+h+18)}
+    ctx.textAlign='right';ctx.fillText('0',pad.l-8,pad.t+h+4);ctx.fillText('1',pad.l-8,pad.t+4);
+    // Línea X (horizontal)
+    ctx.strokeStyle='rgba(16,185,129,.7)';ctx.lineWidth=1.5;ctx.beginPath();
+    const stepX=Math.max(1,Math.floor(allData.length/500));
+    allData.filter((_,i)=>i%stepX===0).forEach((p,i)=>{const x=pad.l+(p.t/maxT)*w,y=pad.t+p.y*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
+    // Línea Y (vertical)
+    ctx.strokeStyle='rgba(245,158,11,.7)';ctx.beginPath();
+    allData.filter((_,i)=>i%stepX===0).forEach((p,i)=>{const x=pad.l+(p.t/maxT)*w,y=pad.t+p.x*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();
+    // Leyenda
+    ctx.font='bold 11px Outfit';ctx.textAlign='left';
+    ctx.fillStyle='rgba(16,185,129,.9)';ctx.fillRect(pad.l+10,pad.t+8,12,3);ctx.fillText('Posicion Y (vertical)',pad.l+28,pad.t+14);
+    ctx.fillStyle='rgba(245,158,11,.9)';ctx.fillRect(pad.l+10,pad.t+24,12,3);ctx.fillText('Posicion X (horizontal)',pad.l+28,pad.t+30);
+}
+
+// --- PARTICIPANTES TABLA ---
+function renderPartTable(e,idx){
+    const tb=document.getElementById('tb-part'),em=document.getElementById('empty-part');
+    // Filtrar participantes que tienen datos para este estímulo
+    const parts=e.participantes.filter(p=>p.datos[idx]&&p.datos[idx].gazeData.length>0);
+    if(!parts.length){tb.innerHTML='';em.style.display='';return}
+    em.style.display='none';
+    tb.innerHTML=parts.map(p=>{
+        const d=p.datos[idx];const dur=d.gazeData.length?d.gazeData[d.gazeData.length-1].tiempo.toFixed(1)+'s':'—';
+        const realIdx=e.participantes.indexOf(p);
+        return`<tr><td style="font-family:monospace;font-size:.75rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td style="font-size:.82rem">${fDate(p.timestamp)}</td><td>${d.gazeData.length.toLocaleString()}</td><td>${dur}</td><td style="font-size:.82rem;color:var(--muted)">${d.viewportWidth||'?'}x${d.viewportHeight||'?'}</td><td style="text-align:right"><button class="b bsm bs" onclick="verIndividual('${e.id}',${realIdx},${idx})"><i class="fas fa-eye"></i></button><button class="b bsm bd" onclick="delPart('${e.id}',${realIdx})"><i class="fas fa-trash"></i></button></td></tr>`}).join('');
+}
+window.verIndividual=function(eid,pi,eidx){
+    const e=getEst(eid);if(!e||!e.participantes[pi])return;
+    const p=e.participantes[pi],d=p.datos[eidx];if(!d)return;
+    const CW=800,vw=d.viewportWidth||1,vh=d.viewportHeight||1,ch=Math.round(CW*vh/vw);
+    const pts=d.gazeData.map(g=>[g.x/vw*CW,g.y/vh*ch,1]);
+    const html=`<!DOCTYPE html><html><head><title>Participante ${p.id.substr(0,8)}</title><script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"><\/script><style>body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:sans-serif;color:#fff;padding:20px}canvas{border-radius:10px;border:1px solid #222}p{margin-top:10px;color:#888;font-size:13px}</style></head><body><canvas id="c" width="${CW}" height="${ch}"></canvas><p>${d.gazeData.length} puntos — ${d.gazeData.length?d.gazeData[d.gazeData.length-1].tiempo.toFixed(1):0}s</p><script>var c=document.getElementById('c'),x=c.getContext('2d');x.fillStyle='#0a0a0a';x.fillRect(0,0,${CW},${ch});var h=simpleheat('c');h.data(${JSON.stringify(pts)});h.radius(20,30);h.gradient({0.1:'#000044',0.25:'#0000cc',0.4:'#0088ff',0.55:'#00ddaa',0.7:'#88ff00',0.85:'#ffcc00',1:'#ff2200'});h.draw(0.02);<\/script></body></html>`;
+    window.open(URL.createObjectURL(new Blob([html],{type:'text/html'})),'_blank');
+};
+window.delPart=function(eid,pi){const e=getEst(eid);if(!e)return;e.participantes.splice(pi,1);save();mostrarRes(eid);toast('Eliminado','in')};
+
+// --- EXPORTAR/IMPORTAR ---
+window.expCSV=function(){
+    const e=getEst(estActualId);if(!e)return;
+    let csv='Participante_ID;Estimulo;Tiempo_s;X_Pantalla;Y_Pantalla;X_Norm;Y_Norm\n';
+    e.participantes.forEach(p=>{p.datos.forEach((d,di)=>{const vw=d.viewportWidth||1,vh=d.viewportHeight||1;
+        d.gazeData.forEach(g=>{csv+=`${p.id};${e.estimulos[di]?.nombre||di};${g.tiempo.toFixed(3)};${g.x};${g.y};${(g.x/vw).toFixed(4)};${(g.y/vh).toFixed(4)}\n`})})});
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=`eyetrack_${e.nombre.replace(/\s+/g,'_')}.csv`;a.click();toast('CSV descargado');
+};
+window.expPNG=function(){const c=document.getElementById('hm-c');if(!c){toast('Genere el mapa primero','er');return}const a=document.createElement('a');a.download='heatmap.png';a.href=c.toDataURL();a.click();toast('PNG descargado')};
+window.importarDatos=function(){
+    const txt=document.getElementById('imp-ta').value.trim();if(!txt){toast('Pegue el codigo primero','er');return}
+    try{
+        const d=JSON.parse(txt);
+        if(!d.studyId||!d.participantId||!d.datosEstimulos)throw new Error('Formato invalido');
+        const e=getEst(d.studyId);if(!e){toast('El estudio no existe','er');return}
+        if(e.participantes.some(p=>p.id===d.participantId)){toast('Este participante ya existe','er');return}
+        e.participantes.push({id:d.participantId,timestamp:d.timestamp,datos:d.datosEstimulos});
+        save();document.getElementById('imp-ta').value='';mostrarRes(d.studyId);toast('Datos importados correctamente');
+    }catch(err){toast('Error: '+err.message,'er')}
+};
+
+// ===== PARTICIPANTE =====
+async function iniciarPart(id){
+    const e=getEst(id);
+    if(!e){document.getElementById('sec-admin').style.display='';document.getElementById('sec-part').style.display='none';toast('Estudio no encontrado','er');nav('dashboard');return}
+    estActualId=id;estIdxActual=0;
+    fase='idle';datosPorEstimulo={};datosGazeActual=[];calCount=0;datosRawCal=[];primeraVez=true;pXA=0;pYA=0;estadoCal='esperando';
+    document.getElementById('sec-admin').style.display='none';
+    document.getElementById('sec-part').style.display='';
+    document.getElementById('p-bienvenida').style.display='flex';
+    document.getElementById('p-carga').style.display='none';
+    document.getElementById('p-cal').style.display='none';
+    document.getElementById('p-trans').style.display='none';
+    document.getElementById('p-fin').style.display='none';
+    document.getElementById('est-p').style.display='none';
+    document.getElementById('punto-cal').style.display='none';
+    document.getElementById('bw-nombre').textContent=e.nombre;
+    document.getElementById('bw-cant').textContent=e.estimulos.length;
+}
+window.partAceptar=async function(){
+    document.getElementById('p-bienvenida').style.display='none';
+    document.getElementById('p-carga').style.display='flex';
+    document.getElementById('txt-carga').textContent='Descargando modelo de IA...';
+    try{
+        const vision=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+        faceLM=await FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"GPU"},runningMode:"VIDEO",numFaces:1});
+        document.getElementById('txt-carga').textContent='Activando camara...';
+        const stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});
+        const vid=document.getElementById('vid-p');vid.srcObject=stream;await vid.play();
+        document.getElementById('p-carga').style.display='none';
+        document.getElementById('p-cal').style.display='flex';
+        document.getElementById('punto-cal').style.display='block';
+        setPC('rojo');moverPC(0);
+        document.getElementById('txt-cal').textContent='Mire el punto hasta que se ponga VERDE (1 de 5)';
+        fase='calibrando';procesarVid();
+    }catch(err){
+        document.getElementById('p-carga').style.display='flex';
+        document.getElementById('txt-carga').innerHTML=`<span style="color:var(--danger)">Error: ${err.message}</span><br><br><button class="b bs" onclick="location.reload()">Reintentar</button>`;
+    }
+};
+function setPC(c){document.getElementById('punto-cal').className=c}
+function moverPC(i){const pts=ptsCal(),p=document.getElementById('punto-cal');p.style.left=pts[i].x+'px';p.style.top=pts[i].y+'px';estadoCal='esperando';setPC('rojo')}
+
+async function procesarVid(){
+    if(fase==='idle'||fase==='fin')return;
+    const st=performance.now(),vid=document.getElementById('vid-p');
+    if(vid.readyState>=2&&faceLM){
+        const res=await faceLM.detectForVideo(vid,st);
+        if(res.faceLandmarks&&res.faceLandmarks.length>0){
+            const lm=res.faceLandmarks[0];
+            // FIX 1: corregido ] faltante en 386
+            let pX=((lm[468].x-lm[33].x)/(lm[133].x-lm[33].x)+(lm[473].x-lm[362].x)/(lm[263].x-lm[362].x))/2;
+            let pY=((lm[468].y-lm[159].y)/(lm[145].y-lm[159].y)+(lm[473].y-lm[386].y)/(lm[374].y-lm[386].y))/2;
+            curRX=pX;curRY=pY;
+            if(fase==='calibrando'){
+                if(primeraVez){pXA=pX;pYA=pY;primeraVez=false}
+                let sX=(pXA*peso)+(pX*(1-peso)),sY=(pYA*peso)+(pY*(1-peso));
+                // FIX 2: diff calculado ANTES de actualizar
+                let dX=Math.abs(sX-pXA),dY=Math.abs(sY-pYA);
+                pXA=sX;pYA=sY;
+                if(dX<UMB_MOV&&dY<UMB_MOV){
+                    if(estadoCal==='esperando'){estadoCal='fijando';tFijInicio=performance.now();setPC('amarillo')}
+                    else if(estadoCal==='fijando'&&performance.now()-tFijInicio>=DUR_FIJ){estadoCal='listo';setPC('verde')}
+                }else{estadoCal='esperando';setPC('rojo')}
+            }else if(fase==='rastreando'){
+                let mX=offX-(pX*sensX),mY=offY-(pY*sensY);
+                if(primeraVez){pXA=mX;pYA=mY;primeraVez=false}
+                let fX=(pXA*peso)+(mX*(1-peso)),fY=(pYA*peso)+(mY*(1-peso));
+                fX=Math.max(0,Math.min(innerWidth,fX));fY=Math.max(0,Math.min(innerHeight,fY));
+                pXA=fX;pYA=fY;
+                datosGazeActual.push({tiempo:(st-tInicioGaze)/1000,x:Math.round(fX),y:Math.round(fY)});
             }
         }
+    }
+    requestAnimationFrame(procesarVid);
+}
 
-        function iniciarTimerParticipante(duracionSegundos) {
-            let restante = duracionSegundos;
-            const timer = document.createElement('div');
-            timer.id = 'timer-p';
-            timer.style.cssText = 'position:fixed;top:20px;right:20px;z-index:500;background:rgba(8,8,13,0.85);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-weight:800;font-size:1.3rem;color:var(--accent);font-family:Outfit,sans-serif;';
-            timer.textContent = restante + 's';
-            document.getElementById('participant-section').appendChild(timer);
+// Click calibración
+document.addEventListener('click',function(ev){
+    if(fase!=='calibrando')return;
+    if(ev.target.tagName==='BUTTON'||ev.target.tagName==='TEXTAREA'||ev.target.tagName==='INPUT')return;
+    if(estadoCal!=='listo'){document.getElementById('txt-cal').textContent='Aun no esta verde. Mantenga la mirada fija.';return}
+    const pts=ptsCal();
+    datosRawCal.push({rawX:curRX,rawY:curRY,screenX:pts[calCount].x,screenY:pts[calCount].y,tipo:pts[calCount].t});
+    calCount++;
+    // FIX 3: verificar antes de actualizar texto
+    if(calCount<5){document.getElementById('txt-cal').textContent=`Mire el punto hasta que se ponga VERDE (${calCount+1} de 5)`;moverPC(calCount)}
+    if(calCount===5)finCal();
+});
 
-            const intervalo = setInterval(() => {
-                restante--;
-                timer.textContent = restante + 's';
-                if (restante <= 5) timer.style.color = 'var(--danger)';
-                if (restante <= 0) {
-                    clearInterval(intervalo);
-                    terminarParticipante();
-                }
-            }, 1000);
-        }
+function finCal(){
+    primeraVez=true;
+    const rI=datosRawCal.filter(p=>p.t.includes('izq')),rD=datosRawCal.filter(p=>p.t.includes('der'));
+    const rA=datosRawCal.filter(p=>p.t.includes('arriba')),rB=datosRawCal.filter(p=>p.t.includes('abajo'));
+    const prIx=rI.reduce((s,p)=>s+p.rawX,0)/rI.length,prDx=rD.reduce((s,p)=>s+p.rawX,0)/rD.length;
+    const prAy=rA.reduce((s,p)=>s+p.rawY,0)/rA.length,prBy=rB.reduce((s,p)=>s+p.rawY,0)/rB.length;
+    // FIX 4: calcular promedios de pantalla que faltaban
+    const psIx=rI.reduce((s,p)=>s+p.screenX,0)/rI.length,psDx=rD.reduce((s,p)=>s+p.screenX,0)/rD.length;
+    const psAy=rA.reduce((s,p)=>s+p.screenY,0)/rA.length,psBy=rB.reduce((s,p)=>s+p.screenY,0)/rB.length;
+    const dxO=prDx-prIx,dxP=psDx-psIx;if(Math.abs(dxO)>.001)sensX=dxP/dxO;
+    const dyO=prBy-prAy,dyP=psBy-psAy;if(Math.abs(dyO)>.001)sensY=dyP/dyO;
+    const rc=datosRawCal.find(p=>p.t==='centro');
+    offX=innerWidth/2-(rc.rawX*sensX);offY=innerHeight/2-(rc.rawY*sensY);
+    document.getElementById('punto-cal').style.display='none';
+    document.getElementById('p-cal').style.display='none';
+    iniciarEstimulo(0);
+}
 
-        function terminarParticipante() {
-            faseParticipante = 'fin';
+function iniciarEstimulo(idx){
+    const e=getEst(estActualId);if(!e||idx>=e.estimulos.length){terminarPart();return}
+    estIdxActual=idx;datosGazeActual=[];primeraVez=true;
+    const est=e.estimulos[idx];
+    document.getElementById('p-trans').style.display='flex';
+    document.getElementById('txt-trans').textContent=`Imagen ${idx+1} de ${e.estimulos.length}: ${est.nombre}`;
+    const img=document.getElementById('est-p');img.src=est.imageUrl;img.style.display='none';
+    const onStart=()=>{
+        document.getElementById('p-trans').style.display='none';
+        img.style.display='block';
+        fase='rastreando';tInicioGaze=performance.now();
+        // Timer
+        let rest=est.duracion;
+        let timer=document.createElement('div');
+        timer.id='timer-p';timer.style.cssText='position:fixed;top:16px;right:16px;z-index:500;background:rgba(7,7,11,.88);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-weight:800;font-size:1.2rem;color:var(--accent);font-family:Outfit,sans-serif';
+        timer.textContent=rest+'s';document.getElementById('sec-part').appendChild(timer);
+        const iv=setInterval(()=>{rest--;timer.textContent=rest+'s';if(rest<=5)timer.style.color='var(--danger)';if(rest<=0){clearInterval(iv);timer.remove();finEstimulo(idx)}},1000);
+    };
+    if(img.complete&&img.naturalWidth)onStart();else{img.onload=onStart;img.onerror=()=>{toast('Error cargando imagen','er');finEstimulo(idx)}}
+}
 
-            // Detener cámara
-            const video = document.getElementById('video-participante');
-            if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+function finEstimulo(idx){
+    fase='idle';
+    datosPorEstimulo[idx]={gazeData:[...datosGazeActual],viewportWidth:innerWidth,viewportHeight:innerHeight};
+    document.getElementById('est-p').style.display='none';
+    const e=getEst(estActualId);
+    if(idx+1<e.estimulos.length){iniciarEstimulo(idx+1)}
+    else{terminarPart()}
+}
 
-            // Ocultar estímulo y timer
-            document.getElementById('estimulo-participante').style.display = 'none';
-            const timer = document.getElementById('timer-p');
-            if (timer) timer.remove();
+function terminarPart(){
+    fase='fin';
+    const vid=document.getElementById('vid-p');if(vid.srcObject)vid.srcObject.getTracks().forEach(t=>t.stop());
+    const part={id:gid(),timestamp:new Date().toISOString(),datos:datosPorEstimulo};
+    const e=getEst(estActualId);
+    if(e){e.participantes.push(part);save()}
+    // Código para compartir
+    const codigo=JSON.stringify({studyId:estActualId,participantId:part.id,timestamp:part.timestamp,datosEstimulos:part.datos});
+    document.getElementById('codigo-d').value=codigo;
+    document.getElementById('p-fin').style.display='flex';
+}
+window.copiarCodigo=function(){const ta=document.getElementById('codigo-d');ta.select();navigator.clipboard.writeText(ta.value).then(()=>toast('Codigo copiado'))};
 
-            // Crear objeto de participante
-            const participante = {
-                id: generarId(),
-                timestamp: new Date().toISOString(),
-                gazeData: datosGaze,
-                viewportWidth: window.innerWidth,
-                viewportHeight: window.innerHeight
-            };
-
-            // Guardar en localStorage
-            const estudio = obtenerEstudio(estudioActualId);
-            if (estudio) {
-                estudio.participantes.push(participante);
-                guardarEstudios();
-            }
-
-            // Generar código de datos para exportación manual
-            const codigoExportar = JSON.stringify({
-                studyId: estudioActualId,
-                participantId: participante.id,
-                timestamp: participante.timestamp,
-                gazeData: participante.gazeData,
-                viewportWidth: participante.viewportWidth,
-                viewportHeight: participante.viewportHeight
-            });
-
-            document.getElementById('codigo-datos').value = codigoExportar;
-            document.getElementById('p-fin').style.display = 'flex';
-        }
-
-        window.copiarCodigo = function() {
-            const textarea = document.getElementById('codigo-datos');
-            textarea.select();
-            navigator.clipboard.writeText(textarea.value).then(() => toast('Codigo copiado'));
-        };
-
-        // ==========================================
-        // 9. INICIALIZACIÓN
-        // ==========================================
-        manejarHash();
-
-    </script>
+// ===== INIT =====
+handleHash();
+</script>
 </body>
 </html>
