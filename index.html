@@ -187,11 +187,11 @@
             const diffX = Math.abs(rawX - puntoPantalla.x);
             const diffY = Math.abs(rawY - puntoPantalla.y);
 
-            if (diffX < 0.08 && diffY < 0.08) {
+            if (diffX < 0.12 && diffY < 0.12) {
                 if (!mirandoFijo) {
                     mirandoFijo = true;
                     tiempoFijacionInicio = performance.now();
-                } else if (performance.now() - tiempoFijacionInicio > 1000) { 
+                } else if (performance.now() - tiempoFijacionInicio > 600) { 
                     puntoMirada.classList.add('listo'); 
                 }
             } else {
