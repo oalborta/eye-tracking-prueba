@@ -99,6 +99,9 @@
         let posicionAnteriorX = window.innerWidth / 2;
         let posicionAnteriorY = window.innerHeight / 2;
         let pesoSuavizado = 0.7; 
+        let rawSmoothX = 0.5;
+        let rawSmoothY = 0.5;
+        let rawSmoothIniciado = false;
         let corrimientoY = -100; 
 
         // --- NUEVA LÓGICA DE CALIBRACIÓN ---
@@ -175,7 +178,7 @@
 
                     // LÓGICA SEGÚN LA FASE
                     if (faseActual === 'calibracion') {
-                        logicaCalibracion(smoothX, smoothY, promedioX, promedioY);
+                        logicaCalibracion(smoothX, smoothY, rawSmoothX, rawSmoothY);
                     } else if (faseActual === 'estudio') {
                         puntoMirada.style.left = smoothX + "px";
                         puntoMirada.style.top = smoothY + "px";
@@ -186,6 +189,15 @@
             }
             requestAnimationFrame(procesarVideo);
         }
+         // SUAVIZAMOS LA LECTURA DEL OJO PARA QUE NO TIEMBLE
+                    if (!rawSmoothIniciado) {
+                        rawSmoothX = promedioX;
+                        rawSmoothY = promedioY;
+                        rawSmoothIniciado = true;
+                    } else {
+                        rawSmoothX = rawSmoothX * 0.85 + promedioX * 0.15;
+                        rawSmoothY = rawSmoothY * 0.85 + promedioY * 0.15;
+                    }
 
         // --- FUNCIONES DE CALIBRACIÓN ---
         function moverPuntoCalibracion(indice) {
