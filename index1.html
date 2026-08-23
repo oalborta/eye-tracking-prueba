@@ -3,1344 +3,604 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EyeTrack Pro - Eye Tracking para Marketing</title>
-    <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>EyeTrack Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        bg: '#0a0e14',
-                        card: '#131a24',
-                        surface: '#0d1219',
-                        accent: '#00e5a0',
-                        'accent-dim': '#00b87d',
-                        muted: '#5a6b80',
-                        border: '#1e2d3d',
-                        danger: '#ef4444',
-                        warning: '#f59e0b',
-                        txt: '#e2e8f0',
-                    },
-                    fontFamily: {
-                        display: ['"Space Grotesk"', 'sans-serif'],
-                        mono: ['"JetBrains Mono"', 'monospace'],
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; }
-        body { font-family: 'Space Grotesk', sans-serif; background: #0a0e14; color: #e2e8f0; }
-        .pantalla { display: none; }
-        .pantalla.activa { display: flex; }
-        .overlay { position: fixed; inset: 0; z-index: 500; }
-        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,229,160,0.08); }
-        input[type="text"], input[type="password"], input[type="number"], input[type="url"], select {
-            background: #0d1219; border: 1px solid #1e2d3d; color: #e2e8f0; padding: 10px 14px;
-            border-radius: 8px; outline: none; transition: border-color 0.2s; font-family: inherit;
+        :root{--bg:#080810;--card:#13131f;--border:#222238;--fg:#e8e8f0;--muted:#6b6b82;--accent:#10b981;--warn:#f59e0b;--danger:#ef4444;--info:#3b82f6;--cyan:#06b6d4}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh}
+        /* ===== LOGIN: IMPOSIBLE NO VERLO ===== */
+        #login-pantalla{
+            min-height:100vh;display:flex;align-items:center;justify-content:center;
+            background:linear-gradient(135deg,#0a0a18 0%,#0d1220 50%,#0a0a18 100%);
         }
-        input:focus, select:focus { border-color: #00e5a0; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.2s; }
-        .btn-primary { background: #00e5a0; color: #0a0e14; }
-        .btn-primary:hover { background: #00b87d; }
-        .btn-secondary { background: #1e2d3d; color: #e2e8f0; }
-        .btn-secondary:hover { background: #2a3a4e; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-sm { padding: 6px 14px; font-size: 13px; }
-        /* Punto de calibración */
-        #punto-cal {
-            width: 44px; height: 44px; border-radius: 50%; position: fixed; z-index: 9999;
-            pointer-events: none; transform: translate(-50%, -50%); display: none;
-            background: #ff0000; box-shadow: 0 0 30px 12px rgba(255,0,0,0.85);
-            transition: background 0.3s, box-shadow 0.3s;
+        .login-box{
+            background:#1a1a2e;border:1px solid #2a2a44;border-radius:20px;
+            padding:3rem 2.5rem;max-width:420px;width:90%;text-align:center;
+            box-shadow:0 20px 60px rgba(0,0,0,.5);
         }
-        /* Toast */
-        .toast {
-            position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; border-radius: 10px;
-            z-index: 10000; font-weight: 500; animation: toastIn 0.3s ease-out;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        .login-box h1{font-size:2.8rem;font-weight:900;margin-bottom:.3rem;letter-spacing:-1px}
+        .login-box h1 span{color:var(--accent)}
+        .login-box p{color:var(--muted);margin-bottom:2rem;font-size:.9rem}
+        .login-input{
+            width:100%;padding:14px 18px;background:#0f0f1a;border:2px solid var(--border);
+            border-radius:12px;color:var(--fg);font-size:1rem;font-family:inherit;
+            outline:none;text-align:center;transition:.2s;
         }
-        @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0e14; }
-        ::-webkit-scrollbar-thumb { background: #1e2d3d; border-radius: 3px; }
-        /* AOI canvas cursor */
-        #canvas-aois { cursor: crosshair; }
-        /* Tab activo */
-        .tab-btn { padding: 10px 20px; border: none; background: transparent; color: #5a6b80; cursor: pointer; font-family: inherit; font-weight: 600; border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .tab-btn.activo { color: #00e5a0; border-bottom-color: #00e5a0; }
-        .tab-btn:hover:not(.activo) { color: #e2e8f0; }
-        /* Fondo animado login */
-        .login-bg {
-            background: radial-gradient(ellipse at 20% 50%, rgba(0,229,160,0.06) 0%, transparent 60%),
-                        radial-gradient(ellipse at 80% 20%, rgba(0,180,220,0.04) 0%, transparent 50%),
-                        #0a0e14;
+        .login-input:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(16,185,129,.15)}
+        .login-btn{
+            width:100%;padding:14px;border:none;border-radius:12px;
+            background:var(--accent);color:#fff;font-size:1.05rem;font-weight:700;
+            font-family:inherit;cursor:pointer;margin-top:1rem;transition:.2s;
         }
-        /* Grid patrón sutil */
-        .grid-pattern {
-            background-image: linear-gradient(rgba(30,45,61,0.3) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(30,45,61,0.3) 1px, transparent 1px);
-            background-size: 40px 40px;
+        .login-btn:hover{background:#059669;transform:translateY(-1px);box-shadow:0 6px 20px rgba(16,185,129,.3)}
+        .login-hint{margin-top:1.2rem;font-size:.78rem;color:var(--muted)}
+        .login-hint code{background:#0f0f1a;padding:2px 8px;border-radius:6px;color:#8888aa}
+
+        /* ===== NAV ===== */
+        .topnav{
+            position:sticky;top:0;z-index:100;height:60px;
+            background:rgba(8,8,16,.92);backdrop-filter:blur(16px);
+            border-bottom:1px solid var(--border);
+            display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;
         }
+        .topnav .logo{font-weight:900;font-size:1.1rem}.topnav .logo span{color:var(--accent)}
+
+        /* ===== BOTONES ===== */
+        .btn{
+            display:inline-flex;align-items:center;gap:6px;padding:10px 18px;
+            border-radius:10px;font-family:inherit;font-weight:700;font-size:.85rem;
+            border:none;cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap;
+        }
+        .btn-green{background:var(--accent);color:#fff}.btn-green:hover{background:#059669}
+        .btn-ghost{background:rgba(255,255,255,.05);color:var(--fg);border:1px solid var(--border)}.btn-ghost:hover{background:rgba(255,255,255,.1)}
+        .btn-red{background:rgba(239,68,68,.12);color:var(--danger)}.btn-red:hover{background:rgba(239,68,68,.22)}
+        .btn-blue{background:rgba(59,130,246,.12);color:var(--info)}.btn-blue:hover{background:rgba(59,130,246,.22)}
+        .btn-yellow{background:rgba(245,158,11,.12);color:var(--warn)}.btn-yellow:hover{background:rgba(245,158,11,.22)}
+        .btn-sm{padding:7px 12px;font-size:.78rem;border-radius:8px}
+        .btn-lg{padding:14px 28px;font-size:1rem;border-radius:12px}
+
+        /* ===== CARDS DE ESTUDIO: GRANDES Y OBVIOS ===== */
+        .study-card{
+            background:var(--card);border:1px solid var(--border);border-radius:16px;
+            overflow:hidden;transition:.2s;margin-bottom:1rem;
+        }
+        .study-card:hover{border-color:rgba(16,185,129,.2);box-shadow:0 8px 30px rgba(0,0,0,.2)}
+        .study-card-header{display:flex;gap:1rem;padding:1.2rem 1.2rem .8rem}
+        .study-card-thumb{width:110px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border);flex-shrink:0;background:#1a1a2e}
+        .study-card-info{flex:1;min-width:0}
+        .study-card-name{font-size:1.15rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .study-card-meta{color:var(--muted);font-size:.8rem;margin-top:4px}
+        .study-card-bar{display:flex;align-items:center;gap:8px;margin-top:8px}
+        .study-card-bar .bar-track{flex:1;height:5px;background:#1a1a2e;border-radius:3px;overflow:hidden}
+        .study-card-bar .bar-fill{height:100%;border-radius:3px;transition:width .4s}
+        .study-card-bar .bar-text{font-size:.8rem;font-weight:700;white-space:nowrap;min-width:50px}
+        .study-card-actions{
+            display:flex;gap:8px;padding:.8rem 1.2rem;border-top:1px solid var(--border);
+            flex-wrap:wrap;
+        }
+
+        /* ===== FORMULARIOS ===== */
+        .form-group{margin-bottom:1rem}
+        .form-label{display:block;font-weight:700;font-size:.72rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+        .form-input{
+            width:100%;padding:10px 14px;background:#0c0c16;border:1px solid var(--border);
+            border-radius:10px;color:var(--fg);font-family:inherit;font-size:.9rem;outline:none;transition:.2s;
+        }
+        .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.1)}
+        .form-input::placeholder{color:#4a4a60}
+        textarea.form-input{resize:vertical;min-height:48px}
+        select.form-input{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6b82' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:2rem}
+
+        /* ===== ESTÍMULO ITEM: TODO VISIBLE ===== */
+        .stim-item{
+            background:#0c0c16;border:1px solid var(--border);border-radius:14px;
+            padding:1rem 1rem 1rem 1rem;margin-bottom:.75rem;position:relative;
+        }
+        .stim-num{
+            position:absolute;top:-8px;left:12px;background:var(--card);
+            border:1px solid var(--border);border-radius:6px;padding:0 8px;
+            font-size:.65rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;
+        }
+        .stim-top{display:flex;gap:.75rem;align-items:flex-start}
+        .stim-thumb{width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex-shrink:0;background:#0a0a14}
+        .stim-fields{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+        .stim-full{grid-column:1/-1}
+        .stim-actions-row{display:flex;justify-content:space-between;align-items:center;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border)}
+
+        /* ===== DROP ZONE ===== */
+        .drop-area{
+            border:2px dashed var(--border);border-radius:14px;padding:2rem;
+            text-align:center;cursor:pointer;transition:.2s;
+        }
+        .drop-area:hover,.drop-area.over{border-color:var(--accent);background:rgba(16,185,129,.03)}
+
+        /* ===== TABS ===== */
+        .tab-bar{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:1rem;flex-wrap:wrap}
+        .tab-btn{padding:8px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);font-family:inherit;font-weight:700;font-size:.82rem;cursor:pointer;transition:.15s}
+        .tab-btn:hover{color:var(--fg)}.tab-btn.on{color:var(--accent);border-bottom-color:var(--accent)}
+        .tab-pane{display:none}.tab-pane.on{display:block}
+
+        /* ===== VISTAS ===== */
+        .view{display:none}.view.on{display:block}
+
+        /* ===== UTILIDADES ===== */
+        .hidden{display:none!important}
+        .text-muted{color:var(--muted)}
+        .text-sm{font-size:.82rem}
+        .text-xs{font-size:.72rem}
+        .fw800{font-weight:800}
+        .mt-1{margin-top:.5rem}.mt-2{margin-top:1rem}.mb-1{margin-bottom:.5rem}.mb-2{margin-bottom:1rem}
+        .gap-1{gap:.5rem}.gap-2{gap:1rem}
+        .flex{display:flex}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-between{justify-content:space-between}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+        .w-full{width:100%}
+
+        /* ===== TOAST ===== */
+        #toasts{position:fixed;top:72px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+        .toast{padding:10px 16px;border-radius:10px;font-size:.82rem;font-weight:600;animation:ti .25s ease;box-shadow:0 8px 25px rgba(0,0,0,.4);display:flex;align-items:center;gap:8px}
+        .toast.ok{background:#065f46;color:#a7f3d0;border:1px solid #10b981}
+        .toast.er{background:#7f1d1d;color:#fca5a5;border:1px solid #ef4444}
+        .toast.in{background:#1e3a5f;color:#93c5fd;border:1px solid #3b82f6}
+        @keyframes ti{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+
+        /* ===== PARTICIPANTE ===== */
+        .pp{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;background:var(--bg)}
+        #punto-cal{width:40px;height:40px;border-radius:50%;position:fixed;pointer-events:none;z-index:999999;transform:translate(-50%,-50%);display:none;transition:background .2s,box-shadow .2s}
+        #punto-cal.rojo{background:#ef4444;box-shadow:0 0 24px 8px rgba(239,68,68,.55)}
+        #punto-cal.amarillo{background:#f59e0b;box-shadow:0 0 24px 8px rgba(245,158,11,.55)}
+        #punto-cal.verde{background:#10b981;box-shadow:0 0 24px 8px rgba(16,185,129,.55)}
+        #cursor-val{width:14px;height:14px;border-radius:50%;background:var(--cyan);position:fixed;pointer-events:none;z-index:999998;transform:translate(-50%,-50%);display:none;box-shadow:0 0 12px 5px rgba(6,182,212,.45);transition:left .07s linear,top .07s linear}
+        @keyframes puR{0%{transform:translate(-50%,-50%) scale(1);opacity:.4}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+        #punto-cal::before{content:'';position:absolute;top:50%;left:50%;width:40px;height:40px;border-radius:50%;border:2px solid currentColor;animation:puR 1.5s ease-out infinite;pointer-events:none}
+        #vid-p{position:fixed;inset:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;opacity:0;pointer-events:none}
+        #est-p{position:fixed;inset:0;width:100vw;height:100vh;object-fit:contain;z-index:1;display:none;background:#000}
+        .resp-opt{padding:12px 20px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:.15s;font-weight:700;font-size:.95rem;background:#0c0c16;text-align:center}
+        .resp-opt:hover{border-color:var(--accent);background:rgba(16,185,129,.05)}
+        .resp-opt.sel{border-color:var(--accent);background:rgba(16,185,129,.12);color:var(--accent)}
+        .resp-rate{width:56px;height:56px;border-radius:12px;border:2px solid var(--border);cursor:pointer;transition:.15s;font-weight:900;font-size:1.2rem;display:flex;align-items:center;justify-content:center;background:#0c0c16}
+        .resp-rate:hover{border-color:var(--accent)}.resp-rate.sel{border-color:var(--accent);background:rgba(16,185,129,.15);color:var(--accent)}
+        .score-ring{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid;flex-shrink:0}
+        .score-ring .sv{font-size:1.8rem;font-weight:900;line-height:1}
+        .score-ring .sl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+        .hm-w{position:relative;display:inline-block;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#000}.hm-w canvas{display:block}
+        .aoi-g{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:480px}
+        .aoi-c{aspect-ratio:16/9;border-radius:6px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:900;font-size:1.1rem}
+        .aoi-c .al{font-size:.5rem;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-top:2px}
+        .viz-c{border-radius:10px;border:1px solid var(--border);display:block;max-width:100%;background:#000}
+        .ita{width:100%;min-height:80px;padding:8px;background:#0c0c16;border:1px solid var(--border);border-radius:8px;color:var(--fg);font-family:monospace;font-size:.7rem;resize:vertical;outline:none}.ita:focus{border-color:var(--accent)}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @media(max-width:640px){.study-card-header{flex-direction:column}.study-card-thumb{width:100%;height:130px;object-fit:contain}.study-card-actions{justify-content:center}.stim-fields{grid-template-columns:1fr}}
+        @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
     </style>
 </head>
 <body>
 
-<!-- ==================== LOGIN ==================== -->
-<div id="screen-login" class="pantalla activa login-bg grid-pattern" style="min-height:100vh;justify-content:center;align-items:center;">
-    <div class="bg-card border border-border rounded-2xl p-10 w-full max-w-md" style="box-shadow:0 20px 60px rgba(0,0,0,0.4);">
-        <div class="flex items-center gap-3 mb-2">
-            <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-                <i class="fas fa-eye text-bg text-lg"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold tracking-tight">EyeTrack Pro</h1>
-        </div>
-        <p class="text-muted text-sm mb-8">Sistema de eye tracking para investigaciones de marketing</p>
-        <div class="space-y-4">
-            <div>
-                <label class="text-sm text-muted block mb-1.5">Usuario</label>
-                <input type="text" id="login-user" class="w-full" placeholder="admin" value="admin">
-            </div>
-            <div>
-                <label class="text-sm text-muted block mb-1.5">Contrasena</label>
-                <input type="password" id="login-pass" class="w-full" placeholder="admin123" value="admin123">
-            </div>
-            <div id="login-error" class="text-danger text-sm hidden">Credenciales incorrectas</div>
-            <button class="btn btn-primary w-full text-base" id="btn-login">Iniciar sesion</button>
-        </div>
-        <p class="text-muted text-xs mt-6 text-center">Usuario: admin / Contrasena: admin123</p>
+<!-- ============================================================ -->
+<!-- PANTALLA DE LOGIN — PRIMERA COSA QUE SE VE, SIN DEPENDER DE JS -->
+<!-- ============================================================ -->
+<div id="login-pantalla">
+    <div class="login-box">
+        <h1>Eye<span>Track</span></h1>
+        <p>Sistema de Eye Tracking para Marketing</p>
+        <input type="password" class="login-input" id="login-pass" placeholder="Contraseña de administrador" autofocus>
+        <button class="login-btn" onclick="hacerLogin()"><i class="fas fa-sign-in-alt"></i> Ingresar al sistema</button>
+        <p class="login-hint">Contraseña por defecto: <code>admin2024</code></p>
     </div>
 </div>
 
-<!-- ==================== APP (Dashboard + Vistas) ==================== -->
-<div id="screen-app" class="pantalla" style="min-height:100vh;flex-direction:column;">
-    <!-- Nav -->
-    <nav class="bg-surface border-b border-border px-6 py-3 flex items-center justify-between flex-shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
-                <i class="fas fa-eye text-bg text-sm"></i>
-            </div>
-            <span class="font-bold text-lg tracking-tight">EyeTrack Pro</span>
+<!-- ============================================================ -->
+<!-- TODO LO DEMÁS — OCULTO HASTA QUE HAGA LOGIN -->
+<!-- ============================================================ -->
+<div id="app" class="hidden">
+
+    <!-- NAV -->
+    <nav class="topnav">
+        <div class="logo">Eye<span>Track</span> Pro</div>
+        <div style="display:flex;gap:4px">
+            <button class="btn btn-ghost btn-sm" onclick="irA('dashboard')" id="nav-dash"><i class="fas fa-th-large"></i> Estudios</button>
         </div>
-        <div class="flex items-center gap-3">
-            <span class="text-muted text-sm"><i class="fas fa-user-circle mr-1"></i> Admin</span>
-            <button class="btn btn-secondary btn-sm" id="btn-logout"><i class="fas fa-sign-out-alt mr-1"></i> Salir</button>
+        <div class="flex items-center gap-1">
+            <span class="text-xs text-muted" id="sto-label"></span>
+            <button class="btn btn-ghost btn-sm" onclick="salir()"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </nav>
 
-    <!-- Contenido -->
-    <div class="flex-1 overflow-auto p-6">
-        <!-- DASHBOARD -->
-        <div id="view-dashboard">
-            <div class="flex items-center justify-between mb-6">
+    <main style="max-width:880px;margin:0 auto;padding:1.5rem">
+
+        <!-- ===== DASHBOARD ===== -->
+        <div id="view-dashboard" class="view">
+            <div class="flex justify-between items-center mb-2">
                 <div>
-                    <h2 class="text-2xl font-extrabold">Estudios</h2>
-                    <p class="text-muted text-sm mt-1">Gestiona tus estudios de eye tracking</p>
+                    <h2 class="fw800" style="font-size:1.3rem">Mis Estudios</h2>
+                    <p class="text-muted text-sm" id="dash-sub"></p>
                 </div>
-                <button class="btn btn-primary" id="btn-crear-estudio"><i class="fas fa-plus mr-2"></i>Nuevo estudio</button>
+                <button class="btn btn-green" onclick="irA('create')"><i class="fas fa-plus"></i> Nuevo estudio</button>
             </div>
-            <div id="lista-estudios" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-            <div id="estado-vacio" class="hidden text-center py-20">
-                <i class="fas fa-flask text-4xl text-border mb-4"></i>
-                <p class="text-muted text-lg">No hay estudios creados</p>
-                <p class="text-muted text-sm mt-1">Crea tu primer estudio para comenzar</p>
-            </div>
-        </div>
-
-        <!-- CREAR ESTUDIO -->
-        <div id="view-crear" class="hidden">
-            <button class="btn btn-secondary btn-sm mb-5" id="btn-volver-dashboard"><i class="fas fa-arrow-left mr-1"></i> Volver</button>
-            <h2 class="text-2xl font-extrabold mb-6">Nuevo estudio</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Formulario -->
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-sm text-muted block mb-1.5">Nombre del estudio</label>
-                        <input type="text" id="est-nombre" class="w-full" placeholder="Ej: Landing Page Producto X">
-                    </div>
-                    <div>
-                        <label class="text-sm text-muted block mb-1.5">URL de la imagen estimulo</label>
-                        <input type="url" id="est-imagen-url" class="w-full" placeholder="https://ejemplo.com/imagen.jpg">
-                    </div>
-                    <div>
-                        <label class="text-sm text-muted block mb-1.5">O subi una imagen local</label>
-                        <input type="file" id="est-imagen-file" accept="image/*" class="text-sm text-muted">
-                    </div>
-                    <div>
-                        <label class="text-sm text-muted block mb-1.5">Duracion del estudio (segundos)</label>
-                        <input type="number" id="est-duracion" class="w-full" value="15" min="5" max="120">
-                    </div>
-                    <button class="btn btn-secondary" id="btn-cargar-imagen"><i class="fas fa-image mr-1"></i> Cargar imagen</button>
-                    <div id="img-error" class="text-danger text-sm hidden"></div>
-                    <button class="btn btn-primary w-full mt-4" id="btn-guardar-estudio"><i class="fas fa-save mr-1"></i> Guardar estudio</button>
-                </div>
-                <!-- Preview + AOIs -->
-                <div>
-                    <p class="text-sm text-muted mb-2">Haz clic y arrastra sobre la imagen para definir Areas de Interes (AOIs)</p>
-                    <div id="contenedor-imagen-aoi" class="relative bg-card border border-border rounded-xl overflow-hidden" style="display:none;">
-                        <img id="preview-img-aoi" style="display:block;max-width:100%;max-height:55vh;margin:auto;">
-                        <canvas id="canvas-aois" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
-                    </div>
-                    <!-- Form nombre AOI -->
-                    <div id="aoi-form" class="hidden mt-3 bg-card border border-accent rounded-xl p-4">
-                        <label class="text-sm text-muted block mb-1.5">Nombre del AOI</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="aoi-nombre-input" class="flex-1" placeholder="Ej: Boton CTA">
-                            <button class="btn btn-primary btn-sm" id="btn-guardar-aoi">Guardar</button>
-                            <button class="btn btn-secondary btn-sm" id="btn-cancelar-aoi">X</button>
-                        </div>
-                    </div>
-                    <!-- Lista de AOIs -->
-                    <div id="lista-aois" class="mt-4 space-y-2"></div>
-                </div>
+            <div id="cards"></div>
+            <div id="empty-dash" class="hidden" style="text-align:center;padding:4rem 1rem;color:var(--muted)">
+                <i class="fas fa-flask" style="font-size:3rem;opacity:.15;display:block;margin-bottom:1rem"></i>
+                <p class="fw800" style="font-size:1.1rem">No hay estudios</p>
+                <p class="text-sm mt-1">Crea tu primer estudio para empezar</p>
+                <button class="btn btn-green mt-2" onclick="irA('create')"><i class="fas fa-plus"></i> Crear estudio</button>
             </div>
         </div>
 
-        <!-- DETALLE ESTUDIO -->
-        <div id="view-detalle" class="hidden">
-            <button class="btn btn-secondary btn-sm mb-5" id="btn-volver-detalle"><i class="fas fa-arrow-left mr-1"></i> Volver</button>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-1 space-y-4">
-                    <div class="bg-card border border-border rounded-xl p-5">
-                        <h2 id="det-nombre" class="text-xl font-bold mb-3"></h2>
-                        <p class="text-muted text-sm mb-1"><i class="fas fa-clock mr-1"></i> Duracion: <span id="det-duracion"></span>s</p>
-                        <p class="text-muted text-sm mb-1"><i class="fas fa-calendar mr-1"></i> Creado: <span id="det-fecha"></span></p>
-                        <p class="text-muted text-sm"><i class="fas fa-users mr-1"></i> Sesiones: <span id="det-sesiones-count">0</span></p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="btn btn-primary flex-1" id="btn-iniciar-sesion"><i class="fas fa-play mr-1"></i> Iniciar sesion</button>
-                        <button class="btn btn-danger btn-sm" id="btn-eliminar-estudio" title="Eliminar estudio"><i class="fas fa-trash"></i></button>
-                    </div>
-                    <button class="btn btn-secondary w-full" id="btn-ver-resultados"><i class="fas fa-chart-bar mr-1"></i> Ver resultados</button>
+        <!-- ===== CREAR / EDITAR ===== -->
+        <div id="view-create" class="view">
+            <div class="flex items-center gap-1 mb-2">
+                <button class="btn btn-ghost btn-sm" onclick="irA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
+                <h2 class="fw800" style="font-size:1.2rem" id="create-titulo">Nuevo Estudio</h2>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem">
+                <!-- Datos generales -->
+                <div class="form-group"><label class="form-label">Nombre del estudio</label><input type="text" class="form-input" id="c-nom" placeholder="Ej: Test packaging snacks"></div>
+                <div class="grid-2">
+                    <div class="form-group"><label class="form-label">Participantes objetivo</label><input type="number" class="form-input" id="c-obj" value="10" min="1"></div>
+                    <div class="form-group"><label class="form-label">Puntos de calibración</label><select class="form-input" id="c-cal"><option value="5">5 (rápido)</option><option value="9" selected>9 (recomendado)</option><option value="13">13 (alta precisión)</option></select></div>
                 </div>
-                <div class="lg:col-span-2">
-                    <div class="bg-card border border-border rounded-xl p-4 relative">
-                        <img id="det-imagen" style="width:100%;border-radius:8px;">
-                        <canvas id="canvas-det-aois" style="position:absolute;top:16px;left:16px;width:calc(100% - 32px);height:calc(100% - 32px);pointer-events:none;"></canvas>
+                <div class="grid-2">
+                    <div class="form-group"><label class="form-label">Orden de estímulos</label><select class="form-input" id="c-orden"><option value="secuencial">Secuencial</option><option value="aleatorio" selected>Aleatorio</option></select></div>
+                    <div class="form-group"><label class="form-label">Pausa entre estímulos (seg)</label><input type="number" class="form-input" id="c-pausa" value="2" min="0" max="30"></div>
+                </div>
+
+                <!-- Subir imágenes -->
+                <hr style="border-color:var(--border);margin:1.25rem 0">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="form-label" style="margin:0">Estímulos (<span id="est-count">0</span>)</label>
+                    <div class="flex gap-1">
+                        <label class="btn btn-green btn-sm" style="cursor:pointer"><i class="fas fa-upload"></i> Subir imágenes<input type="file" accept="image/*" multiple style="display:none" id="file-inp"></label>
+                        <button class="btn btn-ghost btn-sm" onclick="togURL()"><i class="fas fa-link"></i> Desde URL</button>
                     </div>
-                    <!-- Tabla de sesiones -->
-                    <div class="mt-4 bg-card border border-border rounded-xl overflow-hidden">
-                        <div class="px-5 py-3 border-b border-border font-semibold text-sm">Sesiones registradas</div>
-                        <div id="tabla-sesiones" class="divide-y divide-border"></div>
-                        <div id="sin-sesiones" class="px-5 py-8 text-center text-muted text-sm">No hay sesiones registradas</div>
-                    </div>
+                </div>
+                <div id="url-box" class="hidden mb-1" style="background:#0a0a14;border:1px solid var(--border);border-radius:8px;padding:8px">
+                    <div class="flex gap-1"><input type="text" class="form-input" id="url-inp" placeholder="https://ejemplo.com/imagen.jpg"><button class="btn btn-green btn-sm" onclick="addURL()"><i class="fas fa-plus"></i></button></div>
+                </div>
+                <div class="drop-area" id="drop-zone">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:1.8rem;color:var(--muted);display:block;margin-bottom:8px"></i>
+                    <p class="fw800 text-sm" style="color:var(--muted)">Arrastre imágenes aquí o haga clic en "Subir imágenes"</p>
+                    <p class="text-xs text-muted mt-1">Se comprimen automáticamente a 1024px JPEG</p>
+                </div>
+
+                <!-- Lista de estímulos configurados -->
+                <div id="est-lista" class="mt-2"></div>
+                <div id="est-empty" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.85rem;border:1px dashed var(--border);border-radius:10px">Arrastre o suba imágenes arriba para comenzar</div>
+
+                <!-- Guardar -->
+                <div class="flex gap-1 mt-2">
+                    <button class="btn btn-green btn-lg" id="btn-guardar" onclick="guardarEst()"><i class="fas fa-save"></i> Crear estudio</button>
+                    <button class="btn btn-ghost btn-lg" onclick="irA('dashboard')">Cancelar</button>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- ==================== CONSENTIMIENTO ==================== -->
-<div id="screen-consent" class="pantalla overlay bg-bg/95 flex-col items-center justify-center" style="z-index:600;">
-    <div class="bg-card border border-border rounded-2xl p-10 max-w-lg text-center" style="box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-        <div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-5">
-            <i class="fas fa-shield-alt text-accent text-2xl"></i>
+        <!-- ===== RESULTADOS ===== -->
+        <div id="view-results" class="view">
+            <div class="flex items-center gap-1 mb-2" style="flex-wrap:wrap">
+                <button class="btn btn-ghost btn-sm" onclick="irA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
+                <div style="flex:1;min-width:150px"><h2 class="fw800" style="font-size:1.15rem" id="r-tit"></h2><p class="text-muted text-xs" id="r-sub"></p></div>
+            </div>
+            <div id="r-sel" class="flex gap-1 mb-2" style="flex-wrap:wrap"></div>
+            <div class="flex gap-1 mb-2" style="flex-wrap:wrap;align-items:flex-end">
+                <div class="form-group" style="margin:0;width:120px"><label class="form-label">Género</label><select class="form-input" id="f-gen" onchange="refrescar()"><option value="">Todos</option><option>Masculino</option><option>Femenino</option><option>No binario</option><option>Prefiero no decir</option></select></div>
+                <div class="form-group" style="margin:0;width:100px"><label class="form-label">Edad</label><select class="form-input" id="f-edad" onchange="refrescar()"><option value="">Todos</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55+</option></select></div>
+                <span class="text-xs text-muted" id="f-cnt" style="padding-bottom:2px"></span>
+            </div>
+            <div class="tab-bar"><button class="tab-btn on" onclick="setTab(this,'hm')"><i class="fas fa-fire"></i> Calor</button><button class="tab-btn" onclick="setTab(this,'sp')"><i class="fas fa-route"></i> Scanpath</button><button class="tab-btn" onclick="setTab(this,'aoi')"><i class="fas fa-th"></i> AOI</button><button class="tab-btn" onclick="setTab(this,'tl')"><i class="fas fa-chart-line"></i> Timeline</button><button class="tab-btn" onclick="setTab(this,'dt')"><i class="fas fa-users"></i> Datos</button><button class="tab-btn" onclick="setTab(this,'rp')"><i class="fas fa-comment-dots"></i> Respuestas</button><button class="tab-btn" onclick="setTab(this,'ex')"><i class="fas fa-share-alt"></i> Exportar</button></div>
+            <div id="tp-hm" class="tab-pane on"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem" id="hm-box"></div></div>
+            <div id="tp-sp" class="tab-pane"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem" id="sp-box"></div></div>
+            <div id="tp-aoi" class="tab-pane"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem" id="aoi-box"></div></div>
+            <div id="tp-tl" class="tab-pane"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem" id="tl-box"></div></div>
+            <div id="tp-dt" class="tab-pane"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem"><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">ID</th><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Fecha</th><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Género</th><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Edad</th><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Error</th><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Puntos</th><th style="text-align:right;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)"> </th></tr></thead><tbody id="tb-p"></tbody></table><div id="empty-p" class="hidden" style="text-align:center;padding:2rem;color:var(--muted)">Sin datos</div></div></div>
+            <div id="tp-rp" class="tab-pane"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem" id="rp-box"></div></div>
+            <div id="tp-ex" class="tab-pane"><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;max-width:500px"><p class="fw800 mb-1" style="font-size:.9rem">Exportar / Importar</p><div class="flex flex-col gap-1 mb-2"><button class="btn btn-green" onclick="expCSV()"><i class="fas fa-file-csv"></i> Descargar CSV</button><button class="btn btn-ghost" onclick="expPNG()"><i class="fas fa-image"></i> Heatmap PNG</button></div><hr style="border-color:var(--border);margin-bottom:1rem"><p class="text-sm text-muted mb-1">Pegue código de colaborador:</p><textarea id="imp-ta" class="ita" placeholder="JSON..."></textarea><button class="btn btn-ghost mt-1" onclick="importar()"><i class="fas fa-upload"></i> Importar</button></div></div>
         </div>
-        <h2 class="text-2xl font-bold mb-4">Aviso de Privacidad</h2>
-        <p class="text-muted leading-relaxed mb-2">Utilizaremos su camara web <strong class="text-txt">exclusivamente para trazar el movimiento de sus ojos</strong>.</p>
-        <p class="text-danger font-semibold mb-2">No se grabara ningun video ni fotografia de su rostro.</p>
-        <p class="text-muted text-sm mb-6">Para calibrar, <strong class="text-txt">mire fijamente el punto</strong> hasta que se ponga <span class="text-accent font-bold">VERDE</span> y luego haga clic.</p>
-        <button class="btn btn-primary text-base px-10" id="btn-aceptar-consent">Acepto y comenzar</button>
-    </div>
+    </main>
 </div>
 
-<!-- ==================== CARGA ==================== -->
-<div id="screen-carga" class="pantalla overlay bg-bg flex-col items-center justify-center" style="z-index:700;">
-    <div class="w-12 h-12 border-4 border-border border-t-accent rounded-full animate-spin mb-5"></div>
-    <p id="texto-carga" class="text-lg font-semibold">Descargando modelo de IA...</p>
-</div>
+<!-- ============================================================ -->
+<!-- PARTICIPANTE — solo se muestra cuando se ejecuta un estudio -->
+<!-- ============================================================ -->
+<div id="sec-part" class="hidden">
+    <video id="vid-p" playsinline></video>
+    <img id="est-p" alt="">
+    <div id="punto-cal" class="rojo"></div>
+    <div id="cursor-val"></div>
 
-<!-- ==================== CALIBRACION ==================== -->
-<div id="screen-calibracion" class="pantalla overlay flex-col items-center justify-center" style="z-index:800;background:rgba(10,14,20,0.9);pointer-events:none;">
-    <div style="pointer-events:auto;z-index:1000;" class="bg-card/90 backdrop-blur border border-warning rounded-xl px-8 py-5 text-center">
-        <p id="texto-calibracion" class="text-warning font-bold text-lg">Preparando...</p>
-    </div>
-</div>
-
-<!-- ==================== ESTUDIO ACTIVO ==================== -->
-<div id="screen-estudio" class="pantalla overlay flex-col items-center justify-center" style="z-index:850;background:#0a0e14;">
-    <img id="estimulo-activo" style="max-width:100vw;max-height:100vh;object-fit:contain;">
-    <div id="timer-estudio" class="fixed top-5 right-5 bg-card/80 backdrop-blur border border-border rounded-xl px-5 py-3 font-mono text-accent text-xl font-bold" style="z-index:900;"></div>
-</div>
-
-<!-- ==================== RESULTADOS ==================== -->
-<div id="screen-resultados" class="pantalla" style="min-height:100vh;flex-direction:column;">
-    <nav class="bg-surface border-b border-border px-6 py-3 flex items-center justify-between flex-shrink-0">
-        <div class="flex items-center gap-4">
-            <button class="btn btn-secondary btn-sm" id="btn-volver-resultados"><i class="fas fa-arrow-left mr-1"></i> Volver</button>
-            <h2 id="res-titulo" class="font-bold text-lg"></h2>
-        </div>
-        <button class="btn btn-primary btn-sm" id="btn-exportar-csv"><i class="fas fa-download mr-1"></i> Exportar CSV</button>
-    </nav>
-    <!-- Tabs -->
-    <div class="border-b border-border px-6 flex gap-1">
-        <button class="tab-btn activo" data-tab="heatmap">Mapa de calor</button>
-        <button class="tab-btn" data-tab="aois">Analisis por AOI</button>
-        <button class="tab-btn" data-tab="fijaciones">Fijaciones</button>
-    </div>
-    <!-- Tab contenido -->
-    <div class="flex-1 overflow-auto p-6">
-        <div id="tab-heatmap" class="flex justify-center">
-            <div class="relative inline-block">
-                <canvas id="canvas-heatmap" style="border-radius:12px;"></canvas>
-                <canvas id="canvas-heatmap-aois" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:12px;"></canvas>
+    <div id="p-bien" class="pp">
+        <div style="max-width:430px;text-align:center;padding:2rem">
+            <h1 style="font-size:2.5rem;font-weight:900;margin-bottom:.5rem">Eye<span style="color:var(--accent)">Track</span></h1>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.5rem;text-align:left">
+                <h3 class="fw800 mb-1" style="font-size:1rem"><i class="fas fa-flask" style="color:var(--accent);margin-right:4px"></i> <span id="bw-nom"></span></h3>
+                <p class="text-muted text-sm mb-2">Verá <strong style="color:var(--fg)" id="bw-cant">0</strong> imagen(es) y responderá preguntas.</p>
+                <hr style="border-color:var(--border);margin-bottom:1rem">
+                <div class="grid-2 mb-2">
+                    <div class="form-group" style="margin:0"><label class="form-label">Género</label><select class="form-input" id="p-gen"><option value="">Seleccione...</option><option>Masculino</option><option>Femenino</option><option>No binario</option><option>Prefiero no decir</option></select></div>
+                    <div class="form-group" style="margin:0"><label class="form-label">Edad</label><select class="form-input" id="p-edad"><option value="">Seleccione...</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55+</option></select></div>
+                </div>
+                <p class="text-muted" style="font-size:.8rem;line-height:1.5;margin-bottom:1rem">Cámara usada <strong style="color:var(--fg)">solo para rastrear ojos</strong>. <span style="color:var(--danger);font-weight:700">No se graba video.</span></p>
+                <button class="btn btn-green w-full" style="justify-content:center;padding:14px" onclick="partOK()"><i class="fas fa-play"></i> Comenzar</button>
             </div>
         </div>
-        <div id="tab-aois" class="hidden max-w-4xl mx-auto">
-            <div id="res-aois-tabla" class="bg-card border border-border rounded-xl overflow-hidden"></div>
-        </div>
-        <div id="tab-fijaciones" class="hidden max-w-4xl mx-auto">
-            <div class="flex justify-center mb-4">
-                <canvas id="canvas-scatter" style="border-radius:12px;"></canvas>
-            </div>
-            <div id="res-fijaciones-info" class="bg-card border border-border rounded-xl p-5"></div>
-        </div>
     </div>
+    <div id="p-carga" class="pp hidden"><div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:.75rem"></div><p class="fw800" id="txt-carga">Cargando modelo...</p></div>
+    <div id="p-cal" class="pp hidden" style="pointer-events:none"><div style="background:rgba(8,8,16,.93);backdrop-filter:blur(10px);padding:10px 16px;border-radius:10px;border:1px solid var(--border);pointer-events:auto"><p id="txt-cal" style="color:var(--warn);font-weight:700;white-space:nowrap">...</p></div></div>
+    <div id="p-score" class="pp hidden" style="flex-direction:column;gap:1rem"><h2 class="fw800" style="font-size:1.3rem">Calibración lista</h2><div class="flex items-center gap-2"><div class="score-ring" id="s-ring"><div class="sv" id="s-num">0</div><div class="sl">px</div></div><div><p class="fw800" id="s-cat" style="font-size:1rem">...</p><p class="text-muted text-sm mt-1" id="s-desc"></p></div></div><div class="flex gap-1 flex-wrap"><button class="btn btn-green" id="btn-ver" onclick="iniVal()"><i class="fas fa-crosshairs"></i> Verificar</button><button class="btn btn-ghost" onclick="skipVal()"><i class="fas fa-forward"></i> Continuar</button><button class="btn btn-red" onclick="recal()"><i class="fas fa-redo"></i> Recalibrar</button></div></div>
+    <div id="p-val" class="pp hidden" style="pointer-events:none"><div style="background:rgba(8,8,16,.93);backdrop-filter:blur(10px);padding:10px 16px;border-radius:10px;border:1px solid var(--border);pointer-events:auto;text-align:center"><p id="txt-val" style="color:var(--cyan);font-weight:700">¿Cursor sigue al punto?</p><div class="flex gap-1 justify-center mt-1"><button class="btn btn-green btn-sm" onclick="vR(true)"><i class="fas fa-check"></i> Sí</button><button class="btn btn-red btn-sm" onclick="vR(false)"><i class="fas fa-times"></i> No</button></div></div></div>
+    <div id="p-resp" class="pp hidden" style="flex-direction:column;gap:1rem;max-width:500px;padding:2rem"><p id="r-inst" class="fw800" style="font-size:1.1rem;text-align:center;line-height:1.4"></p><div id="r-opts" class="flex flex-col gap-1"></div><div id="r-rate" class="flex gap-1 justify-center"></div><button class="btn btn-green w-full" style="justify-content:center" id="btn-r-ok" onclick="confResp()" disabled><i class="fas fa-check"></i> Confirmar</button></div>
+    <div id="p-trans" class="pp hidden" style="flex-direction:column;gap:.3rem"><div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><p class="fw800">Siguiente...</p><p class="text-muted text-sm" id="txt-trans"></p></div>
+    <div id="p-fin" class="pp hidden" style="flex-direction:column;gap:.8rem"><div style="font-size:2.5rem;color:var(--accent)"><i class="fas fa-check-circle"></i></div><h2 class="fw800" style="font-size:1.5rem">Completado</h2><p class="text-muted text-sm" style="text-align:center">Copie el código y envíelo al investigador.</p><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;max-width:450px;width:92%"><p class="text-xs text-muted mb-1 fw800" style="text-transform:uppercase;letter-spacing:.4px">Código</p><textarea id="codigo-d" class="ita" readonly style="min-height:55px;font-size:.58rem"></textarea><button class="btn btn-green btn-sm mt-1" onclick="copCod()"><i class="fas fa-copy"></i> Copiar</button></div></div>
 </div>
 
-<!-- Punto de calibración -->
-<div id="punto-cal"></div>
-<!-- Video oculto -->
-<video id="video-et" playsinline style="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;"></video>
+<div id="toasts"></div>
 
 <script type="module">
-    import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+import{FaceLandmarker,FilesetResolver}from"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
-    // ===================== CONSTANTES =====================
-    const AOI_COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6bff','#ff9f43','#a29bfe','#00cec9','#fd79a8','#e17055'];
-    const DURACION_FIJACION_CAL = 1200;
-    const UMBRAL_MOVIMIENTO_CAL = 0.12;
-    const PESO_SUAVIZADO_CAL = 0.55;
-    const PESO_SUAVIZADO_EST = 0.3;
-    const STORAGE_KEY = 'eyetrack_pro_data';
+/* ========== ESTADO ========== */
+const PD='admin2024';
+let E=JSON.parse(localStorage.getItem('et6')||'[]');
+let auth=localStorage.getItem('et6_a')==='true';
+let eId=null,rIdx=0,editId=null;
+let flm=null,fase='idle';
+let dPorEst={},dGA=[],tIG=0;
+let pV=true,pxA=0,pyA=0,ps=.6;
+let eC='esp',tFI=0;const DF=1500,UM=.15;
+let cCnt=0,dRC=[],cRX=.5,cRY=.5;
+let rIX=0,rSX=1,rIY=0,rSY=1;
+let cPN=9,eCn=0,tmpE=[];
+let mAct=[],cErr=0;
+let vPts=[],vIdx=0,vSi=0,vNo=0;
+let ordEj=[],ejIdx=0,respAct='';
 
-    // ===================== ESTADO GLOBAL =====================
-    let estado = {
-        estudios: [],
-        estudioActual: null,    // ID del estudio en sesión
-        sesiones: [],
-        faceLandmarker: null,
-        calibrando: false,
-        estudioActivo: false,
-        // Calibración
-        puntosCal: [],
-        clickCalCount: 0,
-        datosRawCal: [],
-        currentRawX: 0.5,
-        currentRawY: 0.5,
-        estadoPunto: 'esperando',
-        tiempoFijacionInicio: 0,
-        smoothX: 0, smoothY: 0,
-        smoothIniciado: false,
-        // Estudio activo
-        sensX: 4.5, sensY: 9.0, offsetX: 0, offsetY: 0,
-        datosOjo: [],
-        tiempoInicioEst: 0,
-        imgNatW: 0, imgNatH: 0,
-        // AOI dibujo
-        aoisTemp: [],
-        aoiDibujando: null,
-        aoiStart: null,
-        // Resultados
-        resultadosEstudioId: null,
-    };
+/* ========== UTILS ========== */
+const gid=()=>Date.now().toString(36)+Math.random().toString(36).substr(2,5);
+function sv(){try{localStorage.setItem('et6',JSON.stringify(E));uSto()}catch(e){toast('Almacenamiento lleno','er')}}
+function toast(m,t='ok'){const c=document.getElementById('toasts'),d=document.createElement('div');d.className='toast '+t;d.innerHTML=`<i class="fas ${t==='ok'?'fa-check-circle':t==='er'?'fa-exclamation-circle':'fa-info-circle'}"></i> ${m}`;c.appendChild(d);setTimeout(()=>d.remove(),3000)}
+function fD(i){const d=new Date(i);return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}
+function gE(i){return E.find(e=>e.id===i)}
+function uSto(){let u=0;for(let k in localStorage)if(localStorage.hasOwnProperty(k))u+=localStorage[k].length*2;const m=(u/1048576).toFixed(1);const el=document.getElementById('sto-label');if(el)el.textContent=m+'MB'}
+function linR(pts,xk,yk){const n=pts.length;if(n<2)return{slope:1,intercept:0};const mx=pts.reduce((s,p)=>s+p[xk],0)/n,my=pts.reduce((s,p)=>s+p[yk],0)/n;let nm=0,dn=0;for(const p of pts){const dx=p[xk]-mx;nm+=dx*(p[yk]-my);dn+=dx*dx}const sl=dn>1e-8?nm/dn:1;return{intercept:my-sl*mx,slope:sl}}
+function cErr(){let e=0;for(const p of dRC)e+=Math.sqrt((rIX+rSX*p.rawX-p.screenX)**2+(rIY+rSY*p.rawY-p.screenY)**2);return dRC.length?e/dRC.length:999}
+function gCP(n){const w=innerWidth,h=innerHeight;const g=(xs,ys)=>xs.map((x,i)=>({x:w*x,y:h*ys[i],t:'p'+i}));if(n===5)return g([.5,.15,.85,.15,.85],[.5,.15,.15,.85,.85]);if(n===13)return g([.15,.38,.62,.85,.15,.38,.5,.62,.85,.15,.38,.62,.85],[.15,.15,.15,.15,.5,.5,.5,.5,.5,.85,.85,.85,.85]);return g([.15,.5,.85,.15,.5,.85,.15,.5,.85],[.15,.15,.15,.5,.5,.5,.85,.85,.85])}
+function compImg(f,mw=1024,q=.72){return new Promise((r,j)=>{const rd=new FileReader();rd.onerror=()=>j(0);rd.onload=e=>{const img=new Image();img.onerror=()=>j(0);img.onload=()=>{const ra=Math.min(1,mw/Math.max(1,img.width));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*ra));c.height=Math.max(1,Math.round(img.height*ra));c.getContext('2d').drawImage(img,0,0,c.width,c.height);r({url:c.toDataURL('image/jpeg',q),name:f.name})};img.src=e.target.result};rd.readAsDataURL(f)})}
 
-    // ===================== UTILIDADES =====================
-    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-    function guardarDatos() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ estudios: estado.estudios, sesiones: estado.sesiones }));
-    }
-    function cargarDatos() {
-        try {
-            const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            if (d) { estado.estudios = d.estudios || []; estado.sesiones = d.sesiones || []; }
-        } catch(e) { estado.estudios = []; estado.sesiones = []; }
-    }
-    function toast(msg, tipo = 'ok') {
-        const t = document.createElement('div');
-        t.className = 'toast';
-        t.style.background = tipo === 'ok' ? '#00e5a0' : tipo === 'error' ? '#ef4444' : '#f59e0b';
-        t.style.color = tipo === 'ok' ? '#0a0e14' : '#fff';
-        t.textContent = msg;
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 3000);
-    }
-    function mostrarPantalla(id) {
-        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
-        document.getElementById(id).classList.add('activa');
-    }
-    // Calcular bounds de imagen con object-fit:contain
-    function getImageBounds(natW, natH, contW, contH) {
-        const imgR = natW / natH, contR = contW / contH;
-        let rW, rH, oX, oY;
-        if (imgR > contR) { rW = contW; rH = contW / imgR; oX = 0; oY = (contH - rH) / 2; }
-        else { rH = contH; rW = contH * imgR; oX = (contW - rW) / 2; oY = 0; }
-        return { rW, rH, oX, oY };
-    }
-    function screenToNorm(sx, sy) {
-        const b = getImageBounds(estado.imgNatW, estado.imgNatH, window.innerWidth, window.innerHeight);
-        return { x: (sx - b.oX) / b.rW, y: (sy - b.oY) / b.rH };
-    }
-    function normToDisplay(nx, ny, canvasW, canvasH) {
-        const b = getImageBounds(estado.imgNatW, estado.imgNatH, canvasW, canvasH);
-        return { x: nx * b.rW + b.oX, y: ny * b.rH + b.oY };
-    }
+/* ========== NAVEGACIÓN ========== */
+function irA(v){
+    document.querySelectorAll('#app .view').forEach(e=>e.classList.remove('on'));
+    const t=document.getElementById('view-'+v);if(t)t.classList.add('on');
+    if(v==='dashboard')renderDash();
+    if(v==='create'&&!editId)limpCrear();
+    location.hash=v;
+}
+function handleHash(){
+    const h=location.hash.replace('#','');
+    if(h.startsWith('collab/')){iniPart(h.split('/')[1]);return}
+    if(h.startsWith('results/')){if(!auth){mostrarLogin();return}mostrarRes(h.split('/')[1]);return}
+    if(h.startsWith('edit/')){if(!auth){mostrarLogin();return}cargarEdit(h.split('/')[1]);return}
+    if(!auth){mostrarLogin();return}
+    document.getElementById('login-pantalla').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    document.getElementById('sec-part').classList.add('hidden');
+    if(['dashboard','create','results'].includes(h))irA(h);else irA('dashboard');
+}
+addEventListener('hashchange',handleHash);
 
-    // ===================== NAVEGACION =====================
-    function irDashboard() {
-        mostrarPantalla('screen-app');
-        document.getElementById('view-dashboard').classList.remove('hidden');
-        document.getElementById('view-crear').classList.add('hidden');
-        document.getElementById('view-detalle').classList.add('hidden');
-        renderEstudios();
-    }
-    function irCrearEstudio() {
-        mostrarPantalla('screen-app');
-        document.getElementById('view-dashboard').classList.add('hidden');
-        document.getElementById('view-crear').classList.remove('hidden');
-        document.getElementById('view-detalle').classList.add('hidden');
-        limpiarFormCrear();
-    }
-    function irDetalle(id) {
-        estado.estudioActual = id;
-        mostrarPantalla('screen-app');
-        document.getElementById('view-dashboard').classList.add('hidden');
-        document.getElementById('view-crear').classList.add('hidden');
-        document.getElementById('view-detalle').classList.remove('hidden');
-        renderDetalle(id);
-    }
-    function irResultados(id) {
-        estado.resultadosEstudioId = id;
-        mostrarPantalla('screen-resultados');
-        renderResultados(id);
-    }
+/* ========== LOGIN ========== */
+function mostrarLogin(){
+    document.getElementById('login-pantalla').classList.remove('hidden');
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('sec-part').classList.add('hidden');
+}
+window.hacerLogin=function(){
+    if(document.getElementById('login-pass').value===(localStorage.getItem('et6_p')||PD)){
+        auth=true;localStorage.setItem('et6_a','true');
+        document.getElementById('login-pass').value='';
+        document.getElementById('login-pantalla').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        irA('dashboard');toast('Bienvenido');
+    }else toast('Contraseña incorrecta','er');
+};
+document.getElementById('login-pass').addEventListener('keydown',e=>{if(e.key==='Enter')window.hacerLogin()});
+window.salir=function(){auth=false;localStorage.removeItem('et6_a');mostrarLogin();toast('Sesión cerrada','in')};
 
-    // ===================== AUTH =====================
-    document.getElementById('btn-login').addEventListener('click', () => {
-        const u = document.getElementById('login-user').value;
-        const p = document.getElementById('login-pass').value;
-        if (u === 'admin' && p === 'admin123') {
-            document.getElementById('login-error').classList.add('hidden');
-            irDashboard();
-        } else {
-            document.getElementById('login-error').classList.remove('hidden');
-        }
-    });
-    document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); });
-    document.getElementById('btn-logout').addEventListener('click', () => {
-        mostrarPantalla('screen-login');
-    });
-
-    // ===================== ESTUDIOS CRUD =====================
-    document.getElementById('btn-crear-estudio').addEventListener('click', irCrearEstudio);
-    document.getElementById('btn-volver-dashboard').addEventListener('click', irDashboard);
-    document.getElementById('btn-volver-detalle').addEventListener('click', irDashboard);
-    document.getElementById('btn-volver-resultados').addEventListener('click', () => irDetalle(estado.resultadosEstudioId));
-
-    function renderEstudios() {
-        const cont = document.getElementById('lista-estudios');
-        const vacio = document.getElementById('estado-vacio');
-        if (estado.estudios.length === 0) { cont.innerHTML = ''; vacio.classList.remove('hidden'); return; }
-        vacio.classList.add('hidden');
-        cont.innerHTML = estado.estudios.map(est => {
-            const sesCount = estado.sesiones.filter(s => s.estudioId === est.id).length;
-            return `<div class="bg-card border border-border rounded-xl overflow-hidden card-hover cursor-pointer" data-ir="${est.id}">
-                <img src="${est.imagenUrl}" style="width:100%;height:180px;object-fit:cover;" onerror="this.style.background='#1e2d3d';this.style.height='180px';">
-                <div class="p-4">
-                    <h3 class="font-bold text-base mb-1 truncate">${est.nombre}</h3>
-                    <div class="flex items-center gap-3 text-muted text-xs">
-                        <span><i class="fas fa-clock mr-1"></i>${est.duracion}s</span>
-                        <span><i class="fas fa-layer-group mr-1"></i>${est.aois.length} AOIs</span>
-                        <span><i class="fas fa-users mr-1"></i>${sesCount}</span>
-                    </div>
+/* ========== DASHBOARD ========== */
+function renderDash(){
+    uSto();
+    let tp=0;E.forEach(e=>tp+=e.participantes.length);
+    document.getElementById('dash-sub').textContent=E.length+' estudio'+(E.length!==1?'s':'')+' · '+tp+' participantes';
+    const g=document.getElementById('cards'),em=document.getElementById('empty-dash');
+    if(!E.length){g.innerHTML='';em.classList.remove('hidden');return}
+    em.classList.add('hidden');
+    g.innerHTML=E.map(e=>{
+        const np=e.participantes.length,obj=e.participantesObjetivo||10,pct=Math.min(100,Math.round(np/obj*100));
+        const col=pct>=100?'var(--accent)':pct>=50?'var(--warn)':'var(--danger)';
+        const link=location.origin+location.pathname+'#collab/'+e.id;
+        const thumb=e.estimulos[0]?.imageUrl||'';
+        const hQ=e.estimulos.some(s=>s.tipoResp!=='ninguna');
+        return`<div class="study-card">
+            <div class="study-card-header">
+                <img src="${thumb}" class="study-card-thumb" alt="" onerror="this.style.display='none'">
+                <div class="study-card-info">
+                    <div class="study-card-name">${e.nombre}</div>
+                    <div class="study-card-meta">${e.estimulos.length} imagen(es) · ${e.calibracionPts||9} pts calibración${hQ?' · Con preguntas':''} · ${e.orden==='aleatorio'?'Aleatorio':'Secuencial'}</div>
+                    <div class="study-card-bar"><span class="bar-text" style="color:${col}">${np}/${obj}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${col}"></div></div></div>
                 </div>
-            </div>`;
-        }).join('');
-        cont.querySelectorAll('[data-ir]').forEach(el => {
-            el.addEventListener('click', () => irDetalle(el.dataset.ir));
-        });
-    }
-
-    function limpiarFormCrear() {
-        document.getElementById('est-nombre').value = '';
-        document.getElementById('est-imagen-url').value = '';
-        document.getElementById('est-imagen-file').value = '';
-        document.getElementById('est-duracion').value = '15';
-        document.getElementById('contenedor-imagen-aoi').style.display = 'none';
-        document.getElementById('aoi-form').classList.add('hidden');
-        document.getElementById('lista-aois').innerHTML = '';
-        document.getElementById('img-error').classList.add('hidden');
-        estado.aoisTemp = [];
-        estado.aoiDibujando = null;
-    }
-
-    // Cargar imagen
-    document.getElementById('btn-cargar-imagen').addEventListener('click', cargarImagenEstudio);
-    document.getElementById('est-imagen-url').addEventListener('keydown', e => { if (e.key === 'Enter') cargarImagenEstudio(); });
-
-    function cargarImagenEstudio() {
-        const urlInput = document.getElementById('est-imagen-url').value.trim();
-        const fileInput = document.getElementById('est-imagen-file').files[0];
-        const errEl = document.getElementById('img-error');
-        errEl.classList.add('hidden');
-
-        if (fileInput) {
-            const reader = new FileReader();
-            reader.onload = (e) => mostrarPreviewAOI(e.target.result);
-            reader.onerror = () => { errEl.textContent = 'Error al leer el archivo'; errEl.classList.remove('hidden'); };
-            reader.readAsDataURL(fileInput);
-        } else if (urlInput) {
-            mostrarPreviewAOI(urlInput);
-        } else {
-            errEl.textContent = 'Ingresa una URL o selecciona un archivo';
-            errEl.classList.remove('hidden');
-        }
-    }
-
-    function mostrarPreviewAOI(src) {
-        const img = document.getElementById('preview-img-aoi');
-        const cont = document.getElementById('contenedor-imagen-aoi');
-        const canvas = document.getElementById('canvas-aois');
-        img.onload = () => {
-            cont.style.display = 'block';
-            canvas.width = img.clientWidth;
-            canvas.height = img.clientHeight;
-            dibujarAOIsEnCanvas(canvas, img.clientWidth, img.clientHeight, estado.aoisTemp);
-        };
-        img.onerror = () => {
-            document.getElementById('img-error').textContent = 'No se pudo cargar la imagen. Verifica la URL.';
-            document.getElementById('img-error').classList.remove('hidden');
-        };
-        img.src = src;
-    }
-
-    // Dibujo de AOIs
-    const canvasAOIs = document.getElementById('canvas-aois');
-    canvasAOIs.addEventListener('mousedown', (e) => {
-        if (!document.getElementById('preview-img-aoi').src) return;
-        const rect = canvasAOIs.getBoundingClientRect();
-        estado.aoiStart = { x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height };
-        estado.aoiDibujando = { ...estado.aoiStart };
-    });
-    canvasAOIs.addEventListener('mousemove', (e) => {
-        if (!estado.aoiStart) return;
-        const rect = canvasAOIs.getBoundingClientRect();
-        estado.aoiDibujando = {
-            x: Math.min(estado.aoiStart.x, (e.clientX - rect.left) / rect.width),
-            y: Math.min(estado.aoiStart.y, (e.clientY - rect.top) / rect.height),
-            w: Math.abs((e.clientX - rect.left) / rect.width - estado.aoiStart.x),
-            h: Math.abs((e.clientY - rect.top) / rect.height - estado.aoiStart.y),
-        };
-        const img = document.getElementById('preview-img-aoi');
-        const c = document.getElementById('canvas-aois');
-        dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp, estado.aoiDibujando);
-    });
-    canvasAOIs.addEventListener('mouseup', () => {
-        if (!estado.aoiStart || !estado.aoiDibujando || estado.aoiDibujando.w < 0.02 || estado.aoiDibujando.h < 0.02) {
-            estado.aoiStart = null; estado.aoiDibujando = null; return;
-        }
-        estado.aoiStart = null;
-        document.getElementById('aoi-form').classList.remove('hidden');
-        document.getElementById('aoi-nombre-input').value = `AOI ${estado.aoisTemp.length + 1}`;
-        document.getElementById('aoi-nombre-input').focus();
-    });
-
-    document.getElementById('btn-guardar-aoi').addEventListener('click', guardarAOITemp);
-    document.getElementById('aoi-nombre-input').addEventListener('keydown', e => { if (e.key === 'Enter') guardarAOITemp(); });
-    document.getElementById('btn-cancelar-aoi').addEventListener('click', () => {
-        document.getElementById('aoi-form').classList.add('hidden');
-        estado.aoiDibujando = null;
-        const img = document.getElementById('preview-img-aoi');
-        const c = document.getElementById('canvas-aois');
-        dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp);
-    });
-
-    function guardarAOITemp() {
-        const nombre = document.getElementById('aoi-nombre-input').value.trim() || `AOI ${estado.aoisTemp.length + 1}`;
-        const d = estado.aoiDibujando;
-        estado.aoisTemp.push({
-            id: uid(), nombre,
-            x: d.x, y: d.y, w: d.w, h: d.h,
-            color: AOI_COLORS[estado.aoisTemp.length % AOI_COLORS.length]
-        });
-        document.getElementById('aoi-form').classList.add('hidden');
-        estado.aoiDibujando = null;
-        renderListaAOIsTemp();
-        const img = document.getElementById('preview-img-aoi');
-        const c = document.getElementById('canvas-aois');
-        dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp);
-    }
-
-    function renderListaAOIsTemp() {
-        const cont = document.getElementById('lista-aois');
-        cont.innerHTML = estado.aoisTemp.map((aoi, i) => `
-            <div class="flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-2.5">
-                <div class="w-4 h-4 rounded" style="background:${aoi.color};flex-shrink:0;"></div>
-                <span class="flex-1 text-sm font-medium">${aoi.nombre}</span>
-                <button class="text-danger text-sm hover:text-red-400" data-del-aoi="${i}"><i class="fas fa-times"></i></button>
             </div>
-        `).join('');
-        cont.querySelectorAll('[data-del-aoi]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                estado.aoisTemp.splice(parseInt(btn.dataset.delAoi), 1);
-                // Reasignar colores
-                estado.aoisTemp.forEach((a, i) => a.color = AOI_COLORS[i % AOI_COLORS.length]);
-                renderListaAOIsTemp();
-                const img = document.getElementById('preview-img-aoi');
-                const c = document.getElementById('canvas-aois');
-                dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp);
-            });
-        });
-    }
-
-    function dibujarAOIsEnCanvas(canvas, dispW, dispH, aois, dibujando = null) {
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        aois.forEach(aoi => {
-            ctx.strokeStyle = aoi.color;
-            ctx.lineWidth = 2;
-            ctx.setLineDash([6, 4]);
-            ctx.strokeRect(aoi.x * dispW, aoi.y * dispH, aoi.w * dispW, aoi.h * dispH);
-            ctx.setLineDash([]);
-            ctx.fillStyle = aoi.color + '18';
-            ctx.fillRect(aoi.x * dispW, aoi.y * dispH, aoi.w * dispW, aoi.h * dispH);
-            ctx.fillStyle = aoi.color;
-            ctx.font = 'bold 12px Space Grotesk, sans-serif';
-            ctx.fillText(aoi.nombre, aoi.x * dispW + 4, aoi.y * dispH + 14);
-        });
-        if (dibujando) {
-            ctx.strokeStyle = '#00e5a0';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
-            ctx.strokeRect(dibujando.x * dispW, dibujando.y * dispH, dibujando.w * dispW, dibujando.h * dispH);
-            ctx.setLineDash([]);
-            ctx.fillStyle = 'rgba(0,229,160,0.1)';
-            ctx.fillRect(dibujando.x * dispW, dibujando.y * dispH, dibujando.w * dispW, dibujando.h * dispH);
-        }
-    }
-
-    // Guardar estudio
-    document.getElementById('btn-guardar-estudio').addEventListener('click', () => {
-        const nombre = document.getElementById('est-nombre').value.trim();
-        const imgUrl = document.getElementById('preview-img-aoi').src;
-        const duracion = parseInt(document.getElementById('est-duracion').value) || 15;
-
-        if (!nombre) { toast('Ingresa un nombre para el estudio', 'error'); return; }
-        if (!imgUrl || imgUrl === location.href) { toast('Carga una imagen de estimulo', 'error'); return; }
-
-        const img = document.getElementById('preview-img-aoi');
-        estado.estudios.push({
-            id: uid(), nombre, imagenUrl: imgUrl,
-            imgNatW: img.naturalWidth, imgNatH: img.naturalHeight,
-            duracion: clamp(duracion, 5, 120),
-            aois: JSON.parse(JSON.stringify(estado.aoisTemp)),
-            creadoEn: new Date().toISOString()
-        });
-        guardarDatos();
-        toast('Estudio guardado correctamente');
-        irDashboard();
-    });
-
-    // ===================== DETALLE ESTUDIO =====================
-    function renderDetalle(id) {
-        const est = estado.estudios.find(e => e.id === id);
-        if (!est) return;
-        document.getElementById('det-nombre').textContent = est.nombre;
-        document.getElementById('det-duracion').textContent = est.duracion;
-        document.getElementById('det-fecha').textContent = new Date(est.creadoEn).toLocaleDateString('es-ES');
-        const sesiones = estado.sesiones.filter(s => s.estudioId === id);
-        document.getElementById('det-sesiones-count').textContent = sesiones.length;
-
-        const img = document.getElementById('det-imagen');
-        img.src = est.imagenUrl;
-        img.onload = () => {
-            const c = document.getElementById('canvas-det-aois');
-            // El canvas debe coincidir con el tamaño display de la imagen
-            setTimeout(() => {
-                c.width = img.clientWidth;
-                c.height = img.clientHeight;
-                dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, est.aois);
-            }, 50);
-        };
-
-        const tabla = document.getElementById('tabla-sesiones');
-        const sinSes = document.getElementById('sin-sesiones');
-        if (sesiones.length === 0) { tabla.innerHTML = ''; sinSes.classList.remove('hidden'); }
-        else {
-            sinSes.classList.add('hidden');
-            tabla.innerHTML = sesiones.map((s, i) => `
-                <div class="px-5 py-3 flex items-center justify-between text-sm">
-                    <span><i class="fas fa-user text-muted mr-2"></i>Participante ${i + 1}</span>
-                    <span class="text-muted">${new Date(s.fecha).toLocaleString('es-ES')}</span>
-                    <span class="text-muted">${s.datos.length} puntos</span>
-                    <button class="btn btn-secondary btn-sm" data-del-ses="${s.id}"><i class="fas fa-trash text-danger"></i></button>
-                </div>
-            `).join('');
-            tabla.querySelectorAll('[data-del-ses]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    estado.sesiones = estado.sesiones.filter(s => s.id !== btn.dataset.delSes);
-                    guardarDatos();
-                    renderDetalle(id);
-                    toast('Sesion eliminada');
-                });
-            });
-        }
-    }
-
-    document.getElementById('btn-iniciar-sesion').addEventListener('click', () => {
-        const est = estado.estudios.find(e => e.id === estado.estudioActual);
-        if (!est) return;
-        // Pre-cargar la imagen del estudio
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            estado.imgNatW = img.naturalWidth;
-            estado.imgNatH = img.naturalHeight;
-            mostrarPantalla('screen-consent');
-        };
-        img.onerror = () => toast('Error al cargar la imagen del estimulo', 'error');
-        img.src = est.imagenUrl;
-    });
-
-    document.getElementById('btn-eliminar-estudio').addEventListener('click', () => {
-        if (!confirm('Eliminar este estudio y todas sus sesiones?')) return; // Solo aquí, es acción destructiva irreversibles
-        estado.estudios = estado.estudios.filter(e => e.id !== estado.estudioActual);
-        estado.sesiones = estado.sesiones.filter(s => s.estudioId !== estado.estudioActual);
-        guardarDatos();
-        toast('Estudio eliminado');
-        irDashboard();
-    });
-
-    document.getElementById('btn-ver-resultados').addEventListener('click', () => {
-        const sesiones = estado.sesiones.filter(s => s.estudioId === estado.estudioActual);
-        if (sesiones.length === 0) { toast('No hay sesiones para analizar', 'warning'); return; }
-        irResultados(estado.estudioActual);
-    });
-
-    // ===================== CONSENTIMIENTO =====================
-    document.getElementById('btn-aceptar-consent').addEventListener('click', iniciarCalibracion);
-
-    // ===================== EYE TRACKING - CALIBRACION =====================
-    async function iniciarCalibracion() {
-        mostrarPantalla('screen-carga');
-        document.getElementById('texto-carga').textContent = 'Descargando modelo de IA...';
-
-        try {
-            if (!estado.faceLandmarker) {
-                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
-                estado.faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
-                    baseOptions: {
-                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-                        delegate: "GPU"
-                    },
-                    runningMode: "VIDEO", numFaces: 1
-                });
-            }
-            document.getElementById('texto-carga').textContent = 'Modelo listo. Activando camara...';
-
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
-            const video = document.getElementById('video-et');
-            video.srcObject = stream;
-            await video.play();
-
-            // Preparar calibración
-            estado.puntosCal = [
-                { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, tipo: 'centro' },
-                { x: window.innerWidth * 0.15, y: window.innerHeight * 0.15, tipo: 'arriba-izq' },
-                { x: window.innerWidth * 0.85, y: window.innerHeight * 0.15, tipo: 'arriba-der' },
-                { x: window.innerWidth * 0.15, y: window.innerHeight * 0.85, tipo: 'abajo-izq' },
-                { x: window.innerWidth * 0.85, y: window.innerHeight * 0.85, tipo: 'abajo-der' },
-            ];
-            estado.clickCalCount = 0;
-            estado.datosRawCal = [];
-            estado.calibrando = true;
-            estado.smoothIniciado = false;
-            estado.estudioActivo = false;
-
-            mostrarPantalla('screen-calibracion');
-            const punto = document.getElementById('punto-cal');
-            punto.style.display = 'block';
-            punto.style.backgroundColor = '#ff0000';
-            punto.style.boxShadow = '0 0 30px 12px rgba(255,0,0,0.85)';
-            moverPuntoCal(0);
-            document.getElementById('texto-calibracion').textContent = 'Mire el punto hasta que se ponga VERDE (1 de 5)';
-
-            procesarVideo();
-        } catch (err) {
-            console.error(err);
-            document.getElementById('texto-carga').textContent = 'Error: ' + (err.message || 'No se pudo acceder a la camara');
-            setTimeout(() => { irDetalle(estado.estudioActual); }, 2500);
-        }
-    }
-
-    function moverPuntoCal(i) {
-        const p = estado.puntosCal[i];
-        const punto = document.getElementById('punto-cal');
-        punto.style.left = p.x + 'px';
-        punto.style.top = p.y + 'px';
-        estado.estadoPunto = 'esperando';
-        estado.smoothIniciado = false;
-        punto.style.backgroundColor = '#ff0000';
-        punto.style.boxShadow = '0 0 30px 12px rgba(255,0,0,0.85)';
-    }
-
-    async function procesarVideo() {
-        if (!estado.calibrando && !estado.estudioActivo) return;
-        const t0 = performance.now();
-        const video = document.getElementById('video-et');
-
-        if (video.readyState >= 2 && estado.faceLandmarker) {
-            const res = await estado.faceLandmarker.detectForVideo(video, t0);
-            if (res.faceLandmarks && res.faceLandmarks.length > 0) {
-                const lm = res.faceLandmarks[0];
-
-                // CORREGIDO: paréntesis cerrado correctamente
-                let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) +
-                          (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
-                // CORREGIDO: lm[386].y en vez de lm[386).y
-                let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) +
-                          (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
-
-                estado.currentRawX = pX;
-                estado.currentRawY = pY;
-
-                if (estado.calibrando) {
-                    // Inicializar suavizado en primer frame
-                    if (!estado.smoothIniciado) {
-                        estado.smoothX = pX;
-                        estado.smoothY = pY;
-                        estado.smoothIniciado = true;
-                    }
-
-                    // Suavizar
-                    let sX = estado.smoothX * PESO_SUAVIZADO_CAL + pX * (1 - PESO_SUAVIZADO_CAL);
-                    let sY = estado.smoothY * PESO_SUAVIZADO_CAL + pY * (1 - PESO_SUAVIZADO_CAL);
-
-                    // CORREGIDO: diffY ahora mide diferencia real
-                    let diffX = Math.abs(sX - estado.smoothX);
-                    let diffY = Math.abs(sY - estado.smoothY);
-
-                    estado.smoothX = sX;
-                    estado.smoothY = sY;
-
-                    const punto = document.getElementById('punto-cal');
-                    const txtCal = document.getElementById('texto-calibracion');
-
-                    if (diffX < UMBRAL_MOVIMIENTO_CAL && diffY < UMBRAL_MOVIMIENTO_CAL) {
-                        if (estado.estadoPunto === 'esperando') {
-                            estado.estadoPunto = 'fijando';
-                            estado.tiempoFijacionInicio = performance.now();
-                            punto.style.backgroundColor = '#ffcc00';
-                            punto.style.boxShadow = '0 0 30px 12px rgba(255,204,0,0.85)';
-                        } else if (estado.estadoPunto === 'fijando') {
-                            if (performance.now() - estado.tiempoFijacionInicio >= DURACION_FIJACION_CAL) {
-                                estado.estadoPunto = 'listo';
-                                punto.style.backgroundColor = '#00ff00';
-                                punto.style.boxShadow = '0 0 30px 12px rgba(0,255,0,0.85)';
-                                txtCal.textContent = `Haga clic ahora (${estado.clickCalCount + 1} de 5)`;
-                            }
-                        }
-                    } else {
-                        estado.estadoPunto = 'esperando';
-                        punto.style.backgroundColor = '#ff0000';
-                        punto.style.boxShadow = '0 0 30px 12px rgba(255,0,0,0.85)';
-                        txtCal.textContent = `Mire el punto hasta que se ponga VERDE (${estado.clickCalCount + 1} de 5)`;
-                    }
-
-                } else if (estado.estudioActivo) {
-                    // Mapeo con regresión
-                    let mX = estado.offsetX - (pX * estado.sensX);
-                    let mY = estado.offsetY - (pY * estado.sensY);
-
-                    if (!estado.smoothIniciado) {
-                        estado.smoothX = mX; estado.smoothY = mY; estado.smoothIniciado = true;
-                    }
-                    let fX = estado.smoothX * PESO_SUAVIZADO_EST + mX * (1 - PESO_SUAVIZADO_EST);
-                    let fY = estado.smoothY * PESO_SUAVIZADO_EST + mY * (1 - PESO_SUAVIZADO_EST);
-                    fX = clamp(fX, 0, window.innerWidth);
-                    fY = clamp(fY, 0, window.innerHeight);
-                    estado.smoothX = fX; estado.smoothY = fY;
-
-                    // Coordenadas normalizadas de la imagen
-                    const norm = screenToNorm(fX, fY);
-
-                    let tiempo = (t0 - estado.tiempoInicioEst) / 1000;
-                    estado.datosOjo.push({
-                        tiempo, x: Math.round(fX), y: Math.round(fY),
-                        nx: norm.x, ny: norm.y
-                    });
-                }
-            }
-        }
-        requestAnimationFrame(procesarVideo);
-    }
-
-    // Click durante calibración
-    document.addEventListener('click', (e) => {
-        if (!estado.calibrando) return;
-        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
-
-        if (estado.estadoPunto !== 'listo') {
-            document.getElementById('texto-calibracion').textContent = 'Aun no esta verde. Mantenga la mirada fija.';
-            return;
-        }
-
-        const pt = estado.puntosCal[estado.clickCalCount];
-        estado.datosRawCal.push({
-            rawX: estado.currentRawX, rawY: estado.currentRawY,
-            screenX: pt.x, screenY: pt.y, tipo: pt.tipo
-        });
-        estado.clickCalCount++;
-
-        if (estado.clickCalCount < 5) {
-            moverPuntoCal(estado.clickCalCount);
-            document.getElementById('texto-calibracion').textContent =
-                `Mire el punto hasta que se ponga VERDE (${estado.clickCalCount + 1} de 5)`;
-        } else {
-            finalizarCalibracion();
-        }
-    });
-
-    function finalizarCalibracion() {
-        estado.calibrando = false;
-
-        const d = estado.datosRawCal;
-        const rawIzq = d.filter(p => p.tipo.includes('izq'));
-        const rawDer = d.filter(p => p.tipo.includes('der'));
-        const rawArriba = d.filter(p => p.tipo.includes('arriba'));
-        const rawAbajo = d.filter(p => p.tipo.includes('abajo'));
-
-        // CORREGIDO: calcular promedios de pantalla que antes faltaban
-        const promRawIzqX = rawIzq.reduce((s, p) => s + p.rawX, 0) / rawIzq.length;
-        const promRawDerX = rawDer.reduce((s, p) => s + p.rawX, 0) / rawDer.length;
-        const promRawArribaY = rawArriba.reduce((s, p) => s + p.rawY, 0) / rawArriba.length;
-        const promRawAbajoY = rawAbajo.reduce((s, p) => s + p.rawY, 0) / rawAbajo.length;
-
-        const promScrIzqX = rawIzq.reduce((s, p) => s + p.screenX, 0) / rawIzq.length;
-        const promScrDerX = rawDer.reduce((s, p) => s + p.screenX, 0) / rawDer.length;
-        const promScrArribaY = rawArriba.reduce((s, p) => s + p.screenY, 0) / rawArriba.length;
-        const promScrAbajoY = rawAbajo.reduce((s, p) => s + p.screenY, 0) / rawAbajo.length;
-
-        const deltaXOjo = promRawDerX - promRawIzqX;
-        const deltaXPantalla = promScrDerX - promScrIzqX;
-        if (Math.abs(deltaXOjo) > 0.001) estado.sensX = deltaXPantalla / deltaXOjo;
-
-        const deltaYOjo = promRawAbajoY - promRawArribaY;
-        const deltaYPantalla = promScrAbajoY - promScrArribaY;
-        if (Math.abs(deltaYOjo) > 0.001) estado.sensY = deltaYPantalla / deltaYOjo;
-
-        const rawCentro = d.find(p => p.tipo === 'centro');
-        const scrCentroX = window.innerWidth / 2;
-        const scrCentroY = window.innerHeight / 2;
-        estado.offsetX = scrCentroX - (rawCentro.rawX * estado.sensX);
-        estado.offsetY = scrCentroY - (rawCentro.rawY * estado.sensY);
-
-        // Pasar al estudio activo
-        document.getElementById('punto-cal').style.display = 'none';
-        iniciarEstudioActivo();
-    }
-
-    // ===================== ESTUDIO ACTIVO =====================
-    function iniciarEstudioActivo() {
-        const est = estado.estudios.find(e => e.id === estado.estudioActual);
-        if (!est) return;
-
-        const imgEl = document.getElementById('estimulo-activo');
-        imgEl.src = est.imagenUrl;
-        imgEl.style.display = 'block';
-
-        estado.datosOjo = [];
-        estado.smoothIniciado = false;
-        estado.estudioActivo = true;
-        estado.tiempoInicioEst = performance.now();
-
-        mostrarPantalla('screen-estudio');
-
-        // Timer
-        let restante = est.duracion;
-        const timerEl = document.getElementById('timer-estudio');
-        timerEl.textContent = restante + 's';
-        const interval = setInterval(() => {
-            restante--;
-            timerEl.textContent = restante + 's';
-            if (restante <= 5) timerEl.style.color = '#ef4444';
-            if (restante <= 0) {
-                clearInterval(interval);
-                terminarEstudio();
-            }
-        }, 1000);
-
-        // Reiniciar procesamiento de video
-        procesarVideo();
-    }
-
-    function terminarEstudio() {
-        estado.estudioActivo = false;
-
-        // Detener cámara
-        const video = document.getElementById('video-et');
-        if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-
-        document.getElementById('estimulo-activo').style.display = 'none';
-        document.getElementById('timer-estudio').style.color = '#00e5a0';
-
-        // Guardar sesión
-        estado.sesiones.push({
-            id: uid(),
-            estudioId: estado.estudioActual,
-            fecha: new Date().toISOString(),
-            datos: estado.datosOjo,
-            calibracion: { sensX: estado.sensX, sensY: estado.sensY, offsetX: estado.offsetX, offsetY: estado.offsetY }
-        });
-        guardarDatos();
-        toast('Sesion registrada correctamente');
-
-        irDetalle(estado.estudioActual);
-    }
-
-    // ===================== RESULTADOS =====================
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
-            btn.classList.add('activo');
-            document.getElementById('tab-heatmap').classList.toggle('hidden', btn.dataset.tab !== 'heatmap');
-            document.getElementById('tab-aois').classList.toggle('hidden', btn.dataset.tab !== 'aois');
-            document.getElementById('tab-fijaciones').classList.toggle('hidden', btn.dataset.tab !== 'fijaciones');
-        });
-    });
-
-    function renderResultados(estudioId) {
-        const est = estado.estudios.find(e => e.id === estudioId);
-        if (!est) return;
-        document.getElementById('res-titulo').textContent = 'Resultados: ' + est.nombre;
-
-        const sesiones = estado.sesiones.filter(s => s.estudioId === estudioId);
-        // Combinar todos los datos
-        const todosDatos = sesiones.flatMap(s => s.datos);
-
-        // Resetear tabs
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
-        document.querySelector('.tab-btn[data-tab="heatmap"]').classList.add('activo');
-        document.getElementById('tab-heatmap').classList.remove('hidden');
-        document.getElementById('tab-aois').classList.add('hidden');
-        document.getElementById('tab-fijaciones').classList.add('hidden');
-
-        renderHeatmap(est, todosDatos);
-        renderAOIAnalysis(est, todosDatos, sesiones);
-        renderFijaciones(est, todosDatos);
-    }
-
-    function renderHeatmap(est, datos) {
-        const canvas = document.getElementById('canvas-heatmap');
-        const canvasAOIs = document.getElementById('canvas-heatmap-aois');
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            // Tamaño del canvas: ajustar al viewport manteniendo aspect ratio
-            const maxW = Math.min(window.innerWidth - 48, 1100);
-            const maxH = window.innerHeight - 200;
-            const imgR = img.naturalWidth / img.naturalHeight;
-            let cW, cH;
-            if (imgR > maxW / maxH) { cW = maxW; cH = maxW / imgR; }
-            else { cH = maxH; cW = maxH * imgR; }
-            cW = Math.round(cW); cH = Math.round(cH);
-
-            canvas.width = cW; canvas.height = cH;
-            canvasAOIs.width = cW; canvasAOIs.height = cH;
-            canvasAOIs.style.width = cW + 'px';
-            canvasAOIs.style.height = cH + 'px';
-
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, cW, cH);
-
-            // Mapear datos normalizados al canvas
-            const bounds = getImageBounds(img.naturalWidth, img.naturalHeight, cW, cH);
-            const heatData = datos.map(p => {
-                const px = p.nx * bounds.rW + bounds.oX;
-                const py = p.ny * bounds.rH + bounds.oY;
-                return [px, py, 1];
-            });
-
-            if (heatData.length > 0) {
-                const heat = simpleheat(canvas);
-                heat.data(heatData);
-                heat.radius(25, 35);
-                heat.gradient({ 0.15: '#0000ff', 0.3: '#00ccff', 0.5: '#00ff88', 0.7: '#ffff00', 0.9: '#ff4400', 1.0: '#ff0000' });
-                heat.draw(0.02);
-            }
-
-            // Dibujar AOIs sobre el heatmap
-            const ctxA = canvasAOIs.getContext('2d');
-            ctxA.clearRect(0, 0, cW, cH);
-            est.aois.forEach(aoi => {
-                ctxA.strokeStyle = aoi.color;
-                ctxA.lineWidth = 2;
-                ctxA.setLineDash([6, 4]);
-                ctxA.strokeRect(aoi.x * cW, aoi.y * cH, aoi.w * cW, aoi.h * cH);
-                ctxA.setLineDash([]);
-                ctxA.fillStyle = aoi.color;
-                ctxA.font = 'bold 13px Space Grotesk, sans-serif';
-                ctxA.fillText(aoi.nombre, aoi.x * cW + 4, aoi.y * cH + 15);
-            });
-        };
-        img.src = est.imagenUrl;
-    }
-
-    function renderAOIAnalysis(est, datos, sesiones) {
-        const cont = document.getElementById('res-aois-tabla');
-        if (est.aois.length === 0) {
-            cont.innerHTML = '<div class="p-8 text-center text-muted">No se definieron AOIs en este estudio</div>';
-            return;
-        }
-
-        const totalPuntos = datos.length;
-        // Asumiendo ~30fps
-        const fpsEstimado = 30;
-        const tiempoTotalEst = totalPuntos / fpsEstimado;
-
-        let filas = est.aois.map(aoi => {
-            const puntosDentro = datos.filter(p =>
-                p.nx >= aoi.x && p.nx <= aoi.x + aoi.w &&
-                p.ny >= aoi.y && p.ny <= aoi.y + aoi.h
-            );
-            const tiempoDentro = puntosDentro.length / fpsEstimado;
-            const pctTiempo = tiempoTotalEst > 0 ? (tiempoDentro / tiempoTotalEst * 100) : 0;
-            const primeraFijacion = puntosDentro.length > 0 ? puntosDentro[0].tiempo : null;
-
-            return { ...aoi, puntos: puntosDentro.length, tiempo: tiempoDentro, pct: pctTiempo, primera: primeraFijacion };
-        });
-
-        // Ordenar por tiempo de fijación (mayor primero)
-        filas.sort((a, b) => b.tiempo - a.tiempo);
-
-        cont.innerHTML = `
-            <div class="px-5 py-3 border-b border-border">
-                <h3 class="font-bold">Analisis de Areas de Interes</h3>
-                <p class="text-muted text-xs mt-1">${sesiones.length} participante(s) | ${totalPuntos} puntos de datos | ~${fpsEstimado}fps estimado</p>
+            <div class="study-card-actions">
+                <button class="btn btn-blue btn-sm" onclick="location.hash='results/${e.id}'"><i class="fas fa-chart-bar"></i> Resultados</button>
+                <button class="btn btn-ghost btn-sm" onclick="location.hash='edit/${e.id}'"><i class="fas fa-edit"></i> Editar</button>
+                <button class="btn btn-yellow btn-sm" onclick="location.hash='collab/${e.id}'"><i class="fas fa-play"></i> Ejecutar yo mismo</button>
+                <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link copiado'))"><i class="fas fa-link"></i> Copiar link colaborador</button>
+                <button class="btn btn-red btn-sm" onclick="delE('${e.id}')"><i class="fas fa-trash"></i> Eliminar</button>
             </div>
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="border-b border-border text-muted text-xs">
-                        <th class="text-left px-5 py-3 font-semibold">AOI</th>
-                        <th class="text-right px-5 py-3 font-semibold">Puntos</th>
-                        <th class="text-right px-5 py-3 font-semibold">Tiempo (s)</th>
-                        <th class="text-right px-5 py-3 font-semibold">% Atencion</th>
-                        <th class="text-right px-5 py-3 font-semibold">Primera fij. (s)</th>
-                        <th class="px-5 py-3 font-semibold" style="width:120px;">Atencion</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${filas.map(f => `
-                        <tr class="border-b border-border/50 hover:bg-surface/50">
-                            <td class="px-5 py-3 flex items-center gap-2">
-                                <div class="w-3 h-3 rounded" style="background:${f.color};"></div>
-                                <span class="font-medium">${f.nombre}</span>
-                            </td>
-                            <td class="text-right px-5 py-3 font-mono text-xs">${f.puntos.toLocaleString()}</td>
-                            <td class="text-right px-5 py-3 font-mono text-xs">${f.tiempo.toFixed(1)}</td>
-                            <td class="text-right px-5 py-3 font-mono text-xs font-bold" style="color:${f.pct > 20 ? '#00e5a0' : f.pct > 10 ? '#ffd93d' : '#5a6b80'}">${f.pct.toFixed(1)}%</td>
-                            <td class="text-right px-5 py-3 font-mono text-xs">${f.primera !== null ? f.primera.toFixed(2) : '-'}</td>
-                            <td class="px-5 py-3">
-                                <div class="w-full bg-border rounded-full h-2.5">
-                                    <div class="h-2.5 rounded-full" style="width:${Math.min(f.pct * 3, 100)}%;background:${f.color};"></div>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        `;
-    }
+        </div>`}).join('');
+}
+window.delE=function(id){const e=gE(id);if(!e)return;const c=document.getElementById('toasts'),t=document.createElement('div');t.className='toast er';t.style.animation='ti .25s ease';t.innerHTML=`<span>Eliminar "${e.nombre}"?</span><button class="btn btn-red btn-sm" style="margin-left:auto" id="dy">Si</button><button class="btn btn-ghost btn-sm" id="dn">No</button>`;c.appendChild(t);document.getElementById('dy').onclick=()=>{E=E.filter(x=>x.id!==id);sv();renderDash();t.remove();toast('Eliminado','in')};document.getElementById('dn').onclick=()=>t.remove();setTimeout(()=>{if(t.parentNode)t.remove()},8000)};
 
-    function renderFijaciones(est, datos) {
-        const canvas = document.getElementById('canvas-scatter');
-        const info = document.getElementById('res-fijaciones-info');
+/* ========== CREAR / EDITAR ========== */
+function limpCrear(){editId=null;document.getElementById('create-titulo').textContent='Nuevo Estudio';document.getElementById('btn-guardar').innerHTML='<i class="fas fa-save"></i> Crear estudio';document.getElementById('c-nom').value='';document.getElementById('c-obj').value='10';document.getElementById('c-cal').value='9';document.getElementById('c-orden').value='aleatorio';document.getElementById('c-pausa').value='2';document.getElementById('est-lista').innerHTML='';document.getElementById('est-empty').classList.remove('hidden');document.getElementById('url-box').classList.add('hidden');document.getElementById('est-count').textContent='0';tmpE=[];eCntr=0}
+window.cargarEdit=function(id){
+    const e=gE(id);if(!e){toast('No encontrado','er');irA('dashboard');return}
+    editId=id;irA('create');
+    document.getElementById('create-titulo').textContent='Editar: '+e.nombre;
+    document.getElementById('btn-guardar').innerHTML='<i class="fas fa-save"></i> Guardar cambios';
+    document.getElementById('c-nom').value=e.nombre;document.getElementById('c-obj').value=e.participantesObjetivo||10;
+    document.getElementById('c-cal').value=e.calibracionPts||9;document.getElementById('c-orden').value=e.orden||'aleatorio';
+    document.getElementById('c-pausa').value=e.pausaGlobal||2;
+    tmpE=[];eCntr=0;document.getElementById('est-lista').innerHTML='';
+    e.estimulos.forEach(es=>{addEItem(es.imageUrl,es.nombre);const el=document.getElementById('e-'+eCntr);if(!el)return;
+        el.querySelector('.e-nom').value=es.nombre;
+        el.querySelector('.e-inst').value=es.instruccion||'';
+        el.querySelector('.e-tipo').value=es.tipoRespuesta||'ninguna';
+        el.querySelector('.e-opts').value=es.opciones||'';
+        el.querySelector('.e-dur').value=es.duracion;
+        el.querySelector('.e-pau').value=es.pausa||e.pausaGlobal||2;
+        if(es.fijo)el.querySelector('.e-fij').checked=true;
+        togTipo(el)});
+    document.getElementById('est-count').textContent=tmpE.length;
+    if(tmpE.length)document.getElementById('est-empty').classList.add('hidden');
+};
 
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            const maxW = Math.min(window.innerWidth - 48, 800);
-            const maxH = 500;
-            const imgR = img.naturalWidth / img.naturalHeight;
-            let cW, cH;
-            if (imgR > maxW / maxH) { cW = maxW; cH = maxW / imgR; }
-            else { cH = maxH; cW = maxH * imgR; }
-            cW = Math.round(cW); cH = Math.round(cH);
-            canvas.width = cW; canvas.height = cH;
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');procF(e.dataTransfer.files)});
+dz.addEventListener('click',()=>document.getElementById('file-inp').click());
+document.getElementById('file-inp').addEventListener('change',e=>{procF(e.target.files);e.target.value=''});
+async function procF(files){const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));if(!imgs.length)return;toast(`Procesando ${imgs.length}...`,'in');for(const f of imgs){try{const r=await compImg(f);addEItem(r.url,f.name.replace(/\.[^.]+$/,''))}catch(e){}}toast('Listo')}
+window.togURL=()=>document.getElementById('url-box').classList.toggle('hidden');
+window.addURL=function(){const u=document.getElementById('url-inp').value.trim();if(!u){toast('URL','er');return}addEItem(u,'Imagen URL');document.getElementById('url-inp').value='';document.getElementById('url-box').classList.add('hidden')};
 
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, cW, cH);
-            ctx.fillStyle = 'rgba(10,14,20,0.5)';
-            ctx.fillRect(0, 0, cW, cH);
+function addEItem(src,nom){
+    eCntr++;const id='e-'+eCntr;tmpE.push({id,src});
+    document.getElementById('est-empty').classList.add('hidden');
+    document.getElementById('est-count').textContent=tmpE.length;
+    const d=document.createElement('div');d.className='stim-item';d.id=id;
+    d.innerHTML=`<div class="stim-num">Estímulo ${eCntr}</div>
+    <div class="stim-top">
+        <img src="${src}" class="stim-thumb" alt="" onerror="this.style.background='#0a0a14'">
+        <div class="stim-fields">
+            <input type="text" class="form-input e-nom stim-full" value="${nom}" placeholder="Nombre descriptivo, ej: Banner verde">
+            <textarea class="form-input e-inst stim-full" rows="2" placeholder="Instrucción para el participante, ej: ¿Cuál de estas opciones le parece más saludable?"></textarea>
+            <div class="form-group" style="margin:0"><label class="form-label">Tipo de respuesta</label><select class="form-input e-tipo" onchange="togTipo(this.closest('.stim-item'))"><option value="ninguna">Sin pregunta (solo eye tracking)</option><option value="opcion">Opción múltiple</option><option value="valoracion">Valoración 1 a 5</option></select></div>
+            <div class="form-group e-ow" style="margin:0"><label class="form-label">Opciones separadas por coma</label><input type="text" class="form-input e-opts" placeholder="Saludable, Económica, Atractiva"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Duración visión (seg)</label><input type="number" class="form-input e-dur" value="15" min="3" max="120"></div>
+            <div class="form-group" style="margin:0"><label class="form-label">Pausa después (seg)</label><input type="number" class="form-input e-pau" value="${document.getElementById('c-pausa').value||'2'}" min="0" max="30"></div>
+        </div>
+    </div>
+    <div class="stim-actions-row">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.8rem;color:var(--muted)"><input type="checkbox" class="e-fij" style="accent-color:var(--accent);width:16px;height:16px"> Fijar como primer estímulo (no se aleatoriza)</label>
+        <button class="btn btn-red btn-sm" onclick="rmE('${id}')"><i class="fas fa-trash"></i> Quitar</button>
+    </div>`;
+    document.getElementById('est-lista').appendChild(d);
+    togTipo(d);
+}
+window.togTipo=function(item){const t=item.querySelector('.e-tipo').value;item.querySelector('.e-ow').style.display=t==='opcion'?'':'none'};
+window.rmE=function(id){tmpE=tmpE.filter(e=>e.id!==id);const el=document.getElementById(id);if(el)el.remove();document.getElementById('est-count').textContent=tmpE.length;if(!tmpE.length)document.getElementById('est-empty').classList.remove('hidden')};
 
-            const bounds = getImageBounds(img.naturalWidth, img.naturalHeight, cW, cH);
+window.guardarEst=function(){
+    const nom=document.getElementById('c-nom').value.trim();if(!nom){toast('Nombre requerido','er');return}
+    if(!tmpE.length){toast('Agregue imágenes','er');return}
+    const obj=parseInt(document.getElementById('c-obj').value)||10;
+    const cp=parseInt(document.getElementById('c-cal').value)||9;
+    const ord=document.getElementById('c-orden').value;
+    const pG=parseInt(document.getElementById('c-pausa').value)||2;
+    const ests=[];let hayF=false;
+    for(const te of tmpE){const el=document.getElementById(te.id);if(!el)continue;
+        const fij=el.querySelector('.e-fij').checked;
+        if(fij&&hayF){toast('Solo un estímulo puede ser fijo','er');return}
+        if(fij)hayF=true;
+        ests.push({id:gid(),imageUrl:te.src,nombre:el.querySelector('.e-nom').value.trim()||'Sin nombre',instruccion:el.querySelector('.e-inst').value.trim(),tipoRespuesta:el.querySelector('.e-tipo').value,opciones:el.querySelector('.e-opts').value.trim(),duracion:Math.max(3,Math.min(120,parseInt(el.querySelector('.e-dur').value)||15)),pausa:Math.max(0,parseInt(el.querySelector('.e-pau').value)||pG),fijo})}
+    if(!ests.length)return;
+    if(editId){const e=gE(editId);if(e){e.nombre=nom;e.estimulos=ests;e.participantesObjetivo=obj;e.calibracionPts=cp;e.orden=ord;e.pausaGlobal=pG;sv();toast('Actualizado');irA('dashboard');return}}
+    E.push({id:gid(),nombre:nom,estimulos:ests,participantesObjetivo:obj,calibracionPts:cp,orden,pausaGlobal:pG,createdAt:new Date().toISOString(),participantes:[]});
+    sv();toast('Estudio creado');irA('dashboard');
+};
 
-            // Dibujar todos los puntos como scatter
-            datos.forEach((p, i) => {
-                const px = p.nx * bounds.rW + bounds.oX;
-                const py = p.ny * bounds.rH + bounds.oY;
-                ctx.beginPath();
-                ctx.arc(px, py, 2, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0,229,160,0.3)';
-                ctx.fill();
-            });
+/* ========== RESULTADOS (compacto) ========== */
+function mostrarRes(id){const e=gE(id);if(!e){toast('No encontrado','er');irA('dashboard');return}eId=id;rIdx=0;document.querySelectorAll('#app .view').forEach(v=>v.classList.remove('on'));document.getElementById('view-results').classList.add('on');document.getElementById('r-tit').textContent=e.nombre;document.getElementById('r-sub').textContent=`${e.participantes.length}/${e.participantesObjetivo} participantes`;document.getElementById('r-sel').innerHTML=e.estimulos.map((s,i)=>`<button class="btn btn-sm ${i===0?'btn-green':'btn-ghost'}" id="es${i}" onclick="selE(${i})">${s.nombre}</button>`).join('');document.getElementById('f-gen').value='';document.getElementById('f-edad').value='';renderAll(e,0)}
+window.selE=function(i){rIdx=i;document.querySelectorAll('#r-sel button').forEach((b,j)=>{b.className='btn btn-sm '+(j===i?'btn-green':'btn-ghost')});renderAll(gE(eId),i)};
+window.setTab=function(b,t){document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.tab-pane').forEach(x=>x.classList.remove('on'));document.getElementById('tp-'+t).classList.add('on')};
+window.refrescar=function(){renderAll(gE(eId),rIdx)};
+function gF(e,i){const fg=document.getElementById('f-gen').value,fe=document.getElementById('f-edad').value;let ps=e.participantes;if(fg)ps=ps.filter(p=>p.genero===fg);if(fe)ps=ps.filter(p=>p.edad===fe);document.getElementById('f-cnt').textContent=ps.length+' participantes';let pts=[];ps.forEach(p=>{const d=p.datos[i];if(!d)return;const vw=d.viewportWidth||innerWidth,vh=d.viewportHeight||innerHeight;d.gazeData.forEach(g=>pts.push({x:g.x/vw,y:g.y/vh}))});return{pts,parts:ps}}
+function renderAll(e,i){const{pts,parts}=gF(e,i);rHM(e,i,pts);rSP(e,i,pts);rAOI(e,i,parts);rTL(e,i,parts);rDT(e,i,parts);rRP(e,i,parts)}
 
-            // Detectar fijaciones (I-DT simplificado)
-            const fijaciones = detectarFijaciones(datos);
-            fijaciones.forEach(f => {
-                const px = f.nx * bounds.rW + bounds.oX;
-                const py = f.ny * bounds.rH + bounds.oY;
-                const radio = clamp(f.duracion / 50, 8, 40);
-                ctx.beginPath();
-                ctx.arc(px, py, radio, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0,229,160,0.15)';
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(0,229,160,0.6)';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-                // Numero de fijacion
-                ctx.fillStyle = '#00e5a0';
-                ctx.font = 'bold 10px JetBrains Mono, monospace';
-                ctx.fillText(f.idx + 1, px + radio + 3, py + 3);
-            });
+function rHM(e,i,pts){const b=document.getElementById('hm-box');if(!pts.length){b.innerHTML='<p class="text-muted" style="text-align:center;padding:1rem">Sin datos</p>';return}const W=760;b.innerHTML=`<div class="hm-w"><canvas id="hmc" width="${W}" height="${W}"></canvas></div><p class="text-xs text-muted mt-1">${pts.length.toLocaleString()} puntos</p>`;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{const h=Math.round(W*img.naturalHeight/Math.max(1,img.naturalWidth));const c=document.getElementById('hmc');if(!c)return;c.width=W;c.height=h;c.style.width=W+'px';c.style.height='auto';c.getContext('2d').drawImage(img,0,0,W,h);const ht=simpleheat('hmc');ht.data(pts.map(p=>[p.x*W,p.y*h,1]));ht.radius(20,30);ht.gradient({.08:'#000044',.22:'#0000cc',.38:'#0088ff',.52:'#00ddaa',.68:'#88ff00',.82:'#ffcc00',1:'#ff2200'});ht.draw(.012)};img.onerror=()=>{const c=document.getElementById('hmc');if(!c)return;c.getContext('2d').fillStyle='#0a0a0a';c.fillRect(0,0,W,W);const ht=simpleheat('hmc');ht.data(pts.map(p=>[p.x*W,p.y*W,1]));ht.radius(20,30);ht.gradient({.08:'#000044',.22:'#0000cc',.38:'#0088ff',.52:'#00ddaa',.68:'#88ff00',.82:'#ffcc00',1:'#ff2200'});ht.draw(.012)};img.src=e.estimulos[i].imageUrl}
+function rSP(e,i,pts){const b=document.getElementById('sp-box');if(!pts.length){b.innerHTML='<p class="text-muted" style="text-align:center;padding:1rem">Sin datos</p>';return}const W=760;b.innerHTML=`<canvas id="spc" class="viz-c" width="${W}" height="${W}"></canvas>`;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>dSP(pts,W,Math.round(W*img.naturalHeight/Math.max(1,img.naturalWidth)),img);img.onerror=()=>dSP(pts,W,W,null);img.src=e.estimulos[i].imageUrl}
+function dSP(pts,CW,CH,bg){const c=document.getElementById('spc');if(!c)return;c.width=CW;c.height=CH;c.style.width=CW+'px';c.style.height='auto';const ctx=c.getContext('2d');if(bg){ctx.globalAlpha=.2;ctx.drawImage(bg,0,0,CW,CH);ctx.globalAlpha=1}else ctx.fillStyle='#0a0a0a',ctx.fillRect(0,0,CW,CH);const st=Math.max(1,Math.floor(pts.length/80)),s=pts.filter((_,i)=>i%st===0);if(s.length<2)return;ctx.lineWidth=1.5;for(let i=1;i<s.length;i++){const t=i/(s.length-1);ctx.strokeStyle=`rgba(${16+t*223},${185-t*117},${129-t*61},.6)`;ctx.beginPath();ctx.moveTo(s[i-1].x*CW,s[i-1].y*CH);ctx.lineTo(s[i].x*CW,s[i].y*CH);ctx.stroke()}ctx.font='bold 9px Outfit';ctx.textAlign='center';ctx.textBaseline='middle';const ns=Math.max(1,Math.floor(s.length/20));s.forEach((p,i)=>{if(i%ns!==0&&i!==s.length-1)return;const t=i/(s.length-1);ctx.fillStyle=`rgb(${16+t*223},${185-t*117},${129-t*61})`;ctx.beginPath();ctx.arc(p.x*CW,p.y*CH,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(i+1,p.x*CW,p.y*CH)})}
+function rAOI(e,i,parts){const b=document.getElementById('aoi-box');const n=['Sup-Izq','Sup-Cen','Sup-Der','Med-Izq','Med-Cen','Med-Der','Inf-Izq','Inf-Cen','Inf-Der'];let cl=Array(9).fill(0),tot=0;parts.forEach(p=>{const d=p.datos[i];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;for(let j=0;j<d.gazeData.length;j++){const g=d.gazeData[j];const c=Math.min(2,Math.floor(g.x/vw*3)),r=Math.min(2,Math.floor(g.y/vh*3));let dt=.033;if(j>0)dt=g.tiempo-d.gazeData[j-1].tiempo;if(dt<=0||dt>.5)dt=.033;cl[r*3+c]+=dt;tot+=dt}});if(!tot){b.innerHTML='<p class="text-muted" style="text-align:center;padding:1rem">Sin datos</p>';return}const pc=cl.map(c=>c/tot*100),mx=Math.max(...pc,1);b.innerHTML=`<p class="fw800 mb-1" style="font-size:.85rem">Cuadrantes</p><div class="aoi-g">${pc.map((p,i)=>{const t=p/mx;return`<div class="aoi-c" style="background:rgba(${16+t*223},${185-t*117},${129-t*61},${.1+t*.5});border:1px solid rgba(${16+t*223},${185-t*117},${129-t*61},${.2+t*.45})"><span>${p.toFixed(1)}%</span><span class="al">${n[i]}</span></div>`}).join('')}</div>`}
+function rTL(e,i,parts){const b=document.getElementById('tl-box');let all=[];parts.forEach(p=>{const d=p.datos[i];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>all.push({t:g.tiempo,x:g.x/vw,y:g.y/vh}))});if(!all.length){b.innerHTML='<p class="text-muted" style="text-align:center;padding:1rem">Sin datos</p>';return}const W=760,H=240,pad={t:16,r:16,b:28,l:38},w=W-pad.l-pad.r,h=H-pad.t-pad.b;b.innerHTML=`<canvas id="tlc" class="viz-c" width="${W}" height="${H}"></canvas><p class="text-xs text-muted mt-1"><span style="color:#10b981">— Y</span> <span style="color:#f59e0b">— X</span></p>`;const c=document.getElementById('tlc');if(!c)return;const ctx=c.getContext('2d');const mT=all[all.length-1].t||1;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;for(let i=0;i<=4;i++){ctx.beginPath();ctx.moveTo(pad.l,pad.t+h*(i/4));ctx.lineTo(pad.l+w,pad.t+h*(i/4));ctx.stroke()}ctx.strokeStyle='rgba(255,255,255,.1)';ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+h);ctx.lineTo(pad.l+w,pad.t+h);ctx.stroke();ctx.fillStyle='#5a5a72';ctx.font='8px Outfit';ctx.textAlign='center';for(let i=0;i<=8;i++)ctx.fillText((mT*i/8).toFixed(1)+'s',pad.l+w*(i/8),pad.t+h+14);const st=Math.max(1,Math.floor(all.length/400)),sa=all.filter((_,i)=>i%st===0);ctx.lineWidth=1;ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/mT)*w,y=pad.t+p.y*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(16,185,129,.5)';ctx.stroke();ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/mT)*w,y=pad.t+p.x*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(245,158,11,.5)';ctx.stroke()}
+function rDT(e,i,parts){const tb=document.getElementById('tb-p'),em=document.getElementById('empty-p');const v=parts.filter(p=>p.datos[i]&&p.datos[i].gazeData.length);if(!v.length){tb.innerHTML='';em.classList.remove('hidden');return}em.classList.add('hidden');tb.innerHTML=v.map(p=>{const d=p.datos[i];const dur=d.gazeData.length?d.gazeData[d.gazeData.length-1].tiempo.toFixed(1)+'s':'—';const ri=e.participantes.indexOf(p);const er=p.calError!=null?Math.round(p.calError)+'px':'—';const ec=p.calError!=null?(p.calError<50?'var(--accent)':p.calError<100?'var(--warn)':'var(--danger)'):'var(--muted)';return`<tr><td style="font-family:monospace;font-size:.7rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td class="text-sm">${fD(p.timestamp)}</td><td class="text-sm">${p.genero||'—'}</td><td class="text-sm">${p.edad||'—'}</td><td class="text-sm" style="color:${ec};font-weight:700">${er}</td><td class="text-sm">${d.gazeData.length.toLocaleString()}</td><td style="text-align:right"><button class="btn btn-red btn-sm" onclick="delP('${e.id}',${ri})"><i class="fas fa-trash"></i></button></td></tr>`}).join('')}
+function rRP(e,i,parts){const b=document.getElementById('rp-box');const es=e.estimulos[i];if(!es||es.tipoRespuesta==='ninguna'){b.innerHTML='<p class="text-muted" style="text-align:center;padding:1rem">Este estímulo no tiene pregunta</p>';return}let h=`<p class="fw800 mb-1" style="font-size:.9rem">${es.nombre}</p><p class="text-muted text-sm mb-2">${es.instruccion}</p><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Participante</th><th style="text-align:left;padding:6px 8px;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)">Respuesta</th></tr></thead><tbody>`;parts.forEach(p=>{h+=`<tr><td style="font-family:monospace;font-size:.7rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td class="text-sm">${p.respuestas?.[i]||'—'}</td></tr>`});h+='</tbody></table>';b.innerHTML=h}
+window.delP=function(eid,pi){const e=gE(eid);if(!e)return;e.participantes.splice(pi,1);sv();mostrarRes(eid);toast('Eliminado','in')};
+window.expCSV=function(){const e=gE(eId);if(!e)return;let csv='ID;Genero;Edad;ErrorCal;Estimulo;Tiempo;X;Y;X_Norm;Y_Norm;Respuesta\n';e.participantes.forEach(p=>{p.datos.forEach((d,di)=>{const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>{csv+=`${p.id};${p.genero};${p.edad};${p.calError?.toFixed(1)||''};${e.estimulos[di]?.nombre};${g.tiempo.toFixed(3)};${g.x};${g.y};${(g.x/vw).toFixed(4)};${(g.y/vh).toFixed(4)};${p.respuestas?.[di]||''}\n`})})});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=`eyetrack_${e.nombre.replace(/\s+/g,'_')}.csv`;a.click();toast('CSV descargado')};
+window.expPNG=function(){const c=document.getElementById('hmc');if(!c){toast('Genere mapa primero','er');return}const a=document.createElement('a');a.download='heatmap.png';a.href=c.toDataURL();a.click();toast('PNG descargado')};
+window.importar=function(){const t=document.getElementById('imp-ta').value.trim();if(!t){toast('Pegue código','er');return}try{const d=JSON.parse(t);if(!d.studyId||!d.participantId)throw 0;const e=gE(d.studyId);if(!e){toast('Estudio no existe','er');return}if(e.participantes.some(p=>p.id===d.participantId)){toast('Ya existe','er');return}e.participantes.push({id:d.participantId,timestamp:d.timestamp,genero:d.genero||'',edad:d.edad||'',calError:d.calError||null,datos:d.datosEstimulos,respuestas:d.respuestas||{}});sv();document.getElementById('imp-ta').value='';mostrarRes(d.studyId);toast('Importado')}catch(e){toast('Error en formato','er')}};
 
-            // Dibujar AOIs
-            est.aois.forEach(aoi => {
-                ctx.strokeStyle = aoi.color;
-                ctx.lineWidth = 1.5;
-                ctx.setLineDash([4, 3]);
-                ctx.strokeRect(aoi.x * cW, aoi.y * cH, aoi.w * cW, aoi.h * cH);
-                ctx.setLineDash([]);
-            });
+/* ========== PARTICIPANTE ========== */
+async function iniPart(id){
+    const e=gE(id);if(!e){mostrarLogin();toast('No encontrado','er');return}
+    eId=id;fase='idle';dPorEst={};dGA=[];cCnt=0;dRC=[];pV=true;pxA=0;pyA=0;eC='esp';mAct=[];cPN=e.calibracionPts||9;respAct='';
+    let idx=e.estimulos.map((_,i)=>i);const fijos=idx.filter(i=>e.estimulos[i].fijo),noFijos=idx.filter(i=>!e.estimulos[i].fijo);
+    if(e.orden==='aleatorio')noFijos.sort(()=>Math.random()-.5);
+    ordEj=[...fijos,...noFijos];ejIdx=0;
+    document.getElementById('app').classList.add('hidden');document.getElementById('sec-part').classList.remove('hidden');
+    ['p-bien','p-carga','p-cal','p-score','p-val','p-resp','p-trans','p-fin'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+    document.getElementById('est-p').style.display='none';document.getElementById('punto-cal').style.display='none';document.getElementById('cursor-val').style.display='none';
+    document.getElementById('p-gen').value='';document.getElementById('p-edad').value='';
+    document.getElementById('bw-nom').textContent=e.nombre;document.getElementById('bw-cant').textContent=e.estimulos.length;
+    document.getElementById('p-bien').classList.remove('hidden');
+}
+window.partOK=async function(){
+    const g=document.getElementById('p-gen').value,ed=document.getElementById('p-edad').value;
+    if(!g||!ed){toast('Complete género y edad','er');return}
+    window._pG=g;window._pE=ed;
+    document.getElementById('p-bien').classList.add('hidden');document.getElementById('p-carga').classList.remove('hidden');
+    document.getElementById('txt-carga').textContent='Cargando modelo...';
+    try{
+        const v=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+        flm=await FaceLandmarker.createFromOptions(v,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"GPU"},runningMode:"VIDEO",numFaces:1});
+        document.getElementById('txt-carga').textContent='Activando cámara...';
+        const s=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});
+        const vid=document.getElementById('vid-p');vid.srcObject=s;await vid.play();
+        document.getElementById('p-carga').classList.add('hidden');document.getElementById('p-cal').classList.remove('hidden');
+        document.getElementById('punto-cal').style.display='block';sPC('rojo');mPC(0);
+        document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (1 de ${gCP(cPN).length})`;
+        fase='calibrando';pVid();
+    }catch(err){document.getElementById('p-carga').classList.remove('hidden');document.getElementById('txt-carga').innerHTML=`<span style="color:var(--danger)">Error: ${err.message}</span><br><br><button class="btn btn-ghost" onclick="location.reload()">Reintentar</button>`}
+};
+function sPC(c){document.getElementById('punto-cal').className=c}
+function mPC(i){const p=gCP(cPN)[i],el=document.getElementById('punto-cal');el.style.left=p.x+'px';el.style.top=p.y+'px';eC='esp';sPC('rojo');mAct=[]}
+async function pVid(){
+    if(fase==='idle'||fase==='fin')return;const st=performance.now(),vid=document.getElementById('vid-p');
+    if(vid.readyState>=2&&flm){const r=await flm.detectForVideo(vid,st);if(r.faceLandmarks&&r.faceLandmarks.length>0){const lm=r.faceLandmarks[0];let pX=((lm[468].x-lm[33].x)/(lm[133].x-lm[33].x)+(lm[473].x-lm[362].x)/(lm[263].x-lm[362].x))/2;let pY=((lm[468].y-lm[159].y)/(lm[145].y-lm[159].y)+(lm[473].y-lm[386].y)/(lm[374].y-lm[386].y))/2;cRX=pX;cRY=pY;
+    if(fase==='calibrando'){if(pV){pxA=pX;pyA=pY;pV=false}let sX=(pxA*ps)+(pX*(1-ps)),sY=(pyA*ps)+(pY*(1-ps));let dX=Math.abs(sX-pxA),dY=Math.abs(sY-pYA);pxA=sX;pyA=sY;if(eC==='fijando'||eC==='listo')mAct.push({x:sX,y:sY});if(dX<UM&&dY<UM){if(eC==='esp'){eC='fij';tFI=performance.now();sPC('amarillo')}else if(eC==='fij'&&performance.now()-tFI>=DF){eC='listo';sPC('verde')}}else{eC='esp';sPC('rojo');mAct=[]}}
+    else if(fase==='rastreando'){let fX=rIX+rSX*pX,fY=rIY+rSY*pY;if(pV){pxA=fX;pyA=fY;pV=false}let smX=(pxA*ps)+(fX*(1-ps)),smY=(pyA*ps)+(fY*(1-ps));smX=Math.max(0,Math.min(innerWidth,smX));smY=Math.max(0,Math.min(innerHeight,smY));pxA=smX;pyA=smY;dGA.push({tiempo:(st-tIG)/1000,x:Math.round(smX),y:Math.round(smY)})}
+    else if(fase==='validando'){let fX=rIX+rSX*pX,fY=rIY+rSY*pY;if(pV){pxA=fX;pyA=fY;pV=false}let smX=(pxA*ps)+(fX*(1-ps)),smY=(pyA*ps)+(fY*(1-ps));smX=Math.max(0,Math.min(innerWidth,smX));smY=Math.max(0,Math.min(innerHeight,smY));pxA=smX;pyA=smY;const cv=document.getElementById('cursor-val');cv.style.left=smX+'px';cv.style.top=smY+'px'}}}
+    requestAnimationFrame(pVid);
+}
+document.addEventListener('click',function(ev){if(fase!=='calibrando')return;if(['BUTTON','TEXTAREA','INPUT','SELECT','LABEL'].includes(ev.target.tagName))return;if(eC!=='listo'){document.getElementById('txt-cal').textContent='Aún no está verde.';return}const pts=gCP(cPN);let ax=cRX,ay=cRY;if(mAct.length>=5){ax=mAct.reduce((s,m)=>s+m.x,0)/mAct.length;ay=mAct.reduce((s,m)=>s+m.y,0)/mAct.length}dRC.push({rawX:ax,rawY:ay,screenX:pts[cCnt].x,screenY:pts[cCnt].y,tipo:pts[cCnt].t});cCnt++;mAct=[];if(cCnt<pts.length){document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (${cCnt+1} de ${pts.length})`;mPC(cCnt)}if(cCnt===pts.length)fCal()});
+function fCal(){pV=true;const rX=linR(dRC,'rawX','screenX'),rY=linR(dRC,'rawY','screenY');rIX=rX.intercept;rSX=rX.slope;rIY=rY.intercept;rSY=rY.slope;cErr=cErr();document.getElementById('punto-cal').style.display='none';document.getElementById('p-cal').classList.add('hidden');const ring=document.getElementById('s-ring'),num=document.getElementById('s-num'),cat=document.getElementById('s-cat'),desc=document.getElementById('s-desc');const err=Math.round(cErr);num.textContent=err;let col,lab;if(err<40){col='var(--accent)';lab='Excelente'}else if(err<80){col='var(--accent)';lab='Buena'}else if(err<120){col='var(--warn)';lab='Aceptable'}else if(err<200){col='#f97316';lab='Baja'}else{col='var(--danger)';lab='Mala'}ring.style.borderColor=col;num.style.color=col;cat.style.color=col;cat.textContent=lab+' ('+err+'px)';desc.textContent=err<80?'Puede continuar con confianza.':'Se recomienda verificar.';document.getElementById('p-score').classList.remove('hidden');fase='score'}
+window.iniVal=function(){document.getElementById('p-score').classList.add('hidden');document.getElementById('p-val').classList.remove('hidden');document.getElementById('punto-cal').style.display='block';document.getElementById('cursor-val').style.display='block';pV=true;vSi=0;vNo=0;vIdx=0;const w=innerWidth,h=innerHeight;vPts=[{x:w*(.2+Math.random()*.6),y:h*(.2+Math.random()*.6)},{x:w*(.1+Math.random()*.8),y:h*(.1+Math.random()*.8)},{x:w*(.15+Math.random()*.7),y:h*(.15+Math.random()*.7)}];fase='validando';mVP(0)};
+function mVP(i){const p=vPts[i];document.getElementById('punto-cal').style.left=p.x+'px';document.getElementById('punto-cal').style.top=p.y+'px';sPC('rojo');document.getElementById('txt-val').textContent=`¿El cursor cyan sigue al punto? (${i+1}/3)`}
+window.vR=function(ok){if(ok)vSi++;else vNo++;vIdx++;if(vIdx<3)mVP(vIdx);else{fase='idle';document.getElementById('punto-cal').style.display='none';document.getElementById('cursor-val').style.display='none';document.getElementById('p-val').classList.add('hidden');if(vSi>=2){toast('OK');iniEstEj(0)}else{toast('Fallida, recalibre','er');document.getElementById('p-score').classList.remove('hidden');document.getElementById('btn-ver').innerHTML='<i class="fas fa-crosshairs"></i> Reintentar'}}};
+window.skipVal=function(){document.getElementById('p-score').classList.add('hidden');if(cErr>150)toast('Error alto','er');iniEstEj(0)};
+window.recal=function(){document.getElementById('p-score').classList.add('hidden');document.getElementById('p-cal').classList.remove('hidden');document.getElementById('punto-cal').style.display='block';cCnt=0;dRC=[];pV=true;pxA=0;pyA=0;eC='esp';mAct=[];mPC(0);document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (1 de ${gCP(cPN).length})`;fase='calibrando'};
 
-            // Info de fijaciones
-            const totalDurFij = fijaciones.reduce((s, f) => s + f.duracion, 0);
-            const avgDur = fijaciones.length > 0 ? totalDurFij / fijaciones.length : 0;
-            info.innerHTML = `
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div>
-                        <div class="text-3xl font-extrabold text-accent">${fijaciones.length}</div>
-                        <div class="text-muted text-xs mt-1">Fijaciones</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-extrabold text-txt">${avgDur.toFixed(0)}ms</div>
-                        <div class="text-muted text-xs mt-1">Duracion promedio</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-extrabold text-txt">${totalDurFij.toFixed(0)}ms</div>
-                        <div class="text-muted text-xs mt-1">Tiempo total en fijaciones</div>
-                    </div>
-                    <div>
-                        <div class="text-3xl font-extrabold text-txt">${datos.length}</div>
-                        <div class="text-muted text-xs mt-1">Puntos crudos</div>
-                    </div>
-                </div>
-                <p class="text-muted text-xs mt-4 text-center">Las circulos verdes representan fijaciones (tamano proporcional a la duracion). Los numeros indican el orden.</p>
-            `;
-        };
-        img.src = est.imagenUrl;
-    }
+function iniEstEj(idx){if(idx>=ordEj.length){termPart();return}const eRI=ordEj[idx],e=gE(eId);if(!e){termPart();return}const es=e.estimulos[eRI];ejIdx=idx;dGA=[];pV=true;document.getElementById('p-trans').classList.remove('hidden');document.getElementById('txt-trans').textContent=`${idx+1} de ${ordEj.length}: ${es.nombre}`;const img=document.getElementById('est-p');img.src=es.imageUrl;img.style.display='none';const go=()=>{document.getElementById('p-trans').classList.add('hidden');img.style.display='block';fase='rastreando';tIG=performance.now();let rest=es.duracion;let tm=document.createElement('div');tm.id='timer-p';tm.style.cssText='position:fixed;top:12px;right:12px;z-index:500;background:rgba(8,8,16,.9);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-weight:800;font-size:1rem;color:var(--accent);font-family:Outfit,sans-serif';tm.textContent=rest+'s';document.getElementById('sec-part').appendChild(tm);const iv=setInterval(()=>{rest--;tm.textContent=rest+'s';if(rest<=5)tm.style.color='var(--danger)';if(rest<=0){clearInterval(iv);tm.remove();finEstEj(eRI,es.pausa||e.pausaGlobal||2)}},1000)};if(img.complete&&img.naturalWidth)go();else{img.onload=go;img.onerror=()=>{toast('Error cargando imagen','er');finEstEj(eRI,0)}}}
+function finEstEj(eRI,pausa){fase='idle';dPorEst[eRI]={gazeData:[...dGA],viewportWidth:innerWidth,viewportHeight:innerHeight};document.getElementById('est-p').style.display='none';const e=gE(eId),es=e.estimulos[eRI];if(es.tipoRespuesta!=='ninguna'&&es.instruccion){mostrarPreg(eRI,es);return}if(pausa>0)setTimeout(()=>iniEstEj(ejIdx+1),pausa*1000);else iniEstEj(ejIdx+1)}
+function mostrarPreg(eRI,es){respAct='';const p=document.getElementById('p-resp');document.getElementById('r-inst').textContent=es.instruccion;const oD=document.getElementById('r-opts'),rD=document.getElementById('r-rate');oD.innerHTML='';rD.innerHTML='';oD.style.display='none';rD.style.display='none';document.getElementById('btn-r-ok').disabled=true;if(es.tipoRespuesta==='opcion'){oD.style.display='flex';oD.innerHTML=es.opciones.split(',').map(o=>o.trim()).filter(o=>o).map(o=>`<div class="resp-opt" onclick="selRO(this,'${o.replace(/'/g,"\\'")}')">${o}</div>`).join('')}else if(es.tipoRespuesta==='valoracion'){rD.style.display='flex';rD.innerHTML=[1,2,3,4,5].map(n=>`<div class="resp-rate" onclick="selRR(this,${n})">${n}</div>`).join('')}p.classList.remove('hidden');fase='respondiendo'}
+window.selRO=function(el,v){document.querySelectorAll('.resp-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');respAct=v;document.getElementById('btn-r-ok').disabled=false};
+window.selRR=function(el,v){document.querySelectorAll('.resp-rate').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');respAct=''+v;document.getElementById('btn-r-ok').disabled=false};
+window.confResp=function(){document.getElementById('p-resp').classList.add('hidden');if(!window._rps)window._rps={};window._rps[ordEj[ejIdx]]=respAct;const e=gE(eId),es=e.estimulos[ordEj[ejIdx]];const pausa=es.pausa||e.pausaGlobal||2;if(pausa>0)setTimeout(()=>iniEstEj(ejIdx+1),pausa*1000);else iniEstEj(ejIdx+1)};
+function termPart(){fase='fin';const vid=document.getElementById('vid-p');if(vid.srcObject)vid.srcObject.getTracks().forEach(t=>t.stop());const p={id:gid(),timestamp:new Date().toISOString(),genero:window._pG||'',edad:window._pE||'',calError:cErr,datos:dPorEst,respuestas:window._rps||{}};const e=gE(eId);if(e){e.participantes.push(p);sv()}document.getElementById('codigo-d').value=JSON.stringify({studyId:eId,participantId:p.id,timestamp:p.timestamp,genero:p.genero,edad:p.edad,calError:p.calError,datosEstimulos:p.datos,respuestas:p.respuestas});document.getElementById('p-fin').classList.remove('hidden')}
+window.copCod=function(){const t=document.getElementById('codigo-d');t.select();navigator.clipboard.writeText(t.value).then(()=>toast('Copiado'))};
 
-    function detectarFijaciones(datos, umbralPx = 0.015, duracionMinMs = 100) {
-        if (datos.length < 2) return [];
-        const fijaciones = [];
-        let grupo = [datos[0]];
-        let grupoIdx = 0;
-
-        for (let i = 1; i < datos.length; i++) {
-            const prev = grupo[grupo.length - 1];
-            const curr = datos[i];
-            // Usar coordenadas normalizadas para independencia de resolución
-            const dist = Math.sqrt((curr.nx - prev.nx) ** 2 + (curr.ny - prev.ny) ** 2);
-
-            if (dist <= umbralPx) {
-                grupo.push(curr);
-            } else {
-                const durMs = (grupo[grupo.length - 1].tiempo - grupo[0].tiempo) * 1000;
-                if (durMs >= duracionMinMs) {
-                    grupoIdx++;
-                    fijaciones.push({
-                        nx: grupo.reduce((s, p) => s + p.nx, 0) / grupo.length,
-                        ny: grupo.reduce((s, p) => s + p.ny, 0) / grupo.length,
-                        tiempoInicio: grupo[0].tiempo,
-                        duracion: durMs,
-                        numPuntos: grupo.length,
-                        idx: grupoIdx
-                    });
-                }
-                grupo = [curr];
-            }
-        }
-        // Último grupo
-        const durMs = (grupo[grupo.length - 1].tiempo - grupo[0].tiempo) * 1000;
-        if (durMs >= duracionMinMs) {
-            grupoIdx++;
-            fijaciones.push({
-                nx: grupo.reduce((s, p) => s + p.nx, 0) / grupo.length,
-                ny: grupo.reduce((s, p) => s + p.ny, 0) / grupo.length,
-                tiempoInicio: grupo[0].tiempo,
-                duracion: durMs,
-                numPuntos: grupo.length,
-                idx: grupoIdx
-            });
-        }
-        return fijaciones;
-    }
-
-    // Exportar CSV
-    document.getElementById('btn-exportar-csv').addEventListener('click', () => {
-        const est = estado.estudios.find(e => e.id === estado.resultadosEstudioId);
-        const sesiones = estado.sesiones.filter(s => s.estudioId === estado.resultadosEstudioId);
-        if (!est || sesiones.length === 0) { toast('No hay datos para exportar', 'warning'); return; }
-
-        let csv = 'Sesion;Tiempo_s;X_Pantalla;Y_Pantalla;X_Norm;Y_Norm\n';
-        sesiones.forEach((ses, si) => {
-            ses.datos.forEach(p => {
-                csv += `${si + 1};${p.tiempo.toFixed(3)};${p.x};${p.y};${p.nx.toFixed(4)};${p.ny.toFixed(4)}\n`;
-            });
-        });
-
-        // Si hay AOIs, agregar análisis
-        if (est.aois.length > 0) {
-            csv += '\n--- ANALISIS POR AOI ---\n';
-            csv += 'AOI;Sesion;Puntos_Dentro;Tiempo_s;Porcentaje\n';
-            const fps = 30;
-            sesiones.forEach((ses, si) => {
-                const totalPts = ses.datos.length;
-                est.aois.forEach(aoi => {
-                    const dentro = ses.datos.filter(p =>
-                        p.nx >= aoi.x && p.nx <= aoi.x + aoi.w &&
-                        p.ny >= aoi.y && p.ny <= aoi.y + aoi.h
-                    );
-                    const t = dentro.length / fps;
-                    const pct = totalPts > 0 ? (dentro.length / totalPts * 100) : 0;
-                    csv += `${aoi.nombre};${si + 1};${dentro.length};${t.toFixed(2)};${pct.toFixed(1)}%\n`;
-                });
-            });
-        }
-
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = `eyetrack_${est.nombre.replace(/\s+/g, '_')}.csv`;
-        a.style.display = 'none'; document.body.appendChild(a); a.click();
-        document.body.removeChild(a); URL.revokeObjectURL(url);
-        toast('CSV descargado');
-    });
-
-    // ===================== INICIALIZACION =====================
-    cargarDatos();
-    // Si ya hay datos, podrían ir al dashboard directamente, pero mejor siempre mostrar login
-    mostrarPantalla('screen-login');
-
+handleHash();
 </script>
 </body>
 </html>
