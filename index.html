@@ -161,6 +161,7 @@
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
         #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
+        /* CORRECCIÓN: Se eliminó crossorigin="anonymous" de esta etiqueta para evitar que el navegador bloquee las URLs externas */
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
         .login-container { max-width: 400px; margin: 0 auto; padding: 4rem 1.5rem; }
@@ -367,7 +368,8 @@
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
         <video id="video-participante" playsinline></video>
-        <img id="estimulo-participante" alt="Estímulo" crossorigin="anonymous">
+        <!-- Eliminado el atributo crossorigin para evitar que el navegador bloquee las URLs externas y deje la pantalla negra -->
+        <img id="estimulo-participante" alt="Estímulo">
         <div id="punto-calibracion" class="rojo"></div>
 
         <div id="p-demografia" class="pantalla-participante">
@@ -468,17 +470,15 @@
         let streamCamara = null;
         let estimulosOrdenadosActuales = [];
         let datosDemograficosTemp = {};
-        // MODIFICADO: Aseguramos que se reinicie cada vez que alguien participa
         let resultadosParticipanteGaze = {};
 
-        // Función global de UI (Toast)
         window.mostrarToast = (mensaje, tipo = 'success') => {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${tipo}`;
             toast.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i> ${mensaje}`;
             container.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000); // 4 segundos de duración
+            setTimeout(() => toast.remove(), 4000); 
         };
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -533,7 +533,7 @@
 
         window.simularPrueba = (id) => {
             estudioActualId = id;
-            resultadosParticipanteGaze = {}; // Reset vital para no cruzar datos
+            resultadosParticipanteGaze = {}; 
             datosDemograficosTemp = {};
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
@@ -704,7 +704,7 @@
             card.querySelector('.preview-txt').style.display = 'none';
         }
 
-        // MODIFICADO: UI Toast explícito para el guardado
+        // CORRECCIÓN: Alerta infalible para asegurar la visualización del guardado
         window.guardarEstudio = () => {
             const idEdit = document.getElementById('edit-estudio-id').value;
             const nombre = document.getElementById('create-nombre').value.trim();
@@ -725,7 +725,7 @@
             });
 
             if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
-                mostrarToast('No se puede guardar: Asigna un nombre y asegúrate de cargar al menos una imagen.', 'error');
+                alert('⚠️ No se puede guardar: Asigna un nombre y asegúrate de cargar al menos una imagen.');
                 return;
             }
 
@@ -752,8 +752,8 @@
 
             localStorage.setItem('et_estudios', JSON.stringify(estudios));
             
-            // Reemplazado alert por el toast de diseño
-            mostrarToast('Estudio guardado correctamente', 'success');
+            // Pop-up nativo para confirmación absoluta
+            alert('✅ ¡Estudio guardado exitosamente!');
             navegarA('dashboard');
         };
 
@@ -822,7 +822,7 @@
             const container = document.createElement('div');
             container.className = 'heatmap-container';
             const img = document.createElement('img');
-            img.crossOrigin = "anonymous"; 
+            // Eliminado crossorigin del heatmap para evitar problemas de redibujado con URLs
             img.src = material.imagen;
             const canvas = document.createElement('canvas');
             container.appendChild(img);
@@ -941,9 +941,9 @@
             }
         };
 
-        // MODIFICADO: Orden de puntos - Centro (primero), Arriba-Izquierda, Arriba-Derecha, Abajo-Derecha, Abajo-Izquierda
+        // CORRECCIÓN: Orden de calibración ideal (Centro primero)
         const puntosCalibracion = [
-            { top: '50%', left: '50%' },  // Centro
+            { top: '50%', left: '50%' },  // Centro 
             { top: '10%', left: '10%' },  // Arriba - Izquierda
             { top: '10%', left: '90%' },  // Arriba - Derecha
             { top: '90%', left: '90%' },  // Abajo - Derecha
@@ -1017,6 +1017,10 @@
             document.getElementById('p-pregunta').style.display = 'none';
             const mat = estimulosOrdenadosActuales[materialActualIndex];
             const imgEl = document.getElementById('estimulo-participante');
+            
+            // Manejo de error por si la imagen sigue caída
+            imgEl.onerror = () => { console.warn("La imagen no cargó. Puede que la URL sea inválida o esté protegida."); };
+            
             imgEl.src = mat.imagen;
             imgEl.style.display = 'block';
 
@@ -1057,40 +1061,31 @@
             }, duracionMs);
         };
 
-        // MODIFICADO: Sistema seguro para evitar crash al guardar datos
+        // CORRECCIÓN: Prevención de crash al guardar
         function finalizarParticipacion() {
-            // Control de errores (Try-Catch) para evitar que la cámara congele la página
             try {
                 if (streamCamara) {
                     streamCamara.getTracks().forEach(t => t.stop());
                 }
             } catch (error) {
-                console.warn("La cámara ya estaba detenida o bloqueada por el navegador");
+                console.warn("Ignorando error al apagar cámara", error);
             }
 
-            // Validar que exista el array de participantes
-            if (!estudioParticipanteObj.participantes) {
-                estudioParticipanteObj.participantes = [];
-            }
+            if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
             
-            // Empujar el nuevo participante a la memoria
             estudioParticipanteObj.participantes.push({
                 id: 'part_' + Math.random().toString(36).substr(2, 9),
                 fecha: Date.now(),
                 ...datosDemograficosTemp,
-                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial || {}
+                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial
             });
 
-            // Sobrescribir en la base de datos local
             const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
             if (idx !== -1) {
                 estudios[idx] = estudioParticipanteObj;
                 localStorage.setItem('et_estudios', JSON.stringify(estudios));
-            } else {
-                console.error("Error: No se encontró el estudio para guardar los datos.");
             }
 
-            // Mostrar pantalla de fin de estudio garantizado
             document.getElementById('p-fin').style.display = 'flex';
         }
     </script>
