@@ -132,7 +132,8 @@
             width: 50px; height: 50px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            transition: background-color 0.4s, box-shadow 0.4s, transform 0.2s;
+            /* Se añade transición suave para moverse entre las esquinas */
+            transition: background-color 0.4s, box-shadow 0.4s, transform 0.2s, top 0.6s ease-in-out, left 0.6s ease-in-out;
             font-size: 0.75rem; font-weight: 800; color: white; user-select: none;
         }
         #punto-calibracion:active { transform: translate(-50%, -50%) scale(0.9); }
@@ -294,12 +295,17 @@
 
             <!-- RESULTADOS -->
             <div id="view-results" class="view">
-                <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
-                    <button class="btn btn-secondary btn-sm" onclick="navegarA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
-                    <div>
-                        <h2 style="font-weight:800; font-size:1.4rem;" id="results-titulo">Resultados</h2>
-                        <p style="color:var(--muted); font-size:0.85rem;" id="results-subtitulo"></p>
+                <!-- Modificación: Contenedor con botón CSV -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+                    <div style="display:flex; align-items:center; gap:1rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="navegarA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
+                        <div>
+                            <h2 style="font-weight:800; font-size:1.4rem;" id="results-titulo">Resultados</h2>
+                            <p style="color:var(--muted); font-size:0.85rem;" id="results-subtitulo"></p>
+                        </div>
                     </div>
+                    <!-- Botón Exportar CSV -->
+                    <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> Exportar a CSV</button>
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
@@ -399,7 +405,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
-                        <br><br>Sigue las instrucciones en pantalla. Para calibrar, <strong>mira fijamente el punto rojo y haz clic sobre él cuando se ponga verde</strong>.
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos rojos en las esquinas y centro. <strong>Míralos fijamente y haz clic sobre ellos cuando se pongan verdes</strong>.
                     </p>
                     <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-check"></i> Acepto y calibrar cámara
@@ -428,7 +434,8 @@
             <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado!</h2>
             <p style="color:var(--muted); max-width:400px; text-align:center;">Tus datos de atención ocular han sido guardados correctamente.</p>
-            <button class="btn btn-secondary" onclick="window.location.href = window.location.href.split('?')[0]">Volver al inicio</button>
+            <!-- Modificado: Regresar al Dashboard internamente sin recargar la página para ver los datos de inmediato -->
+            <button class="btn btn-secondary" onclick="volverAlDashboardDesdePrueba()">Volver al Panel de Administrador</button>
         </div>
     </div>
 
@@ -450,7 +457,6 @@
         let estimulosOrdenadosActuales = [];
         let datosDemograficosTemp = {};
 
-        // Validar si entra por enlace de participante REAL
         const urlParams = new URLSearchParams(window.location.search);
         const estudioParam = urlParams.get('estudio');
 
@@ -501,11 +507,25 @@
             }
         };
 
-        // NUEVO: Función para probar sin recargar la página ni usar URLs
         window.simularPrueba = (id) => {
             estudioActualId = id;
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
+        };
+
+        // Regresar dinámicamente al Dashboard post-prueba
+        window.volverAlDashboardDesdePrueba = () => {
+            // Ocultar todas las pantallas del participante
+            document.getElementById('participant-section').style.display = 'none';
+            document.getElementById('p-fin').style.display = 'none';
+            document.getElementById('p-demografia').style.display = 'flex'; // Resetear para futura prueba
+            
+            // Mostrar Admin
+            document.getElementById('admin-section').style.display = 'block';
+            
+            // Recargar datos e ir al Dashboard
+            estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+            navegarA('dashboard');
         };
 
         function actualizarDashboard() {
@@ -541,7 +561,6 @@
                         </div>
                     </td>
                     <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
-                        <!-- Se ha modificado este botón para simular en la misma pestaña -->
                         <button class="btn btn-primary btn-sm" onclick="simularPrueba('${est.id}')" title="Probar / Simular prueba"><i class="fas fa-play"></i> Probar</button>
                         <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Dashboard Resultados"><i class="fas fa-chart-bar"></i></button>
                         <button class="btn btn-secondary btn-sm" onclick="navegarA('create', '${est.id}')" title="Editar"><i class="fas fa-edit"></i></button>
@@ -806,6 +825,55 @@
 
         window.filtrarResultadosDemografia = () => actualizarSensibilidadHeatmap();
 
+        // NUEVO: Generar y Descargar CSV
+        window.exportarCSV = () => {
+            if (!estudioActualId) return;
+            const estudio = estudios.find(e => e.id === estudioActualId);
+            if (!estudio || !estudio.participantes || estudio.participantes.length === 0) {
+                alert('No hay datos de participantes para exportar.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            // Cabeceras del CSV
+            csvContent += "Estudio,Participante_ID,Edad,Genero,Ocupacion,Material_ID,Material_Nombre,Tiempo_ms,X,Y\n";
+
+            estudio.participantes.forEach(part => {
+                if (part.gazePorMaterial) {
+                    Object.keys(part.gazePorMaterial).forEach(matId => {
+                        const material = estudio.estimulos.find(m => m.id === matId);
+                        const matNombre = material ? material.nombre : matId;
+                        const gazeData = part.gazePorMaterial[matId];
+
+                        gazeData.forEach(punto => {
+                            const row = [
+                                `"${estudio.nombre}"`, 
+                                part.id, 
+                                `"${part.edadRango}"`, 
+                                `"${part.genero}"`, 
+                                `"${part.ocupacion}"`,
+                                matId, 
+                                `"${matNombre}"`, 
+                                punto.time, 
+                                punto.x, 
+                                punto.y
+                            ].join(",");
+                            csvContent += row + "\n";
+                        });
+                    });
+                }
+            });
+
+            // Forzar descarga del archivo
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `DataEyeTracking_${estudio.nombre.replace(/\s+/g, '_')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
         // PARTICIPANTE FLUJOS
         window.validarDemografiaYConsentimiento = () => {
             const edadRango = document.getElementById('part-edad').value;
@@ -851,15 +919,41 @@
             }
         };
 
+        // NUEVO: Calibración de 5 Puntos
+        const puntosCalibracion = [
+            { top: '10%', left: '10%' }, // Arriba - Izquierda
+            { top: '10%', left: '90%' }, // Arriba - Derecha
+            { top: '90%', left: '90%' }, // Abajo - Derecha
+            { top: '90%', left: '10%' }, // Abajo - Izquierda
+            { top: '50%', left: '50%' }  // Centro
+        ];
+        let pasoCalibracionActual = 0;
+
         function iniciarCalibracionPasoAPaso() {
+            pasoCalibracionActual = 0;
+            mostrarPuntoCalibracion();
+        }
+
+        function mostrarPuntoCalibracion() {
+            if (pasoCalibracionActual >= puntosCalibracion.length) {
+                // Si ya pasó por los 5 puntos, iniciamos los estímulos
+                iniciarSecuenciaEstimulos();
+                return;
+            }
+
+            const pos = puntosCalibracion[pasoCalibracionActual];
             const punto = document.getElementById('punto-calibracion');
+            
             punto.style.display = 'flex';
-            punto.style.top = '50vh';
-            punto.style.left = '50vw';
+            // Aplicamos las coordenadas del array
+            punto.style.top = pos.top;
+            punto.style.left = pos.left;
+            
             punto.className = 'rojo';
             punto.innerHTML = ''; 
             punto.onclick = null; 
 
+            // Reducido a 1.5s por punto para no hacer la calibración tan pesada
             setTimeout(() => {
                 punto.className = 'verde';
                 punto.innerHTML = 'CLIC'; 
@@ -867,9 +961,11 @@
                 punto.onclick = () => {
                     punto.style.display = 'none';
                     punto.onclick = null;
-                    iniciarSecuenciaEstimulos();
+                    pasoCalibracionActual++;
+                    // Pausa de 300ms antes de mostrar el siguiente punto
+                    setTimeout(mostrarPuntoCalibracion, 300);
                 };
-            }, 2500); 
+            }, 1500); 
         }
 
         let estudioParticipanteObj = null;
@@ -957,6 +1053,7 @@
                 gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial
             });
 
+            // Guardar los datos en el sistema
             const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
             if (idx !== -1) {
                 estudios[idx] = estudioParticipanteObj;
