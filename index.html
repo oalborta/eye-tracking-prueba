@@ -134,7 +134,7 @@
             procesarVideo();
         };
 
-        async function procesarVideo() {
+                async function procesarVideo() {
             if (faseActual === 'fin') return;
             let startTime = performance.now();
             
@@ -160,6 +160,7 @@
                     posicionAnteriorX = smoothX;
                     posicionAnteriorY = smoothY;
 
+                    // SUAVIZAMOS LA LECTURA DEL OJO PARA QUE NO TEMBLE
                     if (!rawSmoothIniciado) {
                         rawSmoothX = promedioX;
                         rawSmoothY = promedioY;
@@ -169,6 +170,7 @@
                         rawSmoothY = rawSmoothY * 0.6 + promedioY * 0.4;
                     }
 
+                    // LÓGICA SEGÚN LA FASE
                     if (faseActual === 'calibracion') {
                         logicaCalibracion(smoothX, smoothY, rawSmoothX, rawSmoothY);
                     } else if (faseActual === 'estudio') {
@@ -179,7 +181,7 @@
                     }
                 }
             }
-            requestAnimationFrame(procesarVideo);
+            requestAnimationFrame(procesarVideo();
         }
 
         function logicaCalibracion(smoothX, smoothY, rawX, rawY) {
