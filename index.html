@@ -2,31 +2,51 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mini EyeTracker & UX Test - Pro</title>
+    <title>Mini EyeTracker & UX Test</title>
     <!-- MediaPipe Face Mesh -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f9; text-align: center; }
-        .screen { display: none; padding: 40px; height: 100vh; box-sizing: border-box; }
-        .active { display: block; }
-        input, button, select { padding: 12px; font-size: 16px; margin: 10px; width: 300px; display: block; margin-left: auto; margin-right: auto; border-radius: 5px; border: 1px solid #ccc; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background: #f0f2f5; color: #333; text-align: center; }
+        .screen { display: none; padding: 30px; min-height: 100vh; box-sizing: border-box; }
+        .active { display: flex; flex-direction: column; justify-content: center; align-items: center; }
         
-        /* Pantalla de Calibración */
-        #calibration-screen { position: relative; width: 100vw; height: 100vh; background: #111; cursor: crosshair; }
-        .calib-point {
-            position: absolute; width: 30px; height: 30px; background-color: red;
-            border-radius: 50%; transform: translate(-50%, -50%); transition: background-color 0.3s;
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); width: 450px; max-width: 90%; margin: auto; }
+        h2 { margin-top: 0; color: #1a73e8; }
+        p { color: #5f6368; }
+        
+        input[type="text"], input[type="email"], input[type="password"], input[type="file"], select {
+            width: 100%; padding: 12px; font-size: 15px; margin: 12px 0; border-radius: 6px; border: 1px solid #dadce0; box-sizing: border-box;
         }
-        .calib-point.green { background-color: #00ff00; box-shadow: 0 0 15px #00ff00; }
+        button {
+            width: 100%; padding: 12px; font-size: 15px; margin: 8px 0; border-radius: 6px; border: none; background-color: #1a73e8; color: white; font-weight: 600; cursor: pointer; transition: background 0.2s;
+        }
+        button:hover { background-color: #1557b0; }
+        .btn-secondary { background-color: #5f6368; }
+        .btn-secondary:hover { background-color: #444746; }
+        .btn-success { background-color: #137333; }
+        .btn-success:hover { background-color: #0d5023; }
+
+        /* Pantalla de Calibración */
+        #calibration-screen { position: relative; width: 100vw; height: 100vh; background: #111; cursor: crosshair; display: none; }
+        .calib-point {
+            position: absolute; width: 35px; height: 35px; background-color: #ea4335;
+            border-radius: 50%; transform: translate(-50%, -50%); cursor: pointer; box-shadow: 0 0 10px rgba(234, 67, 53, 0.5);
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .calib-point:hover { transform: translate(-50%, -50%) scale(1.1); }
+        .calib-point.green { background-color: #34a853; box-shadow: 0 0 20px #34a853; }
+
+        /* Estímulo Activo */
+        #stimulus-area {
+            max-width: 90vw; max-height: 75vh; margin: 15px auto; position: relative; border: 2px solid #dadce0; background: #fff; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        #stimulus-img { width: 100%; height: auto; display: block; }
         
         #gaze-cursor {
-            position: fixed; width: 15px; height: 15px; background: rgba(0, 255, 255, 0.7);
-            border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); display: none; z-index: 9999;
+            position: fixed; width: 15px; height: 15px; background: rgba(26, 115, 232, 0.7);
+            border: 2px solid white; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); display: none; z-index: 9999;
         }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 400px; margin: 50px auto; }
     </style>
 </head>
 <body>
@@ -36,61 +56,68 @@
     <!-- 1. PANTALLA DE LOGIN -->
     <div id="login-screen" class="screen active">
         <div class="card">
-            <h2>Iniciar Sesión</h2>
-            <p style="color: #666; font-size: 14px;">Ingresa a tu plataforma de EyeTracking</p>
+            <h2>EyeTracker UX</h2>
+            <p>Inicia sesión en tu cuenta</p>
             <input type="email" id="login-email" placeholder="Correo electrónico" value="investigador@ux.com">
             <input type="password" id="login-pass" placeholder="Contraseña" value="123456">
-            <button onclick="handleLogin()">Entrar</button>
+            <button onclick="handleLogin()">Entrar al Sistema</button>
         </div>
     </div>
 
     <!-- 2. DASHBOARD / MENÚ PRINCIPAL -->
     <div id="dashboard-screen" class="screen">
-        <div class="card" style="width: 600px;">
-            <h2>Dashboard Principal</h2>
-            <p>Bienvenido de nuevo. Selecciona una acción:</p>
-            <button onclick="showScreen('config-screen')" style="background-color: #28a745;">+ Crear Nuevo Estudio</button>
-            <button onclick="loadExistingStudy()" style="background-color: #17a2b8;">Ver Estudios Guardados</button>
+        <div class="card">
+            <h2>Dashboard</h2>
+            <p>Selecciona una opción para gestionar tus proyectos</p>
+            <button onclick="openConfigScreen('new')" class="btn-success">+ Crear Nuevo Estudio</button>
+            <button onclick="openConfigScreen('load')" class="btn-secondary">Ver Estudio Guardado</button>
         </div>
     </div>
 
     <!-- 3. CONFIGURACIÓN DE ESTUDIO Y ESTÍMULOS -->
     <div id="config-screen" class="screen">
-        <div class="card" style="width: 600px;">
+        <div class="card" style="width: 550px;">
             <h2>Configuración del Estudio</h2>
-            <input type="text" id="study-title" placeholder="Título del estudio (ej. Test Landing Page)">
+            <input type="text" id="study-title" placeholder="Título del estudio (ej. Rediseño Checkout)">
             
-            <h3 style="margin-top: 20px; text-align: left; font-size: 16px;">Gestión de Estímulos</h3>
-            <p style="text-align: left; font-size: 13px; color: #666;">Sube o define los estímulos visuales (imágenes o mockups) para este test:</p>
-            <input type="file" id="stimulus-file" accept="image/*">
+            <div style="text-align: left; margin-top: 15px;">
+                <label style="font-size: 14px; font-weight: 600; color: #5f6368;">Cargar Estímulo (Imagen):</label>
+                <input type="file" id="stimulus-file" accept="image/*" onchange="previewImage(event)">
+            </div>
             
+            <div id="preview-container" style="margin: 10px 0; max-height: 120px; overflow: hidden; display: none;">
+                <img id="img-preview" style="max-width: 100%; height: auto; border-radius: 4px;" />
+            </div>
+
             <button onclick="saveStudyAndConfig()">Guardar Estudio</button>
-            <button onclick="startCalibrationProcess()" style="background-color: #ffc107; color: black;">Probar Estudio (Modo Local)</button>
-            <button onclick="showScreen('dashboard-screen')" style="background-color: #6c757d;">Volver al Dashboard</button>
+            <button onclick="startCalibrationProcess()" style="background-color: #fbbc05; color: #202124;">Probar Estudio (Modo Local)</button>
+            <button onclick="showScreen('dashboard-screen')" class="btn-secondary">Volver al Dashboard</button>
         </div>
     </div>
 
-    <!-- 4. PANTALLA DE CALIBRACIÓN (Mirada + Clic) -->
+    <!-- 4. PANTALLA DE CALIBRACIÓN (Mirada + Clic manual) -->
     <div id="calibration-screen" class="screen">
-        <h2 style="color: white; position: absolute; top: 20px; width: 100%; text-align: center;" id="calib-instruction">
-            Calibración: Mira el punto rojo. Cuando se ponga verde, hazle clic.
+        <h2 style="color: white; position: absolute; top: 30px; width: 100%; text-align: center; font-weight: 400;" id="calib-instruction">
+            Calibración: Mira el punto rojo, hazle clic para validar.
         </h2>
         <div id="target-point" class="calib-point" style="top: 50%; left: 50%;" onclick="handleCalibrationClick()"></div>
     </div>
 
     <!-- 5. PANTALLA DE ESTÍMULO ACTIVO -->
     <div id="test-screen" class="screen">
-        <h2>Estímulo Activo</h2>
-        <p>Interactúa con el estímulo. El sistema está registrando tus acciones.</p>
-        <div id="stimulus-area" style="width: 800px; height: 450px; background: #e0e0e0; margin: 0 auto; position: relative; border: 2px dashed #999;" onclick="recordClick(event)">
-            <p style="padding-top: 200px; color: #555;" id="stimulus-view-text">[Aquí se cargará tu Estímulo visual]</p>
+        <h2 id="active-study-title" style="margin: 5px 0;">Estímulo Activo</h2>
+        <p style="margin: 0 0 10px 0; font-size: 14px;">Interactúa con el estímulo. El sistema está registrando tus interacciones.</p>
+        
+        <div id="stimulus-area" onclick="recordClick(event)">
+            <img id="stimulus-img" src="" alt="Estímulo de prueba">
         </div>
-        <button onclick="finishTest()" style="margin-top: 20px;">Finalizar Prueba</button>
+        
+        <button onclick="finishTest()" style="width: 250px; margin: 15px auto;">Finalizar Prueba</button>
     </div>
 
     <!-- 6. RESULTADOS -->
     <div id="results-screen" class="screen">
-        <div class="card" style="width: 600px;">
+        <div class="card">
             <h2>Resultados de la Sesión</h2>
             <p id="summary-data"></p>
             <button onclick="showScreen('dashboard-screen')">Volver al Dashboard</button>
@@ -101,16 +128,17 @@
     <video id="webcam" autoplay playsinline style="display:none;"></video>
 
 <script>
-    let currentStudy = { title: "", id: null, stimulus: null };
+    let currentStudy = { title: "", id: null, stimulusDataUrl: null };
     let calibStep = 0;
     const calibCoords = [
         {top: '50%', left: '50%'},
-        {top: '15%', left: '15%'},
-        {top: '15%', left: '85%'},
-        {top: '85%', left: '15%'},
-        {top: '85%', left: '85%'}
+        {top: '20%', left: '20%'},
+        {top: '20%', left: '80%'},
+        {top: '80%', left: '20%'},
+        {top: '80%', left: '80%'}
     ];
     let sessionData = { clicks: [] };
+    let temporaryImageBase64 = null;
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -119,18 +147,51 @@
 
     function handleLogin() {
         const email = document.getElementById('login-email').value;
-        if (!email) {
-            alert("Ingresa un correo válido.");
-            return;
-        }
-        // Pasamos directamente al Dashboard tras el login exitoso
+        if (!email) { alert("Ingresa un correo."); return; }
         showScreen('dashboard-screen');
+    }
+
+    function openConfigScreen(mode) {
+        if (mode === 'load') {
+            const saved = localStorage.getItem('active_study');
+            if (saved) {
+                currentStudy = JSON.parse(saved);
+                document.getElementById('study-title').value = currentStudy.title;
+                if (currentStudy.stimulusDataUrl) {
+                    document.getElementById('img-preview').src = currentStudy.stimulusDataUrl;
+                    document.getElementById('preview-container').style.display = 'block';
+                    temporaryImageBase64 = currentStudy.stimulusDataUrl;
+                }
+                alert(`Estudio cargado: "${currentStudy.title}"`);
+            } else {
+                alert("No hay estudios guardados. Crea uno nuevo.");
+                return;
+            }
+        } else {
+            // Limpiar para nuevo
+            document.getElementById('study-title').value = "";
+            document.getElementById('stimulus-file').value = "";
+            document.getElementById('preview-container').style.display = 'none';
+            temporaryImageBase64 = null;
+        }
+        showScreen('config-screen');
+    }
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                temporaryImageBase64 = e.target.result;
+                document.getElementById('img-preview').src = temporaryImageBase64;
+                document.getElementById('preview-container').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
     }
 
     function saveStudyAndConfig() {
         const title = document.getElementById('study-title').value;
-        const fileInput = document.getElementById('stimulus-file');
-        
         if (!title.trim()) {
             alert("Por favor ingresa un título para el estudio.");
             return;
@@ -139,33 +200,26 @@
         currentStudy = { 
             title, 
             id: 'study_' + Date.now(),
-            stimulus: fileInput.files.length > 0 ? fileInput.files[0].name : "Estímulo por defecto"
+            stimulusDataUrl: temporaryImageBase64 || "https://via.placeholder.com/800x450?text=Estimulo+por+Defecto"
         };
         
         localStorage.setItem('active_study', JSON.stringify(currentStudy));
         alert("¡Estudio y estímulos guardados correctamente!");
     }
 
-    function loadExistingStudy() {
+    function startCalibrationProcess() {
         const saved = localStorage.getItem('active_study');
         if (saved) {
             currentStudy = JSON.parse(saved);
-            alert(`Estudio cargado: "${currentStudy.title}" con estímulo: ${currentStudy.stimulus}`);
-            showScreen('config-screen');
-        } else {
-            alert("No hay estudios guardados todavía. Crea uno nuevo.");
-        }
-    }
-
-    function startCalibrationProcess() {
-        const saved = localStorage.getItem('active_study');
-        if (!saved) {
-            // Si no guardó, creamos uno rápido para no trabar la prueba
-            currentStudy = { title: "Estudio de Prueba Rápida", id: 'temp_' + Date.now(), stimulus: "Mockup base" };
-        } else {
-            currentStudy = JSON.parse(saved);
+        } else if (!currentStudy.title) {
+            currentStudy = { 
+                title: "Estudio Rápido", 
+                id: 'temp_' + Date.now(), 
+                stimulusDataUrl: temporaryImageBase64 || "https://via.placeholder.com/800x450?text=Mockup+Prueba" 
+            };
         }
 
+        calibStep = 0;
         initWebcam();
         showScreen('calibration-screen');
         setupCalibrationPoint();
@@ -177,12 +231,13 @@
             point.style.top = calibCoords[calibStep].top;
             point.style.left = calibCoords[calibStep].left;
             point.classList.remove('green');
-            document.getElementById('calib-instruction').innerText = `Calibración (${calibStep + 1}/5): Mira fijamente el punto rojo hasta que cambie a verde y hazle clic.`;
+            document.getElementById('calib-instruction').innerText = `Calibración (${calibStep + 1}/5): Mira fijamente el punto rojo y hazle clic.`;
         } else {
             // Fin de calibración, pasar al estímulo activo
             showScreen('test-screen');
             document.getElementById('gaze-cursor').style.display = 'block';
-            document.getElementById('stimulus-view-text').innerText = `Estímulo activo: ${currentStudy.stimulus}`;
+            document.getElementById('active-study-title').innerText = currentStudy.title;
+            document.getElementById('stimulus-img').src = currentStudy.stimulusDataUrl;
         }
     }
 
@@ -192,7 +247,7 @@
         setTimeout(() => {
             calibStep++;
             setupCalibrationPoint();
-        }, 400);
+        }, 300);
     }
 
     function recordClick(event) {
@@ -207,7 +262,6 @@
         showScreen('results-screen');
         document.getElementById('summary-data').innerHTML = `
             <strong>Estudio:</strong> ${currentStudy.title}<br>
-            <strong>Estímulo evaluado:</strong> ${currentStudy.stimulus}<br>
             <strong>Clicks registrados:</strong> ${sessionData.clicks.length}
         `;
     }
@@ -225,9 +279,13 @@
         });
         faceMesh.onResults((results) => {
             if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
-                if (calibStep < calibCoords.length) {
-                    document.getElementById('target-point').classList.add('green');
-                }
+                // Posicionamiento opcional del cursor de depuración con la nariz (landmark 1)
+                const landmarks = results.multiFaceLandmarks[0];
+                const nose = landmarks[1];
+                const cursor = document.getElementById('gaze-cursor');
+                // Mapeo básico aproximado a la pantalla
+                cursor.style.left = (window.innerWidth - (nose.x * window.innerWidth)) + 'px';
+                cursor.style.top = (nose.y * window.innerHeight) + 'px';
             }
         });
 
