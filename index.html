@@ -12,149 +12,162 @@
         :root{--bg:#07070b;--bg2:#0d0d15;--card:#11111b;--border:#1a1a2c;--fg:#e2e2ea;--muted:#5a5a72;--accent:#10b981;--accent2:#059669;--warn:#f59e0b;--danger:#ef4444;--info:#3b82f6}
         *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden}
         ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-        .g1{position:fixed;top:-250px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.05) 0%,transparent 70%);pointer-events:none}
-        .g2{position:fixed;bottom:-300px;left:-150px;width:500px;height:500px;background:radial-gradient(circle,rgba(245,158,11,.03) 0%,transparent 70%);pointer-events:none}
-        .anav{position:sticky;top:0;z-index:100;background:rgba(7,7,11,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between}
-        .anav .logo{font-weight:900;font-size:1.1rem;letter-spacing:-.5px}.anav .logo span{color:var(--accent)}
-        .anl{display:flex;gap:2px}.anl a{padding:.4rem .8rem;border-radius:7px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.8rem;transition:.2s}.anl a:hover{color:var(--fg);background:rgba(255,255,255,.03)}.anl a.act{color:var(--accent);background:rgba(16,185,129,.07)}
+        .g1{position:fixed;top:-250px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.04) 0%,transparent 70%);pointer-events:none}
+        .anav{position:sticky;top:0;z-index:100;background:rgba(7,7,11,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+        .anav .logo{font-weight:900;font-size:1.05rem}.anav .logo span{color:var(--accent)}
+        .anl{display:flex;gap:2px}.anl a{padding:.4rem .7rem;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.78rem;transition:.2s}.anl a:hover{color:var(--fg);background:rgba(255,255,255,.03)}.anl a.act{color:var(--accent);background:rgba(16,185,129,.07)}
         .v{display:none;position:relative;z-index:1}.v.act{display:block}
-        .cd{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;transition:.25s}.cd:hover{border-color:rgba(16,185,129,.12)}
-        .sc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;position:relative;overflow:hidden}
-        .sc .si{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;margin-bottom:.6rem}
-        .sc .sn{font-size:1.8rem;font-weight:900;line-height:1}.sc .sl{color:var(--muted);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-top:.3rem}
-        .b{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem .9rem;border-radius:8px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.8rem;border:none;cursor:pointer;transition:.2s;text-decoration:none;white-space:nowrap}
-        .bp{background:var(--accent);color:#fff}.bp:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(16,185,129,.25)}
+        .cd{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;transition:.2s}
+        .b{display:inline-flex;align-items:center;gap:.3rem;padding:.45rem .8rem;border-radius:7px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.78rem;border:none;cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap}
+        .bp{background:var(--accent);color:#fff}.bp:hover{background:var(--accent2)}
         .bs{background:rgba(255,255,255,.05);color:var(--fg);border:1px solid var(--border)}.bs:hover{background:rgba(255,255,255,.08)}
         .bd{background:rgba(239,68,68,.1);color:var(--danger)}.bd:hover{background:rgba(239,68,68,.18)}
         .bi{background:rgba(59,130,246,.1);color:var(--info)}.bi:hover{background:rgba(59,130,246,.18)}
         .bw{background:rgba(245,158,11,.1);color:var(--warn)}.bw:hover{background:rgba(245,158,11,.18)}
-        .bsm{padding:.3rem .6rem;font-size:.72rem;border-radius:6px}
-        .fg{margin-bottom:.85rem}.fl{display:block;font-weight:700;font-size:.7rem;color:var(--muted);margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.5px}
-        .fi{width:100%;padding:.55rem .75rem;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--fg);font-family:'Outfit',sans-serif;font-size:.85rem;outline:none;transition:.2s}
-        .fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.08)}.fi::placeholder{color:var(--muted)}
-        select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5a72' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .7rem center;padding-right:2rem}
+        .bsm{padding:.28rem .55rem;font-size:.7rem;border-radius:6px}
+        .fg{margin-bottom:.75rem}.fl{display:block;font-weight:700;font-size:.65rem;color:var(--muted);margin-bottom:.2rem;text-transform:uppercase;letter-spacing:.5px}
+        .fi{width:100%;padding:.5rem .7rem;background:var(--bg2);border:1px solid var(--border);border-radius:7px;color:var(--fg);font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;transition:.2s}
+        .fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.07)}.fi::placeholder{color:var(--muted)}
+        textarea.fi{resize:vertical;min-height:50px}
+        select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5a72' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .6rem center;padding-right:1.8rem}
         .tw{overflow-x:auto}table{width:100%;border-collapse:collapse}
-        thead th{text-align:left;padding:.5rem .65rem;font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
-        tbody td{padding:.6rem .65rem;border-bottom:1px solid rgba(26,26,44,.4);font-size:.82rem}tbody tr{transition:.12s}tbody tr:hover{background:rgba(255,255,255,.015)}
-        .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:1rem;flex-wrap:wrap}
-        .tb{padding:.5rem .85rem;background:none;border:none;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:600;font-size:.8rem;cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+        thead th{text-align:left;padding:.45rem .6rem;font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border)}
+        tbody td{padding:.55rem .6rem;border-bottom:1px solid rgba(26,26,44,.4);font-size:.8rem}tbody tr:hover{background:rgba(255,255,255,.012)}
+        .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:.85rem;flex-wrap:wrap}
+        .tb{padding:.45rem .75rem;background:none;border:none;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:600;font-size:.78rem;cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
         .tb:hover{color:var(--fg)}.tb.act{color:var(--accent);border-bottom-color:var(--accent)}
         .tc{display:none}.tc.act{display:block}
-        #toasts{position:fixed;top:70px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:.35rem}
-        .toast{padding:.6rem .9rem;border-radius:8px;font-size:.8rem;font-weight:600;animation:tI .3s ease,tO .3s ease 2.7s forwards;display:flex;align-items:center;gap:.35rem;box-shadow:0 6px 25px rgba(0,0,0,.4)}
+        #toasts{position:fixed;top:66px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:.3rem}
+        .toast{padding:.55rem .8rem;border-radius:7px;font-size:.78rem;font-weight:600;animation:tI .25s ease,tO .25s ease 2.7s forwards;display:flex;align-items:center;gap:.3rem;box-shadow:0 5px 20px rgba(0,0,0,.4)}
         .toast.ok{background:#065f46;color:#a7f3d0;border:1px solid #10b981}.toast.er{background:#7f1d1d;color:#fca5a5;border:1px solid #ef4444}.toast.in{background:#1e3a5f;color:#93c5fd;border:1px solid #3b82f6}
-        @keyframes tI{from{opacity:0;transform:translateX(70px)}to{opacity:1;transform:translateX(0)}}
-        @keyframes tO{from{opacity:1}to{opacity:0;transform:translateY(-12px)}}
-        .pbar{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden}.pbar-f{height:100%;border-radius:3px;transition:width .5s}
-        .hm-w{position:relative;display:inline-block;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#000}
-        .hm-w canvas{display:block}
-        .aoi-g{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:500px}
-        .aoi-c{aspect-ratio:16/9;border-radius:7px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:900;font-size:1.2rem;transition:.2s}.aoi-c:hover{transform:scale(1.03)}
-        .aoi-c .al{font-size:.55rem;font-weight:600;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.7px;margin-top:.15rem}
+        @keyframes tI{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes tO{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+        .pbar{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}.pbar-f{height:100%;border-radius:2px;transition:width .4s}
+        .hm-w{position:relative;display:inline-block;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#000}.hm-w canvas{display:block}
+        .aoi-g{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:480px}
+        .aoi-c{aspect-ratio:16/9;border-radius:6px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:900;font-size:1.1rem;transition:.15s;cursor:default}.aoi-c:hover{transform:scale(1.03)}
+        .aoi-c .al{font-size:.5rem;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-top:.1rem}
         .pp{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1000;background:var(--bg)}
-        #punto-cal{width:40px;height:40px;border-radius:50%;position:fixed;pointer-events:none;z-index:999999;transform:translate(-50%,-50%);display:none;transition:background .25s,box-shadow .25s}
-        #punto-cal.rojo{background:#ef4444;box-shadow:0 0 26px 9px rgba(239,68,68,.6)}
-        #punto-cal.amarillo{background:#f59e0b;box-shadow:0 0 26px 9px rgba(245,158,11,.6)}
-        #punto-cal.verde{background:#10b981;box-shadow:0 0 26px 9px rgba(16,185,129,.6)}
-        @keyframes puR{0%{transform:translate(-50%,-50%) scale(1);opacity:.5}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
-        #punto-cal::before{content:'';position:absolute;top:50%;left:50%;width:40px;height:40px;border-radius:50%;border:2px solid currentColor;animation:puR 1.5s ease-out infinite;pointer-events:none}
+        #punto-cal{width:38px;height:38px;border-radius:50%;position:fixed;pointer-events:none;z-index:999999;transform:translate(-50%,-50%);display:none;transition:background .2s,box-shadow .2s}
+        #punto-cal.rojo{background:#ef4444;box-shadow:0 0 24px 8px rgba(239,68,68,.55)}
+        #punto-cal.amarillo{background:#f59e0b;box-shadow:0 0 24px 8px rgba(245,158,11,.55)}
+        #punto-cal.verde{background:#10b981;box-shadow:0 0 24px 8px rgba(16,185,129,.55)}
+        #cursor-val{width:14px;height:14px;border-radius:50%;background:#06b6d4;position:fixed;pointer-events:none;z-index:999998;transform:translate(-50%,-50%);display:none;box-shadow:0 0 10px 4px rgba(6,182,212,.45);transition:left .07s linear,top .07s linear}
+        @keyframes puR{0%{transform:translate(-50%,-50%) scale(1);opacity:.4}100%{transform:translate(-50%,-50%) scale(2);opacity:0}}
+        #punto-cal::before{content:'';position:absolute;top:50%;left:50%;width:38px;height:38px;border-radius:50%;border:2px solid currentColor;animation:puR 1.5s ease-out infinite;pointer-events:none}
         #vid-p{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;opacity:0;pointer-events:none}
         #est-p{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:contain;z-index:1;display:none;background:#000}
-        .ita{width:100%;min-height:90px;padding:.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--fg);font-family:monospace;font-size:.72rem;resize:vertical;outline:none}.ita:focus{border-color:var(--accent)}
+        .ita{width:100%;min-height:80px;padding:.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:7px;color:var(--fg);font-family:monospace;font-size:.7rem;resize:vertical;outline:none}.ita:focus{border-color:var(--accent)}
+
+        /* Study cards */
+        .scard{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.2s;cursor:default}
+        .scard:hover{border-color:rgba(16,185,129,.15);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
+        .scard-top{display:flex;gap:1rem;padding:1rem 1.1rem}
+        .scard-thumb{width:100px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
+        .scard-body{flex:1;min-width:0}
+        .scard-name{font-weight:800;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .scard-meta{color:var(--muted);font-size:.75rem;margin-top:.2rem}
+        .scard-prog{margin-top:.5rem;display:flex;align-items:center;gap:.5rem}
+        .scard-prog span{font-size:.75rem;font-weight:600;white-space:nowrap}
+        .scard-actions{display:flex;gap:.35rem;padding:.6rem 1.1rem;border-top:1px solid var(--border);flex-wrap:wrap}
+
+        /* Estímulo item */
         .est-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.85rem;position:relative;margin-bottom:.6rem}
-        .est-item .en{position:absolute;top:-.45rem;left:.85rem;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:0 .4rem;font-size:.65rem;font-weight:800;color:var(--accent)}
-        .est-thumb{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+        .est-item .en{position:absolute;top:-.4rem;left:.8rem;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:0 .35rem;font-size:.6rem;font-weight:800;color:var(--accent)}
+        .est-thumb{width:64px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--border);flex-shrink:0;background:var(--bg)}
+        .drop-zone{border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:.2s}
+        .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(16,185,129,.03)}
+
+        /* Score ring */
+        .score-ring{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid;flex-shrink:0}
+        .score-ring .sn{font-size:1.8rem;font-weight:900;line-height:1}.score-ring .sl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:.1rem}
+
+        /* Response screen */
+        .resp-opt{padding:.75rem 1.25rem;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:.15s;font-weight:600;font-size:.9rem;background:var(--bg2);text-align:center}
+        .resp-opt:hover{border-color:var(--accent);background:rgba(16,185,129,.05)}
+        .resp-opt.sel{border-color:var(--accent);background:rgba(16,185,129,.1);color:var(--accent)}
+        .resp-rate{width:52px;height:52px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:.15s;font-weight:800;font-size:1.1rem;display:flex;align-items:center;justify-content:center;background:var(--bg2)}
+        .resp-rate:hover{border-color:var(--accent);background:rgba(16,185,129,.05)}
+        .resp-rate.sel{border-color:var(--accent);background:rgba(16,185,129,.15);color:var(--accent)}
+
         .viz-c{border-radius:10px;border:1px solid var(--border);display:block;max-width:100%;background:#000}
-        .drop-zone{border:2px dashed var(--border);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;transition:.2s;background:rgba(255,255,255,.01)}
-        .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(16,185,129,.04)}
-        .drop-zone i{font-size:2rem;color:var(--muted);margin-bottom:.5rem;display:block}
-        .sto-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:.3rem}.sto-fill{height:100%;border-radius:2px;transition:width .3s}
-        .demo-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .5rem;border-radius:20px;font-size:.7rem;font-weight:600}
+        .demo-badge{display:inline-flex;align-items:center;padding:.12rem .45rem;border-radius:16px;font-size:.68rem;font-weight:600}
         @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes fU{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.fu{animation:fU .4s ease forwards}.fu1{animation-delay:.07s;opacity:0}.fu2{animation-delay:.14s;opacity:0}.fu3{animation-delay:.21s;opacity:0}.fu4{animation-delay:.28s;opacity:0}
+        @keyframes fU{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.fu{animation:fU .35s ease forwards}.fu1{animation-delay:.06s;opacity:0}.fu2{animation-delay:.12s;opacity:0}.fu3{animation-delay:.18s;opacity:0}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+        @media(max-width:640px){.scard-top{flex-direction:column}.scard-thumb{width:100%;height:120px;object-fit:contain}.scard-actions{justify-content:center}}
     </style>
 </head>
 <body>
-<div class="g1"></div><div class="g2"></div><div id="toasts"></div>
+<div class="g1"></div><div id="toasts"></div>
 
 <!-- ==================== ADMIN ==================== -->
 <div id="sec-ad">
     <nav class="anav" id="anav" style="display:none">
         <div class="logo">Eye<span>Track</span> Pro</div>
-        <div class="anl">
-            <a href="#dashboard" data-n="dashboard" class="act"><i class="fas fa-chart-pie" style="margin-right:3px"></i> Dashboard</a>
-            <a href="#create" data-n="create"><i class="fas fa-flask" style="margin-right:3px"></i> Nuevo</a>
-        </div>
-        <div style="display:flex;align-items:center;gap:.6rem">
-            <span style="font-size:.7rem;color:var(--muted)" id="sto-info"></span>
+        <div class="anl"><a href="#dashboard" data-n="dashboard" class="act"><i class="fas fa-th-large" style="margin-right:3px"></i> Estudios</a></div>
+        <div style="display:flex;align-items:center;gap:.5rem">
+            <span style="font-size:.65rem;color:var(--muted)" id="sto-info"></span>
             <button class="b bsm bs" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i></button>
         </div>
     </nav>
-    <main style="max-width:1120px;margin:0 auto;padding:1.25rem">
+    <main style="max-width:900px;margin:0 auto;padding:1.25rem">
 
         <!-- LOGIN -->
         <div id="v-login" class="v act">
-            <div style="max-width:360px;margin:0 auto;padding:3rem 1rem" class="fu">
-                <div style="text-align:center;margin-bottom:2rem">
-                    <div style="font-size:2.6rem;font-weight:900;letter-spacing:-1px">Eye<span style="color:var(--accent)">Track</span></div>
-                    <p style="color:var(--muted);margin-top:.35rem;font-size:.85rem">Eye Tracking para Marketing</p>
-                </div>
-                <div class="cd">
-                    <div class="fg"><label class="fl">Contraseña</label><input type="password" id="inp-pass" class="fi" placeholder="Ingrese la contraseña" autofocus></div>
-                    <button class="b bp" style="width:100%;justify-content:center" onclick="login()"><i class="fas fa-lock"></i> Ingresar</button>
-                    <p style="text-align:center;margin-top:.75rem;font-size:.72rem;color:var(--muted)">Por defecto: <code style="background:var(--bg2);padding:1px 5px;border-radius:3px">admin2024</code></p>
-                </div>
+            <div style="max-width:340px;margin:0 auto;padding:3rem 1rem" class="fu">
+                <div style="text-align:center;margin-bottom:2rem"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-1px">Eye<span style="color:var(--accent)">Track</span></div><p style="color:var(--muted);margin-top:.3rem;font-size:.82rem">Eye Tracking para Marketing</p></div>
+                <div class="cd"><div class="fg"><label class="fl">Contraseña</label><input type="password" id="inp-pass" class="fi" placeholder="Contraseña" autofocus></div><button class="b bp" style="width:100%;justify-content:center" onclick="login()"><i class="fas fa-lock"></i> Ingresar</button><p style="text-align:center;margin-top:.7rem;font-size:.7rem;color:var(--muted)">Default: <code style="background:var(--bg2);padding:1px 4px;border-radius:3px">admin2024</code></p></div>
             </div>
         </div>
 
         <!-- DASHBOARD -->
         <div id="v-dashboard" class="v">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:.6rem;margin-bottom:1.25rem">
-                <div class="sc fu fu1"><div class="si" style="background:rgba(16,185,129,.1);color:var(--accent)"><i class="fas fa-flask"></i></div><div class="sn" id="s1">0</div><div class="sl">Estudios</div></div>
-                <div class="sc fu fu2"><div class="si" style="background:rgba(245,158,11,.1);color:var(--warn)"><i class="fas fa-users"></i></div><div class="sn" id="s2">0</div><div class="sl">Participantes</div></div>
-                <div class="sc fu fu3"><div class="si" style="background:rgba(59,130,246,.1);color:var(--info)"><i class="fas fa-database"></i></div><div class="sn" id="s3">0</div><div class="sl">Puntos</div></div>
-                <div class="sc fu fu4"><div class="si" style="background:rgba(239,68,68,.1);color:var(--danger)"><i class="fas fa-clock"></i></div><div class="sn" id="s4">0s</div><div class="sl">Tiempo total</div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+                <div><h2 style="font-weight:900;font-size:1.2rem">Mis Estudios</h2><p style="color:var(--muted);font-size:.8rem" id="dash-sub"></p></div>
+                <button class="b bp" onclick="nav('create')"><i class="fas fa-plus"></i> Nuevo estudio</button>
             </div>
-            <div class="cd fu fu2">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.85rem">
-                    <h2 style="font-weight:800;font-size:1.1rem">Estudios</h2>
-                    <button class="b bp bsm" onclick="nav('create')"><i class="fas fa-plus"></i> Nuevo</button>
-                </div>
-                <div class="tw"><table><thead><tr><th>Estudio</th><th>Estímulos</th><th>Progreso</th><th>Creado</th><th>Link</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="tb-est"></tbody></table></div>
-                <div id="empty-d" style="display:none;text-align:center;padding:2.5rem 1rem;color:var(--muted)"><i class="fas fa-eye" style="font-size:2.2rem;opacity:.2;display:block;margin-bottom:.6rem"></i><p style="font-weight:600">Sin estudios</p><p style="font-size:.8rem;margin-top:.25rem">Crea tu primer estudio</p></div>
+            <div id="cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:.85rem"></div>
+            <div id="empty-d" style="display:none;text-align:center;padding:4rem 1rem;color:var(--muted)">
+                <i class="fas fa-flask" style="font-size:3rem;opacity:.15;display:block;margin-bottom:.8rem"></i>
+                <p style="font-weight:700;font-size:1rem">No hay estudios aún</p>
+                <p style="font-size:.82rem;margin-top:.3rem">Crea tu primer estudio para empezar a rastrear miradas</p>
+                <button class="b bp" style="margin-top:1rem" onclick="nav('create')"><i class="fas fa-plus"></i> Crear estudio</button>
             </div>
         </div>
 
-        <!-- CREAR -->
+        <!-- CREAR / EDITAR -->
         <div id="v-create" class="v">
-            <div style="max-width:680px;margin:0 auto">
-                <h2 style="font-weight:900;font-size:1.3rem;margin-bottom:.25rem" class="fu">Nuevo Estudio</h2>
-                <p style="color:var(--muted);margin-bottom:1.25rem;font-size:.85rem" class="fu fu1">Suba imágenes desde su carpeta o agregue por URL.</p>
-                <div class="cd fu fu2">
-                    <div class="fg"><label class="fl">Nombre del estudio</label><input type="text" id="c-nom" class="fi" placeholder="Ej: Campaña verano 2025"></div>
-                    <div class="fg"><label class="fl">Participantes objetivo (por estímulo)</label><input type="number" id="c-obj" class="fi" value="10" min="1" max="500" style="max-width:140px"></div>
-                    <div style="margin-bottom:.75rem">
-                        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem">
-                            <label class="b bp" style="cursor:pointer"><i class="fas fa-folder-open"></i> Seleccionar imágenes<input type="file" accept="image/*" multiple style="display:none" id="file-input"></label>
-                            <button class="b bs" onclick="toggleURLForm()"><i class="fas fa-link"></i> Desde URL</button>
-                        </div>
-                        <div id="url-form" style="display:none;margin-bottom:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:.6rem">
-                            <div style="display:flex;gap:.4rem"><input type="text" class="fi" id="url-inp" placeholder="https://ejemplo.com/imagen.jpg"><button class="b bp bsm" onclick="addFromURL()"><i class="fas fa-plus"></i></button></div>
-                        </div>
-                        <div class="drop-zone" id="drop-zone">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p style="font-weight:600;font-size:.9rem;color:var(--muted)">Arrastre imágenes aquí</p>
-                            <p style="font-size:.75rem;color:var(--border);margin-top:.2rem">Se comprimen automáticamente a 1024px JPEG</p>
-                        </div>
+            <div style="max-width:700px;margin:0 auto">
+                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
+                    <button class="b bs bsm" onclick="nav('dashboard')"><i class="fas fa-arrow-left"></i></button>
+                    <h2 style="font-weight:900;font-size:1.2rem" id="create-titulo">Nuevo Estudio</h2>
+                </div>
+                <div class="cd">
+                    <div class="fg"><label class="fl">Nombre del estudio</label><input type="text" id="c-nom" class="fi" placeholder="Ej: Test packaging snacks"></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                        <div class="fg"><label class="fl">Participantes objetivo</label><input type="number" id="c-obj" class="fi" value="10" min="1" max="500"></div>
+                        <div class="fg"><label class="fl">Puntos de calibración</label><select class="fi" id="c-cal"><option value="5">5 rápido</option><option value="9" selected>9 recomendado</option><option value="13">13 alta precisión</option></select></div>
                     </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
+                        <div class="fg"><label class="fl">Orden de estímulos</label><select class="fi" id="c-orden"><option value="secuencial">Secuencial (como se cargan)</option><option value="aleatorio" selected>Aleatorio</option></select></div>
+                        <div class="fg"><label class="fl">Pausa entre estímulos (s)</label><input type="number" id="c-pausa" class="fi" value="2" min="0" max="30"></div>
+                    </div>
+
+                    <hr style="border-color:var(--border);margin:1rem 0">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
                         <label class="fl" style="margin:0">Estímulos (<span id="est-count">0</span>)</label>
+                        <div style="display:flex;gap:.3rem">
+                            <label class="b bp bsm" style="cursor:pointer"><i class="fas fa-folder-open"></i> Subir<img style="display:none" type="file" accept="image/*" multiple id="file-input"></label>
+                            <button class="b bs bsm" onclick="toggleURL()"><i class="fas fa-link"></i> URL</button>
+                        </div>
                     </div>
-                    <div id="est-lista"></div>
-                    <div id="est-empty" style="text-align:center;padding:1.5rem;color:var(--muted);font-size:.85rem;border:1px dashed var(--border);border-radius:8px;margin-bottom:1rem">No se agregaron estímulos aún</div>
+                    <div id="url-form" style="display:none;margin-bottom:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:.5rem"><div style="display:flex;gap:.35rem"><input type="text" class="fi" id="url-inp" placeholder="https://..."><button class="b bp bsm" onclick="addURL()"><i class="fas fa-plus"></i></button></div></div>
+                    <div class="drop-zone" id="drop-zone"><i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;color:var(--muted);display:block;margin-bottom:.3rem"></i><p style="font-size:.85rem;color:var(--muted);font-weight:600">Arrastre imágenes aquí</p></div>
+                    <div id="est-lista" style="margin-top:.75rem"></div>
+                    <div id="est-empty" style="text-align:center;padding:1.2rem;color:var(--muted);font-size:.82rem;border:1px dashed var(--border);border-radius:7px">Sin estímulos</div>
                     <div style="display:flex;gap:.5rem;margin-top:1rem">
-                        <button class="b bp" onclick="crearEstudio()"><i class="fas fa-save"></i> Guardar</button>
+                        <button class="b bp" id="btn-save" onclick="guardarEstudio()"><i class="fas fa-save"></i> Crear estudio</button>
                         <button class="b bs" onclick="nav('dashboard')">Cancelar</button>
                     </div>
                 </div>
@@ -163,31 +176,24 @@
 
         <!-- RESULTADOS -->
         <div id="v-results" class="v">
-            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap">
                 <button class="b bs bsm" onclick="nav('dashboard')"><i class="fas fa-arrow-left"></i></button>
-                <div style="flex:1;min-width:180px"><h2 style="font-weight:900;font-size:1.2rem" id="r-tit"></h2><p style="color:var(--muted);font-size:.78rem" id="r-sub"></p></div>
+                <div style="flex:1;min-width:150px"><h2 style="font-weight:900;font-size:1.15rem" id="r-tit"></h2><p style="color:var(--muted);font-size:.75rem" id="r-sub"></p></div>
             </div>
-            <div id="r-estsel" style="display:flex;gap:.3rem;margin-bottom:1rem;flex-wrap:wrap"></div>
-            <!-- Filtros demográficos -->
-            <div id="r-filtros" style="display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;align-items:flex-end">
-                <div class="fg" style="margin:0;min-width:130px"><label class="fl">Género</label><select class="fi" id="f-gen" onchange="aplicarFiltros()"><option value="">Todos</option><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option><option value="No binario">No binario</option><option value="Prefiero no decir">Prefiero no decir</option></select></div>
-                <div class="fg" style="margin:0;min-width:110px"><label class="fl">Edad</label><select class="fi" id="f-edad" onchange="aplicarFiltros()"><option value="">Todos</option><option value="18-24">18-24</option><option value="25-34">25-34</option><option value="35-44">35-44</option><option value="45-54">45-54</option><option value="55+">55+</option></select></div>
-                <div style="padding-bottom:.15rem"><span style="font-size:.78rem;color:var(--muted)" id="f-cnt">0 participantes</span></div>
+            <div id="r-estsel" style="display:flex;gap:.25rem;margin-bottom:.75rem;flex-wrap:wrap"></div>
+            <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;align-items:flex-end">
+                <div class="fg" style="margin:0;min-width:120px"><label class="fl">Género</label><select class="fi" id="f-gen" onchange="refrescarViz()"><option value="">Todos</option><option>Masculino</option><option>Femenino</option><option>No binario</option><option>Prefiero no decir</option></select></div>
+                <div class="fg" style="margin:0;min-width:100px"><label class="fl">Edad</label><select class="fi" id="f-edad" onchange="refrescarViz()"><option value="">Todos</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55+</option></select></div>
+                <span style="font-size:.75rem;color:var(--muted);padding-bottom:.1rem" id="f-cnt"></span>
             </div>
-            <div class="tabs" id="r-tabs">
-                <button class="tb act" data-t="heatmap" onclick="setTab(this,'heatmap')"><i class="fas fa-fire"></i> Calor</button>
-                <button class="tb" data-t="scanpath" onclick="setTab(this,'scanpath')"><i class="fas fa-route"></i> Scanpath</button>
-                <button class="tb" data-t="aoi" onclick="setTab(this,'aoi')"><i class="fas fa-th"></i> AOI</button>
-                <button class="tb" data-t="timeline" onclick="setTab(this,'timeline')"><i class="fas fa-chart-line"></i> Timeline</button>
-                <button class="tb" data-t="datos" onclick="setTab(this,'datos')"><i class="fas fa-users"></i> Participantes</button>
-                <button class="tb" data-t="exportar" onclick="setTab(this,'exportar')"><i class="fas fa-share-alt"></i> Compartir</button>
-            </div>
+            <div class="tabs"><button class="tb act" onclick="setTab(this,'heatmap')"><i class="fas fa-fire"></i> Calor</button><button class="tb" onclick="setTab(this,'scanpath')"><i class="fas fa-route"></i> Scanpath</button><button class="tb" onclick="setTab(this,'aoi')"><i class="fas fa-th"></i> AOI</button><button class="tb" onclick="setTab(this,'timeline')"><i class="fas fa-chart-line"></i> Timeline</button><button class="tb" onclick="setTab(this,'datos')"><i class="fas fa-users"></i> Datos</button><button class="tb" onclick="setTab(this,'respuestas')"><i class="fas fa-comment-dots"></i> Respuestas</button><button class="tb" onclick="setTab(this,'exportar')"><i class="fas fa-share-alt"></i> Exportar</button></div>
             <div id="tc-heatmap" class="tc act"><div class="cd" id="hm-box"></div></div>
             <div id="tc-scanpath" class="tc"><div class="cd" id="sp-box"></div></div>
             <div id="tc-aoi" class="tc"><div class="cd" id="aoi-box"></div></div>
             <div id="tc-timeline" class="tc"><div class="cd" id="tl-box"></div></div>
-            <div id="tc-datos" class="tc"><div class="cd"><div class="tw"><table><thead><tr><th>ID</th><th>Fecha</th><th>Género</th><th>Edad</th><th>Puntos</th><th>Duración</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="tb-part"></tbody></table></div><div id="empty-p" style="display:none;text-align:center;padding:2rem;color:var(--muted)"><i class="fas fa-users" style="font-size:1.8rem;opacity:.2;display:block;margin-bottom:.4rem"></i><p style="font-weight:600">Sin participantes</p></div></div></div>
-            <div id="tc-exportar" class="tc"><div class="cd" style="max-width:540px"><h3 style="font-weight:700;margin-bottom:.6rem;font-size:.95rem">Exportar e importar</h3><div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.25rem"><button class="b bp" onclick="expCSV()"><i class="fas fa-file-csv"></i> Descargar CSV</button><button class="b bs" onclick="expPNG()"><i class="fas fa-image"></i> Descargar Heatmap PNG</button></div><hr style="border-color:var(--border);margin-bottom:1rem"><h3 style="font-weight:700;margin-bottom:.5rem;font-size:.95rem">Importar datos de colaborador</h3><p style="color:var(--muted);font-size:.8rem;margin-bottom:.6rem">Pegue el código que le envió el colaborador.</p><textarea id="imp-ta" class="ita" placeholder="Pegue el código JSON aquí..."></textarea><button class="b bs" style="margin-top:.5rem" onclick="importarDatos()"><i class="fas fa-upload"></i> Importar</button></div></div>
+            <div id="tc-datos" class="tc"><div class="cd"><div class="tw"><table><thead><tr><th>ID</th><th>Fecha</th><th>Género</th><th>Edad</th><th>Error cal.</th><th>Puntos</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="tb-part"></tbody></table></div><div id="empty-p" style="display:none;text-align:center;padding:2rem;color:var(--muted)"><p style="font-weight:600">Sin datos</p></div></div></div>
+            <div id="tc-respuestas" class="tc"><div class="cd" id="resp-box"></div></div>
+            <div id="tc-exportar" class="tc"><div class="cd" style="max-width:500px"><h3 style="font-weight:700;margin-bottom:.5rem;font-size:.9rem">Exportar / Importar</h3><div style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem"><button class="b bp" onclick="expCSV()"><i class="fas fa-file-csv"></i> CSV</button><button class="b bs" onclick="expPNG()"><i class="fas fa-image"></i> Heatmap PNG</button></div><hr style="border-color:var(--border);margin-bottom:.75rem"><p style="font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Importar código de colaborador:</p><textarea id="imp-ta" class="ita" placeholder="JSON..."></textarea><button class="b bs" style="margin-top:.4rem" onclick="importar()"><i class="fas fa-upload"></i> Importar</button></div></div>
         </div>
     </main>
 </div>
@@ -195,368 +201,247 @@
 <!-- ==================== PARTICIPANTE ==================== -->
 <div id="sec-p" style="display:none">
     <video id="vid-p" playsinline></video>
-    <img id="est-p" alt="Estímulo">
+    <img id="est-p" alt="">
     <div id="punto-cal" class="rojo"></div>
+    <div id="cursor-val"></div>
 
     <div id="p-bien" class="pp" style="background:var(--bg)">
-        <div style="max-width:440px;text-align:center;padding:1.5rem">
-            <div style="font-size:2.3rem;font-weight:900;margin-bottom:.6rem">Eye<span style="color:var(--accent)">Track</span></div>
+        <div style="max-width:420px;text-align:center;padding:1.5rem">
+            <div style="font-size:2.2rem;font-weight:900;margin-bottom:.5rem">Eye<span style="color:var(--accent)">Track</span></div>
             <div class="cd" style="text-align:left">
-                <h3 style="font-weight:700;margin-bottom:.6rem"><i class="fas fa-flask" style="color:var(--accent);margin-right:4px"></i> <span id="bw-nom">Estudio</span></h3>
-                <p style="color:var(--muted);font-size:.85rem;line-height:1.5;margin-bottom:1rem">Se le mostrarán <strong style="color:var(--fg)" id="bw-cant">0</strong> imagen(es). Mire con naturalidad.</p>
-                <hr style="border-color:var(--border);margin-bottom:1rem">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem">
-                    <div class="fg" style="margin:0"><label class="fl">Género</label><select class="fi" id="p-gen"><option value="">Seleccione...</option><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option><option value="No binario">No binario</option><option value="Prefiero no decir">Prefiero no decir</option></select></div>
-                    <div class="fg" style="margin:0"><label class="fl">Edad</label><select class="fi" id="p-edad"><option value="">Seleccione...</option><option value="18-24">18-24</option><option value="25-34">25-34</option><option value="35-44">35-44</option><option value="45-54">45-54</option><option value="55+">55+</option></select></div>
+                <h3 style="font-weight:700;margin-bottom:.5rem;font-size:.95rem"><i class="fas fa-flask" style="color:var(--accent);margin-right:4px"></i> <span id="bw-nom"></span></h3>
+                <p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">Verá <strong style="color:var(--fg)" id="bw-cant">0</strong> imagen(es) y responderá preguntas.</p>
+                <hr style="border-color:var(--border);margin-bottom:.75rem">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem">
+                    <div class="fg" style="margin:0"><label class="fl">Género</label><select class="fi" id="p-gen"><option value="">...</option><option>Masculino</option><option>Femenino</option><option>No binario</option><option>Prefiero no decir</option></select></div>
+                    <div class="fg" style="margin:0"><label class="fl">Edad</label><select class="fi" id="p-edad"><option value="">...</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55+</option></select></div>
                 </div>
-                <p style="color:var(--muted);font-size:.8rem;line-height:1.6;margin-bottom:1rem">Su cámara se usará <strong style="color:var(--fg)">solo para trazar sus ojos</strong>. <span style="color:var(--danger);font-weight:700">No se graba video ni foto.</span></p>
+                <p style="color:var(--muted);font-size:.78rem;line-height:1.5;margin-bottom:.75rem">Cámara usada <strong style="color:var(--fg)">solo para rastrear ojos</strong>. <span style="color:var(--danger);font-weight:700">No se graba video.</span></p>
                 <button class="b bp" style="width:100%;justify-content:center" onclick="partAceptar()"><i class="fas fa-play"></i> Comenzar</button>
             </div>
         </div>
     </div>
-    <div id="p-carga" class="pp" style="background:var(--bg);display:none"><div style="text-align:center"><div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem"></div><p id="txt-carga" style="font-weight:600;font-size:.95rem">Descargando modelo...</p></div></div>
-    <div id="p-cal" class="pp" style="background:transparent;display:none;pointer-events:none"><div style="background:rgba(7,7,11,.92);backdrop-filter:blur(10px);padding:1rem 1.5rem;border-radius:10px;border:1px solid var(--border);pointer-events:auto"><p id="txt-cal" style="color:var(--warn);font-weight:700;font-size:.9rem;white-space:nowrap">Preparando...</p></div></div>
-    <div id="p-trans" class="pp" style="background:var(--bg);display:none;flex-direction:column;gap:.4rem"><div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><p style="font-weight:700;font-size:1rem">Siguiente imagen...</p><p style="color:var(--muted);font-size:.82rem" id="txt-trans"></p></div>
-    <div id="p-fin" class="pp" style="background:rgba(7,7,11,.96);display:none;flex-direction:column;gap:.85rem">
-        <div style="font-size:2.2rem;color:var(--accent)"><i class="fas fa-check-circle"></i></div>
-        <h2 style="font-weight:900;font-size:1.5rem">Completado</h2>
-        <p style="color:var(--muted);max-width:360px;text-align:center;line-height:1.5;font-size:.85rem">Copie el código y envíelo al investigador.</p>
-        <div class="cd" style="max-width:460px;width:92%"><p style="font-size:.68rem;color:var(--muted);margin-bottom:.35rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px">Código de datos</p><textarea id="codigo-d" class="ita" readonly style="min-height:60px;font-size:.6rem"></textarea><button class="b bp bsm" style="margin-top:.35rem" onclick="copiarCodigo()"><i class="fas fa-copy"></i> Copiar</button></div>
+    <div id="p-carga" class="pp" style="background:var(--bg);display:none"><div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:.75rem"></div><p id="txt-carga" style="font-weight:600;font-size:.9rem">Cargando modelo...</p></div>
+    <div id="p-cal" class="pp" style="background:transparent;display:none;pointer-events:none"><div style="background:rgba(7,7,11,.92);backdrop-filter:blur(10px);padding:.8rem 1.2rem;border-radius:9px;border:1px solid var(--border);pointer-events:auto"><p id="txt-cal" style="color:var(--warn);font-weight:700;font-size:.85rem;white-space:nowrap">...</p></div></div>
+    <div id="p-score" class="pp" style="background:var(--bg);display:none;flex-direction:column;gap:1rem">
+        <h2 style="font-weight:900;font-size:1.3rem">Calibración lista</h2>
+        <div style="display:flex;align-items:center;gap:1.2rem">
+            <div class="score-ring" id="score-ring"><div class="sn" id="score-num">0</div><div class="sl">px</div></div>
+            <div><p style="font-weight:800;font-size:1rem" id="score-cat">...</p><p style="color:var(--muted);font-size:.8rem;margin-top:.2rem" id="score-desc"></p></div>
+        </div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+            <button class="b bp" id="btn-ver" onclick="iniciarVal()"><i class="fas fa-crosshairs"></i> Verificar</button>
+            <button class="b bs" onclick="saltarVal()"><i class="fas fa-forward"></i> Continuar</button>
+            <button class="b bd" onclick="recalibrar()"><i class="fas fa-redo"></i> Recalibrar</button>
+        </div>
+    </div>
+    <div id="p-val" class="pp" style="background:transparent;display:none;pointer-events:none"><div style="background:rgba(7,7,11,.92);backdrop-filter:blur(10px);padding:.8rem 1.2rem;border-radius:9px;border:1px solid var(--border);pointer-events:auto;text-align:center"><p id="txt-val" style="color:#06b6d4;font-weight:700;font-size:.85rem">¿El cursor sigue al punto?</p><div style="display:flex;gap:.4rem;justify-content:center;margin-top:.5rem"><button class="b bp bsm" onclick="valR(true)"><i class="fas fa-check"></i> Sí</button><button class="b bd bsm" onclick="valR(false)"><i class="fas fa-times"></i> No</button></div></div></div>
+
+    <!-- RESPUESTA -->
+    <div id="p-resp" class="pp" style="background:rgba(7,7,11,.96);display:none;flex-direction:column;gap:1rem;max-width:500px;padding:2rem">
+        <p id="resp-inst" style="font-weight:700;font-size:1.1rem;text-align:center;line-height:1.4"></p>
+        <div id="resp-opts" style="display:flex;flex-direction:column;gap:.4rem"></div>
+        <div id="resp-rate" style="display:flex;gap:.5rem;justify-content:center"></div>
+        <button class="b bp" style="width:100%;justify-content:center" id="btn-resp-ok" onclick="confirmarResp()" disabled><i class="fas fa-check"></i> Confirmar</button>
+    </div>
+
+    <div id="p-trans" class="pp" style="background:var(--bg);display:none;flex-direction:column;gap:.3rem"><div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><p style="font-weight:700">Siguiente...</p><p style="color:var(--muted);font-size:.8rem" id="txt-trans"></p></div>
+    <div id="p-fin" class="pp" style="background:rgba(7,7,11,.96);display:none;flex-direction:column;gap:.7rem">
+        <div style="font-size:2rem;color:var(--accent)"><i class="fas fa-check-circle"></i></div>
+        <h2 style="font-weight:900;font-size:1.4rem">Completado</h2>
+        <p style="color:var(--muted);font-size:.82rem;text-align:center">Copie el código y envíelo al investigador.</p>
+        <div class="cd" style="max-width:440px;width:92%"><p style="font-size:.65rem;color:var(--muted);margin-bottom:.25rem;font-weight:700;text-transform:uppercase">Código</p><textarea id="codigo-d" class="ita" readonly style="min-height:55px;font-size:.58rem"></textarea><button class="b bp bsm" style="margin-top:.3rem" onclick="copiarCod()"><i class="fas fa-copy"></i> Copiar</button></div>
     </div>
 </div>
 
 <script type="module">
 import{FaceLandmarker,FilesetResolver}from"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
-// ===== ESTADO =====
 const PASS_DEF='admin2024';
-let estudios=JSON.parse(localStorage.getItem('et3_est')||'[]');
-let auth=localStorage.getItem('et3_auth')==='true';
-let estId=null,resIdx=0,estIdxAct=0;
+let estudios=JSON.parse(localStorage.getItem('et5')||'[]');
+let auth=localStorage.getItem('et5_a')==='true';
+let estId=null,resIdx=0,editId=null;
 let faceLM=null,fase='idle';
 let datosPorEst={},datosGA=[],tIniG=0;
 let pv=true,pxA=0,pyA=0,peso=.6;
-let estCal='esp',tFijI=0;
-const DUR_F=1500,UMB_M=.15;
+let estCal='esp',tFijI=0;const DUR_F=1500,UMB_M=.15;
 let calCnt=0,datRawCal=[],cRX=.5,cRY=.5;
-let sX=4.5,sY=9,oX=0,oY=0;
-let estCntr=0;
-// Estímulos temporales para crear estudio
-let tmpEstimulos=[];
+let regIX=0,regSX=1,regIY=0,regSY=1;
+let calPtsN=9,estCntr=0,tmpEst=[];
+let muestrasAct=[],calErrPx=0;
+let valPts=[],valIdx=0,valSi=0,valNo=0;
+let ordenEjecucion=[],ejecIdx=0;
+let respActual='';
 
-// ===== UTILS =====
 const gid=()=>Date.now().toString(36)+Math.random().toString(36).substr(2,5);
-function save(){try{localStorage.setItem('et3_est',JSON.stringify(estudios));updateStoInfo()}catch(e){toast('Almacenamiento lleno. Elimine estudios o use imágenes más pequeñas.','er')}}
-function toast(m,t='ok'){const c=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+t;const ic=t==='ok'?'fa-check-circle':t==='er'?'fa-exclamation-circle':'fa-info-circle';e.innerHTML=`<i class="fas ${ic}"></i> ${m}`;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
+function save(){try{localStorage.setItem('et5',JSON.stringify(estudios));uSto()}catch(e){toast('Almacenamiento lleno','er')}}
+function toast(m,t='ok'){const c=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+t;e.innerHTML=`<i class="fas ${t==='ok'?'fa-check-circle':t==='er'?'fa-exclamation-circle':'fa-info-circle'}"></i> ${m}`;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
 function fD(iso){const d=new Date(iso);return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}
 function gE(id){return estudios.find(e=>e.id===id)}
-function ptsC(){const w=innerWidth,h=innerHeight;return[{x:w/2,y:h/2,t:'centro'},{x:w*.15,y:h*.15,t:'arriba-izq'},{x:w*.85,y:h*.15,t:'arriba-der'},{x:w*.15,y:h*.85,t:'abajo-izq'},{x:w*.85,y:h*.85,t:'abajo-der'}]}
-function updateStoInfo(){let u=0;for(let k in localStorage)if(localStorage.hasOwnProperty(k))u+=localStorage[k].length*2;const mb=(u/1024/1024).toFixed(1);const el=document.getElementById('sto-info');if(el){const pct=Math.min(100,mb/5*100);const c=pct>80?'var(--danger)':pct>50?'var(--warn)':'var(--accent)';el.innerHTML=`<span style="color:${c}">${mb}MB</span> / 5MB`}}
-function genColor(gen){return gen==='Masculino'?'rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3)':gen==='Femenino'?'rgba(236,72,153,.15);color:#f472b6;border:1px solid rgba(236,72,153,.3)':gen==='No binario'?'rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3)':'rgba(255,255,255,.05);color:var(--muted);border:1px solid var(--border)'}
+function uSto(){let u=0;for(let k in localStorage)if(localStorage.hasOwnProperty(k))u+=localStorage[k].length*2;const mb=(u/1048576).toFixed(1);const el=document.getElementById('sto-info');if(el)el.innerHTML=`<span style="color:${mb>4?'var(--danger)':mb>3?'var(--warn)':'var(--accent)'}">${mb}MB</span>`}
+function linReg(pts,xk,yk){const n=pts.length;if(n<2)return{slope:1,intercept:0};const mx=pts.reduce((s,p)=>s+p[xk],0)/n,my=pts.reduce((s,p)=>s+p[yk],0)/n;let num=0,den=0;for(const p of pts){const dx=p[xk]-mx;num+=dx*(p[yk]-my);den+=dx*dx}const sl=den>1e-8?num/den:1;return{intercept:my-sl*mx,slope:sl}}
+function calcErr(){let e=0;for(const p of datRawCal){e+=Math.sqrt((regIX+regSX*p.rawX-p.screenX)**2+(regIY+regSY*p.rawY-p.screenY)**2)}return datRawCal.length?e/datRawCal.length:999}
+function getCalPts(n){const w=innerWidth,h=innerHeight;const g=(xs,ys)=>xs.map((x,i)=>({x:w*x,y:h*ys[i],t:'p'+i}));if(n===5)return g([.5,.15,.85,.15,.85],[.5,.15,.15,.85,.85]);if(n===13)return g([.15,.38,.62,.85,.15,.38,.5,.62,.85,.15,.38,.62,.85],[.15,.15,.15,.15,.5,.5,.5,.5,.5,.85,.85,.85,.85]);return g([.15,.5,.85,.15,.5,.85,.15,.5,.85],[.15,.15,.15,.5,.5,.5,.85,.85,.85])}
+function comprimir(file,mw=1024,q=.72){return new Promise((r,j)=>{const rd=new FileReader();rd.onerror=()=>j(0);rd.onload=e=>{const img=new Image();img.onerror=()=>j(0);img.onload=()=>{const ra=Math.min(1,mw/Math.max(1,img.width));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*ra));c.height=Math.max(1,Math.round(img.height*ra));c.getContext('2d').drawImage(img,0,0,c.width,c.height);r({url:c.toDataURL('image/jpeg',q),name:file.name})};img.src=e.target.result};rd.readAsDataURL(file)})}
 
-// ===== COMPRESIÓN DE IMAGEN =====
-function comprimirImg(file,maxW=1024,cal=.72){
-    return new Promise((resolve,reject)=>{
-        const reader=new FileReader();
-        reader.onerror=()=>reject(new Error('No se pudo leer'));
-        reader.onload=e=>{
-            const img=new Image();
-            img.onerror=()=>reject(new Error('Imagen inválida'));
-            img.onload=()=>{
-                const ratio=Math.min(1,maxW/Math.max(1,img.width));
-                const c=document.createElement('canvas');
-                c.width=Math.max(1,Math.round(img.width*ratio));
-                c.height=Math.max(1,Math.round(img.height*ratio));
-                c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-                resolve({dataUrl:c.toDataURL('image/jpeg',cal),width:c.width,height:c.height,name:file.name});
-            };
-            img.src=e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-// ===== ROUTER =====
-function nav(v){
-    document.querySelectorAll('#sec-ad .v').forEach(e=>e.classList.remove('act'));
-    const t=document.getElementById('v-'+v);if(t)t.classList.add('act');
-    document.querySelectorAll('.anl a').forEach(a=>{a.classList.toggle('act',a.dataset.n===v)});
-    if(v==='dashboard')renderDash();
-    if(v==='create')limpiarCrear();
-    location.hash=v;
-}
-function handleHash(){
-    const h=location.hash.replace('#','');
-    if(h.startsWith('collab/')){iniciarPart(h.split('/')[1]);return}
-    if(h.startsWith('results/')){if(!auth){nav('login');return}mostrarRes(h.split('/')[1]);return}
-    document.getElementById('sec-ad').style.display='';
-    document.getElementById('sec-p').style.display='none';
-    document.getElementById('anav').style.display=auth?'flex':'none';
-    if(!auth)nav('login');
-    else if(['dashboard','create','results'].includes(h))nav(h);
-    else nav('dashboard');
-}
+// ROUTER
+function nav(v){document.querySelectorAll('#sec-ad .v').forEach(e=>e.classList.remove('act'));const t=document.getElementById('v-'+v);if(t)t.classList.add('act');document.querySelectorAll('.anl a').forEach(a=>{a.classList.toggle('act',a.dataset.n===v)});if(v==='dashboard')renderDash();if(v==='create'&&!editId)limpiarCrear();location.hash=v}
+function handleHash(){const h=location.hash.replace('#','');if(h.startsWith('collab/')){iniciarPart(h.split('/')[1]);return}if(h.startsWith('results/')){if(!auth){nav('login');return}mostrarRes(h.split('/')[1]);return}if(h.startsWith('edit/')){if(!auth){nav('login');return}cargarEditar(h.split('/')[1]);return}document.getElementById('sec-ad').style.display='';document.getElementById('sec-p').style.display='none';document.getElementById('anav').style.display=auth?'flex':'none';if(!auth)nav('login');else if(['dashboard','create','results'].includes(h))nav(h);else nav('dashboard')}
 addEventListener('hashchange',handleHash);
-
-// ===== LOGIN =====
-window.login=function(){const p=document.getElementById('inp-pass').value;if(p===(localStorage.getItem('et3_pass')||PASS_DEF)){auth=true;localStorage.setItem('et3_auth','true');document.getElementById('inp-pass').value='';handleHash();toast('Bienvenido')}else toast('Contraseña incorrecta','er')};
+window.login=function(){if(document.getElementById('inp-pass').value===(localStorage.getItem('et5_p')||PASS_DEF)){auth=true;localStorage.setItem('et5_a','true');document.getElementById('inp-pass').value='';handleHash();toast('Bienvenido')}else toast('Incorrecta','er')};
 document.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')window.login()});
-window.cerrarSesion=function(){auth=false;localStorage.removeItem('et3_auth');document.getElementById('anav').style.display='none';nav('login');toast('Sesión cerrada','in')};
+window.cerrarSesion=function(){auth=false;localStorage.removeItem('et5_a');document.getElementById('anav').style.display='none';nav('login');toast('Sesión cerrada','in')};
 
-// ===== DASHBOARD =====
+// DASHBOARD CON CARDS
 function renderDash(){
-    let tp=0,td=0,tt=0;
-    estudios.forEach(e=>{tp+=e.participantes.length;e.participantes.forEach(p=>{p.datos.forEach(d=>{td+=d.gazeData.length;if(d.gazeData.length)tt+=d.gazeData[d.gazeData.length-1].tiempo})})});
-    document.getElementById('s1').textContent=estudios.length;
-    document.getElementById('s2').textContent=tp;
-    document.getElementById('s3').textContent=td>1000?(td/1000).toFixed(1)+'k':td;
-    document.getElementById('s4').textContent=Math.round(tt)+'s';
-    updateStoInfo();
-    const tb=document.getElementById('tb-est'),em=document.getElementById('empty-d');
-    if(!estudios.length){tb.innerHTML='';em.style.display='';return}
-    em.style.display='none';
-    tb.innerHTML=estudios.map(e=>{
-        const link=location.origin+location.pathname+'#collab/'+e.id;
-        const np=e.participantes.length,obj=e.participantesObjetivo||10;
-        const pct=Math.min(100,Math.round(np/obj*100));
+    uSto();const g=document.getElementById('cards-grid'),em=document.getElementById('empty-d');
+    let tp=0;estudios.forEach(e=>tp+=e.participantes.length);
+    document.getElementById('dash-sub').textContent=estudios.length+' estudio'+(estudios.length!==1?'s':'')+' · '+tp+' participantes';
+    if(!estudios.length){g.innerHTML='';em.style.display='';return}em.style.display='none';
+    g.innerHTML=estudios.map(e=>{
+        const np=e.participantes.length,obj=e.participantesObjetivo||10,pct=Math.min(100,Math.round(np/obj*100));
         const c=pct>=100?'var(--accent)':pct>=50?'var(--warn)':'var(--danger)';
-        return `<tr><td style="font-weight:600">${e.nombre}</td><td style="color:var(--muted)">${e.estimulos.length} img</td><td style="min-width:130px"><div style="display:flex;align-items:center;gap:.4rem"><span style="font-size:.8rem;font-weight:600;white-space:nowrap">${np}/${obj}</span><div class="pbar" style="flex:1"><div class="pbar-f" style="width:${pct}%;background:${c}"></div></div></div></td><td style="color:var(--muted);font-size:.8rem">${fD(e.createdAt)}</td><td><div style="display:flex;align-items:center;gap:.25rem;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:.2rem .4rem;max-width:180px"><code style="font-size:.65rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${link}</code><button class="b bsm bs" style="padding:1px 5px;flex-shrink:0" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Copiado'))"><i class="fas fa-copy"></i></button></div></td><td style="text-align:right;white-space:nowrap"><button class="b bsm bi" onclick="location.hash='results/${e.id}'"><i class="fas fa-chart-bar"></i></button> <button class="b bsm bd" onclick="delEst('${e.id}')"><i class="fas fa-trash"></i></button></td></tr>`}).join('');
+        const link=location.origin+location.pathname+'#collab/'+e.id;
+        const thumb=e.estimulos[0]?.imageUrl||'';
+        const hasQ=e.estimulos.some(es=>es.tipoRespuesta!=='ninguna');
+        return`<div class="scard fu">
+            <div class="scard-top">
+                <img src="${thumb}" class="scard-thumb" alt="" onerror="this.style.display='none'">
+                <div class="scard-body">
+                    <div class="scard-name">${e.nombre}</div>
+                    <div class="scard-meta">${e.estimulos.length} img · ${e.calibracionPts||9} pts calibración${hasQ?' · Con preguntas':''} · ${e.orden==='aleatorio'?'Aleatorio':'Secuencial'}</div>
+                    <div class="scard-prog"><span style="color:${c}">${np}/${obj}</span><div class="pbar" style="flex:1"><div class="pbar-f" style="width:${pct}%;background:${c}"></div></div></div>
+                </div>
+            </div>
+            <div class="scard-actions">
+                <button class="b bp bsm" onclick="location.hash='results/${e.id}'"><i class="fas fa-chart-bar"></i> Resultados</button>
+                <button class="b bi bsm" onclick="location.hash='edit/${e.id}'"><i class="fas fa-edit"></i> Editar</button>
+                <button class="b bw bsm" onclick="location.hash='collab/${e.id}'"><i class="fas fa-play"></i> Ejecutar</button>
+                <button class="b bs bsm" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link copiado'))"><i class="fas fa-link"></i> Copiar link</button>
+                <button class="b bd bsm" onclick="delEst('${e.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>`}).join('');
 }
-window.delEst=function(id){const e=gE(id);if(!e)return;const c=document.getElementById('toasts'),t=document.createElement('div');t.className='toast er';t.style.animation='tI .3s ease';t.innerHTML=`<span>Eliminar "${e.nombre}"?</span><button class="b bsm bd" style="margin-left:auto" id="dy">Si</button><button class="b bsm bs" id="dn">No</button>`;c.appendChild(t);document.getElementById('dy').onclick=()=>{estudios=estudios.filter(x=>x.id!==id);save();renderDash();t.remove();toast('Eliminado','in')};document.getElementById('dn').onclick=()=>t.remove();setTimeout(()=>{if(t.parentNode)t.remove()},8000)};
+window.delEst=function(id){const e=gE(id);if(!e)return;const c=document.getElementById('toasts'),t=document.createElement('div');t.className='toast er';t.style.animation='tI .25s ease';t.innerHTML=`<span>Eliminar "${e.nombre}"?</span><button class="b bsm bd" style="margin-left:auto" id="dy">Si</button><button class="b bsm bs" id="dn">No</button>`;c.appendChild(t);document.getElementById('dy').onclick=()=>{estudios=estudios.filter(x=>x.id!==id);save();renderDash();t.remove();toast('Eliminado','in')};document.getElementById('dn').onclick=()=>t.remove();setTimeout(()=>{if(t.parentNode)t.remove()},8000)};
 
-// ===== CREAR ESTUDIO =====
-function limpiarCrear(){document.getElementById('c-nom').value='';document.getElementById('c-obj').value='10';document.getElementById('est-lista').innerHTML='';document.getElementById('est-empty').style.display='';document.getElementById('url-form').style.display='none';document.getElementById('est-count').textContent='0';tmpEstimulos=[];estCntr=0}
+// CREAR / EDITAR
+function limpiarCrear(){editId=null;document.getElementById('create-titulo').textContent='Nuevo Estudio';document.getElementById('btn-save').innerHTML='<i class="fas fa-save"></i> Crear estudio';document.getElementById('c-nom').value='';document.getElementById('c-obj').value='10';document.getElementById('c-cal').value='9';document.getElementById('c-orden').value='aleatorio';document.getElementById('c-pausa').value='2';document.getElementById('est-lista').innerHTML='';document.getElementById('est-empty').style.display='';document.getElementById('url-form').style.display='none';document.getElementById('est-count').textContent='0';tmpEst=[];estCntr=0}
+window.cargarEditar=function(id){
+    const e=gE(id);if(!e){toast('No encontrado','er');nav('dashboard');return}
+    editId=id;nav('create');
+    document.getElementById('create-titulo').textContent='Editar: '+e.nombre;
+    document.getElementById('btn-save').innerHTML='<i class="fas fa-save"></i> Guardar cambios';
+    document.getElementById('c-nom').value=e.nombre;
+    document.getElementById('c-obj').value=e.participantesObjetivo||10;
+    document.getElementById('c-cal').value=e.calibracionPts||9;
+    document.getElementById('c-orden').value=e.orden||'aleatorio';
+    document.getElementById('c-pausa').value=e.pausaGlobal||2;
+    tmpEst=[];estCntr=0;document.getElementById('est-lista').innerHTML='';
+    e.estimulos.forEach(es=>{addEstItem(es.imageUrl,es.nombre);const el=document.getElementById('est-'+estCntr);if(!el)return;el.querySelector('.est-nom').value=es.nombre;el.querySelector('.est-inst').value=es.instruccion||'';el.querySelector('.est-tipo').value=es.tipoRespuesta||'ninguna';el.querySelector('.est-opts').value=es.opciones||'';el.querySelector('.est-dur').value=es.duracion;el.querySelector('.est-pausa').value=es.pausa||e.pausaGlobal||2;if(es.fijo)el.querySelector('.est-fijo').checked=true;toggleTipoResp(el)});
+    document.getElementById('est-count').textContent=tmpEst.length;
+    document.getElementById('est-empty').style.display=tmpEst.length?'none':'';
+};
 
-// Drag & drop
 const dz=document.getElementById('drop-zone');
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
 dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');procesarArchivos(e.dataTransfer.files)});
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');procF(e.dataTransfer.files)});
 dz.addEventListener('click',()=>document.getElementById('file-input').click());
-document.getElementById('file-input').addEventListener('change',e=>{procesarArchivos(e.target.files);e.target.value=''});
+document.getElementById('file-input').addEventListener('change',e=>{procF(e.target.files);e.target.value=''});
+async function procF(files){const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));if(!imgs.length)return;toast(`Procesando ${imgs.length}...`,'in');for(const f of imgs){try{const r=await comprimir(f);addEstItem(r.url,f.name.replace(/\.[^.]+$/,''))}catch(e){toast('Error: '+f.name,'er')}}toast('Listo')}
+window.toggleURL=()=>{const f=document.getElementById('url-form');f.style.display=f.style.display==='none'?'':'none'};
+window.addURL=function(){const u=document.getElementById('url-inp').value.trim();if(!u){toast('URL','er');return}addEstItem(u,'Imagen URL');document.getElementById('url-inp').value='';document.getElementById('url-form').style.display='none'};
 
-async function procesarArchivos(files){
-    const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));
-    if(!imgs.length){toast('No se encontraron imágenes','er');return}
-    toast(`Procesando ${imgs.length} imagen(es)...`,'in');
-    for(const f of imgs){
-        try{
-            const r=await comprimirImg(f);
-            agregarEstimuloItem(r.dataUrl,r.name,f.name.replace(/\.[^.]+$/,''));
-        }catch(err){toast(`Error con ${f.name}: ${err.message}`,'er')}
-    }
-    toast('Imágenes procesadas');
-}
-window.toggleURLForm=()=>{const f=document.getElementById('url-form');f.style.display=f.style.display==='none'?'':'none'};
-window.addFromURL=function(){
-    const url=document.getElementById('url-inp').value.trim();
-    if(!url){toast('Ingrese URL','er');return}
-    agregarEstimuloItem(url,'Imagen URL','Imagen URL');
-    document.getElementById('url-inp').value='';
-    document.getElementById('url-form').style.display='none';
-    toast('Imagen agregada');
-};
-
-function agregarEstimuloItem(src,fileName,nombreBase){
-    estCntr++;
-    const id='est-'+estCntr;
-    tmpEstimulos.push({id,src});
-    document.getElementById('est-empty').style.display='none';
-    document.getElementById('est-count').textContent=tmpEstimulos.length;
+function addEstItem(src,nom){
+    estCntr++;const id='est-'+estCntr;tmpEst.push({id,src});
+    document.getElementById('est-empty').style.display='none';document.getElementById('est-count').textContent=tmpEst.length;
     const d=document.createElement('div');d.className='est-item';d.id=id;
     d.innerHTML=`<div class="en">Estímulo ${estCntr}</div>
-        <div style="display:flex;gap:.6rem;margin-top:.4rem;align-items:center">
-            <img src="${src}" class="est-thumb" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2272%22 height=%2254%22%3E%3Crect fill=%22%23111%22 width=%2272%22 height=%2254%22/%3E%3Ctext x=%2236%22 y=%2230%22 text-anchor=%22middle%22 fill=%22%23555%22 font-size=%2210%22%3E?%3C/text%3E%3C/svg%3E'">
-            <div style="flex:1;display:grid;grid-template-columns:1fr 70px;gap:.4rem">
-                <input type="text" class="fi est-nom" value="${nombreBase}" placeholder="Nombre">
-                <input type="number" class="fi est-dur" value="15" min="3" max="120" title="Duración en segundos">
-            </div>
-            <button class="b bsm bd" onclick="removeEstItem('${id}')"><i class="fas fa-times"></i></button>
-        </div>`;
+    <div style="display:flex;gap:.5rem;margin-top:.35rem;align-items:flex-start">
+        <img src="${src}" class="est-thumb" alt="" onerror="this.style.background='var(--bg2)'">
+        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
+            <input type="text" class="fi est-nom" value="${nom}" placeholder="Nombre" style="grid-column:1/-1">
+            <textarea class="fi est-inst" placeholder="Instrucción: ¿Cuál le parece más saludable?" rows="2" style="grid-column:1/-1;min-height:44px"></textarea>
+            <div class="fg" style="margin:0"><label class="fl">Tipo respuesta</label><select class="fi est-tipo" onchange="toggleTipoResp(this.closest('.est-item'))"><option value="ninguna">Sin respuesta</option><option value="opcion">Opción múltiple</option><option value="valoracion">Valoración 1-5</option></select></div>
+            <div class="fg" style="margin:0 est-opts-wrap" id="${id}-opts-w"><label class="fl">Opciones (separar con coma)</label><input type="text" class="fi est-opts" placeholder="Opción A, Opción B, Opción C"></div>
+            <div class="fg" style="margin:0"><label class="fl">Duración (s)</label><input type="number" class="fi est-dur" value="15" min="3" max="120"></div>
+            <div class="fg" style="margin:0"><label class="fl">Pausa (s)</label><input type="number" class="fi est-pausa" value="${document.getElementById('c-pausa').value||'2'}" min="0" max="30"></div>
+            <label style="grid-column:1/-1;display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;color:var(--muted)"><input type="checkbox" class="est-fijo" style="accent-color:var(--accent)"> Fijar como primer estímulo</label>
+        </div>
+        <button class="b bsm bd" style="margin-top:.2rem" onclick="rmEst('${id}')"><i class="fas fa-times"></i></button>
+    </div>`;
     document.getElementById('est-lista').appendChild(d);
+    toggleTipoResp(d);
 }
-window.removeEstItem=function(id){
-    tmpEstimulos=tmpEstimulos.filter(e=>e.id!==id);
-    const el=document.getElementById(id);if(el)el.remove();
-    document.getElementById('est-count').textContent=tmpEstimulos.length;
-    if(!tmpEstimulos.length)document.getElementById('est-empty').style.display='';
+window.toggleTipoResp=function(item){
+    const tipo=item.querySelector('.est-tipo').value;
+    const w=item.querySelector('.est-opts-wrap');
+    w.style.display=tipo==='opcion'?'':'none';
 };
+window.rmEst=function(id){tmpEst=tmpEst.filter(e=>e.id!==id);const el=document.getElementById(id);if(el)el.remove();document.getElementById('est-count').textContent=tmpEst.length;if(!tmpEst.length)document.getElementById('est-empty').style.display=''};
 
-window.crearEstudio=function(){
-    const nombre=document.getElementById('c-nom').value.trim();
+window.guardarEstudio=function(){
+    const nombre=document.getElementById('c-nom').value.trim();if(!nombre){toast('Nombre requerido','er');return}
+    if(!tmpEst.length){toast('Agregue estímulos','er');return}
     const obj=parseInt(document.getElementById('c-obj').value)||10;
-    if(!nombre){toast('Ingrese nombre','er');return}
-    if(!tmpEstimulos.length){toast('Agregue al menos un estímulo','er');return}
-    const estimulos=[];
-    tmpEstimulos.forEach(te=>{
-        const el=document.getElementById(te.id);if(!el)return;
-        const nom=el.querySelector('.est-nom').value.trim()||'Sin nombre';
-        const dur=parseInt(el.querySelector('.est-dur').value)||15;
-        estimulos.push({id:gid(),imageUrl:te.src,nombre:nom,duracion:Math.max(3,Math.min(120,dur))});
-    });
-    if(!estimulos.length){toast('Error leyendo estímulos','er');return}
-    estudios.push({id:gid(),nombre,estimulos,participantesObjetivo:obj,createdAt:new Date().toISOString(),participantes:[]});
-    save();toast('Estudio creado');nav('dashboard');
+    const cp=parseInt(document.getElementById('c-cal').value)||9;
+    const orden=document.getElementById('c-orden').value;
+    const pausaG=parseInt(document.getElementById('c-pausa').value)||2;
+    const ests=[];let hayFijo=false;
+    tmpEst.forEach(te=>{const el=document.getElementById(te.id);if(!el)return;
+        const fijo=el.querySelector('.est-fijo').checked;
+        if(fijo&&hayFijo){toast('Solo un estímulo puede ser fijo como primero','er');return}
+        if(fijo)hayFijo=true;
+        ests.push({id:editId&&ests.length<estudios.find(x=>x.id===editId)?.estimulos.length?estudios.find(x=>x.id===editId).estimulos[ests.length].id:gid(),imageUrl:te.src,nombre:el.querySelector('.est-nom').value.trim()||'Sin nombre',instruccion:el.querySelector('.est-inst').value.trim(),tipoRespuesta:el.querySelector('.est-tipo').value,opciones:el.querySelector('.est-opts').value.trim(),duracion:Math.max(3,Math.min(120,parseInt(el.querySelector('.est-dur').value)||15)),pausa:Math.max(0,parseInt(el.querySelector('.est-pausa').value)||pausaG),fijo})});
+    if(!ests.length)return;
+    if(editId){const e=gE(editId);if(e){e.nombre=nombre;e.estimulos=ests;e.participantesObjetivo=obj;e.calibracionPts=cp;e.orden=orden;e.pausaGlobal=pausaG;save();toast('Actualizado');nav('dashboard');return}}
+    estudios.push({id:gid(),nombre,estimulos:ests,participantesObjetivo:obj,calibracionPts:cp,orden,pausaGlobal:pausaG,createdAt:new Date().toISOString(),participantes:[]});
+    save();toast('Creado');nav('dashboard');
 };
 
-// ===== RESULTADOS =====
-function mostrarRes(id){
-    const e=gE(id);if(!e){toast('No encontrado','er');nav('dashboard');return}
-    estId=id;resIdx=0;
-    document.querySelectorAll('#sec-ad .v').forEach(v=>v.classList.remove('act'));
-    document.getElementById('v-results').classList.add('act');
-    document.querySelectorAll('.anl a').forEach(a=>a.classList.remove('act'));
-    document.getElementById('r-tit').textContent=e.nombre;
-    document.getElementById('r-sub').textContent=`${e.participantes.length}/${e.participantesObjetivo} participantes — ${e.estimulos.length} estímulo(s)`;
-    const sel=document.getElementById('r-estsel');
-    sel.innerHTML=e.estimulos.map((es,i)=>`<button class="b bsm ${i===0?'bp':'bs'}" id="esel-${i}" onclick="selEst(${i})">${es.nombre||'Img '+(i+1)}</button>`).join('');
-    document.getElementById('f-gen').value='';
-    document.getElementById('f-edad').value='';
-    renderAll(e,0);
-}
-window.selEst=function(i){resIdx=i;const e=gE(estId);if(!e)return;document.querySelectorAll('#r-estsel button').forEach((b,j)=>{b.className='b bsm '+(j===i?'bp':'bs')});renderAll(e,i)};
-window.setTab=function(btn,t){document.querySelectorAll('#r-tabs .tb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');document.querySelectorAll('.tc').forEach(c=>c.classList.remove('act'));document.getElementById('tc-'+t).classList.add('act')};
-window.aplicarFiltros=function(){const e=gE(estId);if(e)renderAll(e,resIdx)};
+// RESULTADOS
+function mostrarRes(id){const e=gE(id);if(!e){toast('No encontrado','er');nav('dashboard');return}estId=id;resIdx=0;document.querySelectorAll('#sec-ad .v').forEach(v=>v.classList.remove('act'));document.getElementById('v-results').classList.add('act');document.querySelectorAll('.anl a').forEach(a=>a.classList.remove('act'));document.getElementById('r-tit').textContent=e.nombre;document.getElementById('r-sub').textContent=`${e.participantes.length}/${e.participantesObjetivo} participantes`;const sel=document.getElementById('r-estsel');sel.innerHTML=e.estimulos.map((es,i)=>`<button class="b bsm ${i===0?'bp':'bs'}" id="esel-${i}" onclick="selEst(${i})">${es.nombre}</button>`).join('');document.getElementById('f-gen').value='';document.getElementById('f-edad').value='';renderAll(e,0)}
+window.selEst=function(i){resIdx=i;document.querySelectorAll('#r-estsel button').forEach((b,j)=>{b.className='b bsm '+(j===i?'bp':'bs')});renderAll(gE(estId),i)};
+window.setTab=function(btn,t){document.querySelectorAll('.tb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');document.querySelectorAll('.tc').forEach(c=>c.classList.remove('act'));document.getElementById('tc-'+t).classList.add('act')};
+window.refrescarViz=function(){renderAll(gE(estId),resIdx)};
+function getFilt(e,idx){const fg=document.getElementById('f-gen').value,fe=document.getElementById('f-edad').value;let ps=e.participantes;if(fg)ps=ps.filter(p=>p.genero===fg);if(fe)ps=ps.filter(p=>p.edad===fe);document.getElementById('f-cnt').textContent=ps.length+' participantes';let pts=[];ps.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||innerWidth,vh=d.viewportHeight||innerHeight;d.gazeData.forEach(g=>pts.push({x:g.x/vw,y:g.y/vh}))});return{pts,parts:ps}}
+function renderAll(e,idx){const{pts,parts}=getFilt(e,idx);renderHM(e,idx,pts);renderSP(e,idx,pts);renderAOI(e,idx,parts);renderTL(e,idx,parts);renderPT(e,idx,parts);renderResp(e,idx,parts)}
 
-function getFiltered(e,idx){
-    const fg=document.getElementById('f-gen').value;
-    const fe=document.getElementById('f-edad').value;
-    let parts=e.participantes;
-    if(fg)parts=parts.filter(p=>p.genero===fg);
-    if(fe)parts=parts.filter(p=>p.edad===fe);
-    document.getElementById('f-cnt').textContent=parts.length+' participante'+(parts.length!==1?'s':'');
-    let pts=[];
-    parts.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||innerWidth,vh=d.viewportHeight||innerHeight;d.gazeData.forEach(g=>pts.push({x:g.x/vw,y:g.y/vh}))});
-    return{pts,parts};
-}
-function renderAll(e,idx){const{pts,parts}=getFiltered(e,idx);renderHM(e,idx,pts);renderSP(e,idx,pts);renderAOI(e,idx,parts);renderTL(e,idx,parts);renderPT(e,idx,parts)}
-
-// HEATMAP
-function renderHM(e,idx,pts){
-    const box=document.getElementById('hm-box');
-    if(!pts.length){box.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted)"><i class="fas fa-fire" style="font-size:1.8rem;opacity:.2;display:block;margin-bottom:.4rem"></i><p style="font-weight:600">Sin datos</p></div>';return}
-    const CW=780;
-    box.innerHTML=`<div class="hm-w" id="hm-w"><canvas id="hm-c" width="${CW}" height="${CW}"></canvas></div><p style="color:var(--muted);font-size:.72rem;margin-top:.4rem">${pts.length.toLocaleString()} puntos</p>`;
-    const img=new Image();img.crossOrigin='anonymous';
-    img.onload=()=>{const ch=Math.round(CW*img.naturalHeight/Math.max(1,img.naturalWidth));const c=document.getElementById('hm-c');if(!c)return;c.width=CW;c.height=ch;c.style.width=CW+'px';c.style.height='auto';const ctx=c.getContext('2d');ctx.drawImage(img,0,0,CW,ch);const h=simpleheat('hm-c');h.data(pts.map(p=>[p.x*CW,p.y*ch,1]));h.radius(20,30);h.gradient({0.08:'#000044',0.22:'#0000cc',0.38:'#0088ff',0.52:'#00ddaa',0.68:'#88ff00',0.82:'#ffcc00',1:'#ff2200'});h.draw(0.012)};
-    img.onerror=()=>{const c=document.getElementById('hm-c');if(!c)return;const ctx=c.getContext('2d');ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CW);const h=simpleheat('hm-c');h.data(pts.map(p=>[p.x*CW,p.y*CW,1]));h.radius(20,30);h.gradient({0.08:'#000044',0.22:'#0000cc',0.38:'#0088ff',0.52:'#00ddaa',0.68:'#88ff00',0.82:'#ffcc00',1:'#ff2200'});h.draw(0.012)};
-    img.src=e.estimulos[idx].imageUrl;
-}
-
-// SCANPATH
-function renderSP(e,idx,pts){
-    const box=document.getElementById('sp-box');
-    if(!pts.length){box.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted)"><i class="fas fa-route" style="font-size:1.8rem;opacity:.2;display:block;margin-bottom:.4rem"></i><p style="font-weight:600">Sin datos</p></div>';return}
-    const CW=780;box.innerHTML=`<canvas id="sp-c" class="viz-c" width="${CW}" height="${CW}"></canvas><p style="color:var(--muted);font-size:.72rem;margin-top:.4rem">Trayectoria — números = orden temporal</p>`;
-    const img=new Image();img.crossOrigin='anonymous';
-    img.onload=()=>drawSP(pts,CW,Math.round(CW*img.naturalHeight/Math.max(1,img.naturalWidth)),img);
-    img.onerror=()=>drawSP(pts,CW,CW,null);
-    img.src=e.estimulos[idx].imageUrl;
-}
-function drawSP(pts,CW,CH,bg){
-    const c=document.getElementById('sp-c');if(!c)return;c.width=CW;c.height=CH;c.style.width=CW+'px';c.style.height='auto';
-    const ctx=c.getContext('2d');
-    if(bg){ctx.globalAlpha=.22;ctx.drawImage(bg,0,0,CW,CH);ctx.globalAlpha=1}else{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CH)}
-    const step=Math.max(1,Math.floor(pts.length/80)),s=pts.filter((_,i)=>i%step===0);if(s.length<2)return;
-    ctx.lineWidth=1.5;ctx.lineJoin='round';
-    for(let i=1;i<s.length;i++){const t=i/(s.length-1);ctx.strokeStyle=`rgba(${16+t*223},${185-t*117},${129-t*61},0.65)`;ctx.beginPath();ctx.moveTo(s[i-1].x*CW,s[i-1].y*CH);ctx.lineTo(s[i].x*CW,s[i].y*CH);ctx.stroke()}
-    ctx.font='bold 9px Outfit';ctx.textAlign='center';ctx.textBaseline='middle';
-    const ns=Math.max(1,Math.floor(s.length/20));
-    s.forEach((p,i)=>{if(i%ns!==0&&i!==s.length-1)return;const t=i/(s.length-1);ctx.fillStyle=`rgb(${16+t*223},${185-t*117},${129-t*61})`;ctx.beginPath();ctx.arc(p.x*CW,p.y*CH,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(i+1,p.x*CW,p.y*CH)});
-}
-
-// AOI
-function renderAOI(e,idx,parts){
-    const box=document.getElementById('aoi-box');
-    const noms=['Sup-Izq','Sup-Cen','Sup-Der','Med-Izq','Med-Cen','Med-Der','Inf-Izq','Inf-Cen','Inf-Der'];
-    let cel=Array(9).fill(0),tot=0;
-    parts.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;for(let i=0;i<d.gazeData.length;i++){const g=d.gazeData[i];const col=Math.min(2,Math.floor(g.x/vw*3)),row=Math.min(2,Math.floor(g.y/vh*3));let dt=.033;if(i>0)dt=g.tiempo-d.gazeData[i-1].tiempo;if(dt<=0||dt>.5)dt=.033;cel[row*3+col]+=dt;tot+=dt}});
-    if(!tot){box.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted)"><i class="fas fa-th" style="font-size:1.8rem;opacity:.2;display:block;margin-bottom:.4rem"></i><p style="font-weight:600">Sin datos</p></div>';return}
-    const pcts=cel.map(c=>c/tot*100),mx=Math.max(...pcts,1);
-    box.innerHTML=`<h3 style="font-weight:700;margin-bottom:.6rem;font-size:.9rem">Distribución por cuadrante</h3><p style="color:var(--muted);font-size:.78rem;margin-bottom:.85rem">Tiempo de fijación por zona.</p><div class="aoi-g">${pcts.map((p,i)=>{const t=p/mx;return`<div class="aoi-c" style="background:rgba(${16+t*223},${185-t*117},${129-t*61},${.1+t*.5});border:1px solid rgba(${16+t*223},${185-t*117},${129-t*61},${.2+t*.45})"><span>${p.toFixed(1)}%</span><span class="al">${noms[i]}</span></div>`}).join('')}</div>`;
-}
-
-// TIMELINE
-function renderTL(e,idx,parts){
-    const box=document.getElementById('tl-box');let all=[];
-    parts.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>all.push({t:g.tiempo,x:g.x/vw,y:g.y/vh}))});
-    if(!all.length){box.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted)"><i class="fas fa-chart-line" style="font-size:1.8rem;opacity:.2;display:block;margin-bottom:.4rem"></i><p style="font-weight:600">Sin datos</p></div>';return}
-    const CW=780,CH=260,pad={t:18,r:18,b:32,l:42},w=CW-pad.l-pad.r,h=CH-pad.t-pad.b;
-    box.innerHTML=`<canvas id="tl-c" class="viz-c" width="${CW}" height="${CH}"></canvas><p style="color:var(--muted);font-size:.72rem;margin-top:.4rem"><span style="color:#10b981">— Posición Y (vertical)</span> &nbsp; <span style="color:#f59e0b">— Posición X (horizontal)</span></p>`;
-    const c=document.getElementById('tl-c');if(!c)return;const ctx=c.getContext('2d');
-    const maxT=all[all.length-1].t||1;
-    ctx.strokeStyle='rgba(255,255,255,.05)';ctx.lineWidth=1;
-    for(let i=0;i<=4;i++){const y=pad.t+h*(i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+w,y);ctx.stroke()}
-    for(let i=0;i<=8;i++){const x=pad.l+w*(i/8);ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+h);ctx.stroke()}
-    ctx.strokeStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+h);ctx.lineTo(pad.l+w,pad.t+h);ctx.stroke();
-    ctx.fillStyle='#5a5a72';ctx.font='9px Outfit';ctx.textAlign='center';
-    for(let i=0;i<=8;i++)ctx.fillText((maxT*i/8).toFixed(1)+'s',pad.l+w*(i/8),pad.t+h+16);
-    const st=Math.max(1,Math.floor(all.length/400)),sa=all.filter((_,i)=>i%st===0);
-    ctx.lineWidth=1.2;ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/maxT)*w,y=pad.t+p.y*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(16,185,129,.6)';ctx.stroke();
-    ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/maxT)*w,y=pad.t+p.x*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(245,158,11,.6)';ctx.stroke();
-}
-
-// PARTICIPANTES TABLA
-function renderPT(e,idx,parts){
-    const tb=document.getElementById('tb-part'),em=document.getElementById('empty-p');
-    const valid=parts.filter(p=>p.datos[idx]&&p.datos[idx].gazeData.length);
-    if(!valid.length){tb.innerHTML='';em.style.display='';return}
-    em.style.display='none';
-    tb.innerHTML=valid.map(p=>{
-        const d=p.datos[idx];const dur=d.gazeData.length?d.gazeData[d.gazeData.length-1].tiempo.toFixed(1)+'s':'—';
-        const ri=e.participantes.indexOf(p);
-        return`<tr><td style="font-family:monospace;font-size:.72rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td style="font-size:.8rem">${fD(p.timestamp)}</td><td><span class="demo-badge" style="background:${genColor(p.genero)}">${p.genero||'—'}</span></td><td style="font-size:.8rem">${p.edad||'—'}</td><td>${d.gazeData.length.toLocaleString()}</td><td>${dur}</td><td style="text-align:right"><button class="b bsm bs" onclick="verInd('${e.id}',${ri},${idx})"><i class="fas fa-eye"></i></button> <button class="b bsm bd" onclick="delPart('${e.id}',${ri})"><i class="fas fa-trash"></i></button></td></tr>`}).join('');
-}
-window.verInd=function(eid,pi,eidx){
-    const e=gE(eid);if(!e||!e.participantes[pi])return;
-    const p=e.participantes[pi],d=p.datos[eidx];if(!d)return;
-    const CW=780,vw=d.viewportWidth||1,vh=d.viewportHeight||1,ch=Math.round(CW*vh/vw);
-    const pts=d.gazeData.map(g=>[g.x/vw*CW,g.y/vh*ch,1]);
-    const html=`<!DOCTYPE html><html><head><title>Participante</title><script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"><\/script><style>body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:sans-serif;color:#fff;padding:16px}canvas{border-radius:8px;border:1px solid #222}p{margin-top:8px;color:#777;font-size:12px}</style></head><body><canvas id="c" width="${CW}" height="${ch}"></canvas><p>${d.gazeData.length} pts — ${p.genero||'?'} — ${p.edad||'?'}</p><script>var c=document.getElementById('c'),x=c.getContext('2d');x.fillStyle='#0a0a0a';x.fillRect(0,0,${CW},${ch});var h=simpleheat('c');h.data(${JSON.stringify(pts)});h.radius(18,28);h.gradient({0.08:'#000044',0.22:'#0000cc',0.38:'#0088ff',0.52:'#00ddaa',0.68:'#88ff00',0.82:'#ffcc00',1:'#ff2200'});h.draw(0.02);<\/script></body></html>`;
-    window.open(URL.createObjectURL(new Blob([html],{type:'text/html'})),'_blank');
-};
+function renderHM(e,idx,pts){const box=document.getElementById('hm-box');if(!pts.length){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p style="font-weight:600">Sin datos</p></div>';return}const CW=760;box.innerHTML=`<div class="hm-w"><canvas id="hm-c" width="${CW}" height="${CW}"></canvas></div><p style="color:var(--muted);font-size:.7rem;margin-top:.35rem">${pts.length.toLocaleString()} puntos</p>`;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{const ch=Math.round(CW*img.naturalHeight/Math.max(1,img.naturalWidth));const c=document.getElementById('hm-c');if(!c)return;c.width=CW;c.height=ch;c.style.width=CW+'px';c.style.height='auto';c.getContext('2d').drawImage(img,0,0,CW,ch);const h=simpleheat('hm-c');h.data(pts.map(p=>[p.x*CW,p.y*ch,1]));h.radius(20,30);h.gradient({.08:'#000044',.22:'#0000cc',.38:'#0088ff',.52:'#00ddaa',.68:'#88ff00',.82:'#ffcc00',1:'#ff2200'});h.draw(.012)};img.onerror=()=>{const c=document.getElementById('hm-c');if(!c)return;const ctx=c.getContext('2d');ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CW);const h=simpleheat('hm-c');h.data(pts.map(p=>[p.x*CW,p.y*CW,1]));h.radius(20,30);h.gradient({.08:'#000044',.22:'#0000cc',.38:'#0088ff',.52:'#00ddaa',.68:'#88ff00',.82:'#ffcc00',1:'#ff2200'});h.draw(.012)};img.src=e.estimulos[idx].imageUrl}
+function renderSP(e,idx,pts){const box=document.getElementById('sp-box');if(!pts.length){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p style="font-weight:600">Sin datos</p></div>';return}const CW=760;box.innerHTML=`<canvas id="sp-c" class="viz-c" width="${CW}" height="${CW}"></canvas>`;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>drawSP(pts,CW,Math.round(CW*img.naturalHeight/Math.max(1,img.naturalWidth)),img);img.onerror=()=>drawSP(pts,CW,CW,null);img.src=e.estimulos[idx].imageUrl}
+function drawSP(pts,CW,CH,bg){const c=document.getElementById('sp-c');if(!c)return;c.width=CW;c.height=CH;c.style.width=CW+'px';c.style.height='auto';const ctx=c.getContext('2d');if(bg){ctx.globalAlpha=.2;ctx.drawImage(bg,0,0,CW,CH);ctx.globalAlpha=1}else{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CH)}const st=Math.max(1,Math.floor(pts.length/80)),s=pts.filter((_,i)=>i%st===0);if(s.length<2)return;ctx.lineWidth=1.5;for(let i=1;i<s.length;i++){const t=i/(s.length-1);ctx.strokeStyle=`rgba(${16+t*223},${185-t*117},${129-t*61},.6)`;ctx.beginPath();ctx.moveTo(s[i-1].x*CW,s[i-1].y*CH);ctx.lineTo(s[i].x*CW,s[i].y*CH);ctx.stroke()}ctx.font='bold 9px Outfit';ctx.textAlign='center';ctx.textBaseline='middle';const ns=Math.max(1,Math.floor(s.length/20));s.forEach((p,i)=>{if(i%ns!==0&&i!==s.length-1)return;const t=i/(s.length-1);ctx.fillStyle=`rgb(${16+t*223},${185-t*117},${129-t*61})`;ctx.beginPath();ctx.arc(p.x*CW,p.y*CH,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(i+1,p.x*CW,p.y*CH)})}
+function renderAOI(e,idx,parts){const box=document.getElementById('aoi-box');const n=['Sup-Izq','Sup-Cen','Sup-Der','Med-Izq','Med-Cen','Med-Der','Inf-Izq','Inf-Cen','Inf-Der'];let cel=Array(9).fill(0),tot=0;parts.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;for(let i=0;i<d.gazeData.length;i++){const g=d.gazeData[i];const c=Math.min(2,Math.floor(g.x/vw*3)),r=Math.min(2,Math.floor(g.y/vh*3));let dt=.033;if(i>0)dt=g.tiempo-d.gazeData[i-1].tiempo;if(dt<=0||dt>.5)dt=.033;cel[r*3+c]+=dt;tot+=dt}});if(!tot){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p>Sin datos</p></div>';return}const pcts=cel.map(c=>c/tot*100),mx=Math.max(...pcts,1);box.innerHTML=`<h3 style="font-weight:700;margin-bottom:.5rem;font-size:.85rem">Cuadrantes</h3><div class="aoi-g">${pcts.map((p,i)=>{const t=p/mx;return`<div class="aoi-c" style="background:rgba(${16+t*223},${185-t*117},${129-t*61},${.1+t*.5});border:1px solid rgba(${16+t*223},${185-t*117},${129-t*61},${.2+t*.45})"><span>${p.toFixed(1)}%</span><span class="al">${n[i]}</span></div>`}).join('')}</div>`}
+function renderTL(e,idx,parts){const box=document.getElementById('tl-box');let all=[];parts.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>all.push({t:g.tiempo,x:g.x/vw,y:g.y/vh}))});if(!all.length){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p>Sin datos</p></div>';return}const CW=760,CH=240,pad={t:16,r:16,b:28,l:38},w=CW-pad.l-pad.r,h=CH-pad.t-pad.b;box.innerHTML=`<canvas id="tl-c" class="viz-c" width="${CW}" height="${CH}"></canvas><p style="color:var(--muted);font-size:.7rem;margin-top:.35rem"><span style="color:#10b981">— Y</span> <span style="color:#f59e0b">— X</span></p>`;const c=document.getElementById('tl-c');if(!c)return;const ctx=c.getContext('2d');const mT=all[all.length-1].t||1;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;for(let i=0;i<=4;i++){ctx.beginPath();ctx.moveTo(pad.l,pad.t+h*(i/4));ctx.lineTo(pad.l+w,pad.t+h*(i/4));ctx.stroke()}ctx.strokeStyle='rgba(255,255,255,.1)';ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+h);ctx.lineTo(pad.l+w,pad.t+h);ctx.stroke();ctx.fillStyle='#5a5a72';ctx.font='8px Outfit';ctx.textAlign='center';for(let i=0;i<=8;i++)ctx.fillText((mT*i/8).toFixed(1)+'s',pad.l+w*(i/8),pad.t+h+14);const st=Math.max(1,Math.floor(all.length/400)),sa=all.filter((_,i)=>i%st===0);ctx.lineWidth=1;ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/mT)*w,y=pad.t+p.y*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(16,185,129,.5)';ctx.stroke();ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/mT)*w,y=pad.t+p.x*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(245,158,11,.5)';ctx.stroke()}
+function renderPT(e,idx,parts){const tb=document.getElementById('tb-part'),em=document.getElementById('empty-p');const v=parts.filter(p=>p.datos[idx]&&p.datos[idx].gazeData.length);if(!v.length){tb.innerHTML='';em.style.display='';return}em.style.display='none';tb.innerHTML=v.map(p=>{const d=p.datos[idx];const dur=d.gazeData.length?d.gazeData[d.gazeData.length-1].tiempo.toFixed(1)+'s':'—';const ri=e.participantes.indexOf(p);const er=p.calError!=null?Math.round(p.calError)+'px':'—';const ec=p.calError!=null?(p.calError<50?'var(--accent)':p.calError<100?'var(--warn)':'var(--danger)'):'var(--muted)';return`<tr><td style="font-family:monospace;font-size:.7rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td style="font-size:.78rem">${fD(p.timestamp)}</td><td style="font-size:.78rem">${p.genero||'—'}</td><td style="font-size:.78rem">${p.edad||'—'}</td><td style="font-size:.78rem;color:${ec};font-weight:600">${er}</td><td>${d.gazeData.length.toLocaleString()}</td><td style="text-align:right"><button class="b bsm bd" onclick="delPart('${e.id}',${ri})"><i class="fas fa-trash"></i></button></td></tr>`}).join('')}
+function renderResp(e,idx,parts){const box=document.getElementById('resp-box');const es=e.estimulos[idx];if(!es||es.tipoRespuesta==='ninguna'){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p>Este estímulo no tiene pregunta asociada</p></div>';return}let html=`<h3 style="font-weight:700;margin-bottom:.5rem;font-size:.9rem">${es.nombre}</h3><p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">${es.instruccion}</p><div class="tw"><table><thead><tr><th>Participante</th><th>Respuesta</th></tr></thead><tbody>`;parts.forEach(p=>{const r=p.respuestas?.[idx]||'—';html+=`<tr><td style="font-family:monospace;font-size:.7rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td>${r}</td></tr>`});html+='</tbody></table></div>';if(!parts.length)html+='<div style="text-align:center;padding:1rem;color:var(--muted)"><p>Sin respuestas</p></div>';box.innerHTML=html}
 window.delPart=function(eid,pi){const e=gE(eid);if(!e)return;e.participantes.splice(pi,1);save();mostrarRes(eid);toast('Eliminado','in')};
-
-// EXPORTAR / IMPORTAR
-window.expCSV=function(){
-    const e=gE(estId);if(!e)return;
-    let csv='Participante_ID;Genero;Edad;Estimulo;Tiempo_s;X;Y;X_Norm;Y_Norm\n';
-    e.participantes.forEach(p=>{p.datos.forEach((d,di)=>{const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>{csv+=`${p.id};${p.genero||''};${p.edad||''};${e.estimulos[di]?.nombre||di};${g.tiempo.toFixed(3)};${g.x};${g.y};${(g.x/vw).toFixed(4)};${(g.y/vh).toFixed(4)}\n`})})});
-    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=`eyetrack_${e.nombre.replace(/\s+/g,'_')}.csv`;a.click();toast('CSV descargado');
-};
-window.expPNG=function(){const c=document.getElementById('hm-c');if(!c){toast('Genere el mapa primero','er');return}const a=document.createElement('a');a.download='heatmap.png';a.href=c.toDataURL();a.click();toast('PNG descargado')};
-window.importarDatos=function(){
-    const txt=document.getElementById('imp-ta').value.trim();if(!txt){toast('Pegue el código','er');return}
-    try{
-        const d=JSON.parse(txt);if(!d.studyId||!d.participantId||!d.datosEstimulos)throw new Error('Formato inválido');
-        const e=gE(d.studyId);if(!e){toast('Estudio no existe','er');return}
-        if(e.participantes.some(p=>p.id===d.participantId)){toast('Ya existe','er');return}
-        e.participantes.push({id:d.participantId,timestamp:d.timestamp,genero:d.genero||'',edad:d.edad||'',datos:d.datosEstimulos});
-        save();document.getElementById('imp-ta').value='';mostrarRes(d.studyId);toast('Datos importados');
-    }catch(err){toast('Error: '+err.message,'er')}
-};
+window.expCSV=function(){const e=gE(estId);if(!e)return;let csv='ID;Genero;Edad;ErrorCal;Estimulo;Tiempo;X;Y;X_Norm;Y_Norm;Respuesta\n';e.participantes.forEach(p=>{p.datos.forEach((d,di)=>{const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>{csv+=`${p.id};${p.genero};${p.edad};${p.calError?.toFixed(1)||''};${e.estimulos[di]?.nombre};${g.tiempo.toFixed(3)};${g.x};${g.y};${(g.x/vw).toFixed(4)};${(g.y/vh).toFixed(4)};${p.respuestas?.[di]||''}\n`})})});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=`eyetrack_${e.nombre.replace(/\s+/g,'_')}.csv`;a.click();toast('CSV descargado')};
+window.expPNG=function(){const c=document.getElementById('hm-c');if(!c){toast('Genere el mapa','er');return}const a=document.createElement('a');a.download='heatmap.png';a.href=c.toDataURL();a.click();toast('PNG descargado')};
+window.importar=function(){const t=document.getElementById('imp-ta').value.trim();if(!t){toast('Pegue código','er');return}try{const d=JSON.parse(t);if(!d.studyId||!d.participantId)throw 0;const e=gE(d.studyId);if(!e){toast('Estudio no existe','er');return}if(e.participantes.some(p=>p.id===d.participantId)){toast('Ya existe','er');return}e.participantes.push({id:d.participantId,timestamp:d.timestamp,genero:d.genero||'',edad:d.edad||'',calError:d.calError||null,datos:d.datosEstimulos,respuestas:d.respuestas||{}});save();document.getElementById('imp-ta').value='';mostrarRes(d.studyId);toast('Importado')}catch(e){toast('Error en formato','er')}};
 
 // ===== PARTICIPANTE =====
 async function iniciarPart(id){
-    const e=gE(id);
-    if(!e){document.getElementById('sec-ad').style.display='';document.getElementById('sec-p').style.display='none';toast('Estudio no encontrado','er');nav('dashboard');return}
-    estId=id;estIdxAct=0;fase='idle';datosPorEst={};datosGA=[];calCnt=0;datRawCal=[];pv=true;pxA=0;pyA=0;estCal='esp';
+    const e=gE(id);if(!e){document.getElementById('sec-ad').style.display='';document.getElementById('sec-p').style.display='none';toast('No encontrado','er');nav('dashboard');return}
+    estId=id;fase='idle';datosPorEst={};datosGA=[];calCnt=0;datRawCal=[];pv=true;pxA=0;pyA=0;estCal='esp';muestrasAct=[];calPtsN=e.calibracionPts||9;respActual='';
+    // Construir orden de ejecución
+    let indices=e.estimulos.map((_,i)=>i);
+    const fijos=indices.filter(i=>e.estimulos[i].fijo);
+    const noFijos=indices.filter(i=>!e.estimulos[i].fijo);
+    if(e.orden==='aleatorio')noFijos.sort(()=>Math.random()-.5);
+    ordenEjecucion=[...fijos,...noFijos];ejecIdx=0;
     document.getElementById('sec-ad').style.display='none';document.getElementById('sec-p').style.display='';
-    ['p-bien','p-carga','p-cal','p-trans','p-fin'].forEach(id=>document.getElementById(id).style.display='none');
-    document.getElementById('est-p').style.display='none';document.getElementById('punto-cal').style.display='none';
+    ['p-bien','p-carga','p-cal','p-score','p-val','p-resp','p-trans','p-fin'].forEach(id=>document.getElementById(id).style.display='none');
+    document.getElementById('est-p').style.display='none';document.getElementById('punto-cal').style.display='none';document.getElementById('cursor-val').style.display='none';
     document.getElementById('p-gen').value='';document.getElementById('p-edad').value='';
-    document.getElementById('bw-nom').textContent=e.nombre;
-    document.getElementById('bw-cant').textContent=e.estimulos.length;
+    document.getElementById('bw-nom').textContent=e.nombre;document.getElementById('bw-cant').textContent=e.estimulos.length;
     document.getElementById('p-bien').style.display='flex';
 }
 window.partAceptar=async function(){
-    const gen=document.getElementById('p-gen').value;
-    const edad=document.getElementById('p-edad').value;
+    const gen=document.getElementById('p-gen').value,edad=document.getElementById('p-edad').value;
     if(!gen||!edad){toast('Complete género y edad','er');return}
-    // Guardar para usar al final
-    window._partGen=gen;window._partEdad=edad;
+    window._pG=gen;window._pE=edad;
     document.getElementById('p-bien').style.display='none';document.getElementById('p-carga').style.display='flex';
-    document.getElementById('txt-carga').textContent='Descargando modelo de IA...';
+    document.getElementById('txt-carga').textContent='Cargando modelo...';
     try{
         const vision=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
         faceLM=await FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"GPU"},runningMode:"VIDEO",numFaces:1});
@@ -565,94 +450,86 @@ window.partAceptar=async function(){
         const vid=document.getElementById('vid-p');vid.srcObject=stream;await vid.play();
         document.getElementById('p-carga').style.display='none';document.getElementById('p-cal').style.display='flex';
         document.getElementById('punto-cal').style.display='block';setPC('rojo');moverPC(0);
-        document.getElementById('txt-cal').textContent='Mire el punto hasta VERDE (1 de 5)';
+        const pts=getCalPts(calPtsN);
+        document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (1 de ${pts.length})`;
         fase='calibrando';procVid();
     }catch(err){document.getElementById('p-carga').style.display='flex';document.getElementById('txt-carga').innerHTML=`<span style="color:var(--danger)">Error: ${err.message}</span><br><br><button class="b bs" onclick="location.reload()">Reintentar</button>`}
 };
 function setPC(c){document.getElementById('punto-cal').className=c}
-function moverPC(i){const pts=ptsC(),p=document.getElementById('punto-cal');p.style.left=pts[i].x+'px';p.style.top=pts[i].y+'px';estCal='esp';setPC('rojo')}
-
+function moverPC(i){const pts=getCalPts(calPtsN),p=document.getElementById('punto-cal');p.style.left=pts[i].x+'px';p.style.top=pts[i].y+'px';estCal='esp';setPC('rojo');muestrasAct=[]}
 async function procVid(){
-    if(fase==='idle'||fase==='fin')return;
-    const st=performance.now(),vid=document.getElementById('vid-p');
-    if(vid.readyState>=2&&faceLM){
-        const res=await faceLM.detectForVideo(vid,st);
-        if(res.faceLandmarks&&res.faceLandmarks.length>0){
-            const lm=res.faceLandmarks[0];
-            let pX=((lm[468].x-lm[33].x)/(lm[133].x-lm[33].x)+(lm[473].x-lm[362].x)/(lm[263].x-lm[362].x))/2;
-            let pY=((lm[468].y-lm[159].y)/(lm[145].y-lm[159].y)+(lm[473].y-lm[386].y)/(lm[374].y-lm[386].y))/2;
-            cRX=pX;cRY=pY;
-            if(fase==='calibrando'){
-                if(pv){pxA=pX;pyA=pY;pv=false}
-                let sX2=(pxA*peso)+(pX*(1-peso)),sY2=(pyA*peso)+(pY*(1-peso));
-                let dX=Math.abs(sX2-pxA),dY=Math.abs(sY2-pYA);
-                pxA=sX2;pyA=sY2;
-                if(dX<UMB_M&&dY<UMB_M){
-                    if(estCal==='esp'){estCal='fij';tFijI=performance.now();setPC('amarillo')}
-                    else if(estCal==='fij'&&performance.now()-tFijI>=DUR_F){estCal='listo';setPC('verde')}
-                }else{estCal='esp';setPC('rojo')}
-            }else if(fase==='rastreando'){
-                let mX=oX-(pX*sX),mY=oY-(pY*sY);
-                if(pv){pxA=mX;pyA=mY;pv=false}
-                let fX=(pxA*peso)+(mX*(1-peso)),fY=(pyA*peso)+(mY*(1-peso));
-                fX=Math.max(0,Math.min(innerWidth,fX));fY=Math.max(0,Math.min(innerHeight,fY));
-                pxA=fX;pyA=fY;
-                datosGA.push({tiempo:(st-tIniG)/1000,x:Math.round(fX),y:Math.round(fY)});
-            }
-        }
-    }
+    if(fase==='idle'||fase==='fin')return;const st=performance.now(),vid=document.getElementById('vid-p');
+    if(vid.readyState>=2&&faceLM){const res=await faceLM.detectForVideo(vid,st);if(res.faceLandmarks&&res.faceLandmarks.length>0){const lm=res.faceLandmarks[0];let pX=((lm[468].x-lm[33].x)/(lm[133].x-lm[33].x)+(lm[473].x-lm[362].x)/(lm[263].x-lm[362].x))/2;let pY=((lm[468].y-lm[159].y)/(lm[145].y-lm[159].y)+(lm[473].y-lm[386].y)/(lm[374].y-lm[386].y))/2;cRX=pX;cRY=pY;
+    if(fase==='calibrando'){if(pv){pxA=pX;pyA=pY;pv=false}let sX=(pxA*peso)+(pX*(1-peso)),sY=(pyA*peso)+(pY*(1-peso));let dX=Math.abs(sX-pxA),dY=Math.abs(sY-pYA);pxA=sX;pyA=sY;if(estCal==='fijando'||estCal==='listo')muestrasAct.push({x:sX,y:sY});if(dX<UMB_M&&dY<UMB_M){if(estCal==='esp'){estCal='fij';tFijI=performance.now();setPC('amarillo')}else if(estCal==='fij'&&performance.now()-tFijI>=DUR_F){estCal='listo';setPC('verde')}}else{estCal='esp';setPC('rojo');muestrasAct=[]}}
+    else if(fase==='rastreando'){let fX=regIX+regSX*pX,fY=regIY+regSY*pY;if(pv){pxA=fX;pyA=fY;pv=false}let smX=(pxA*peso)+(fX*(1-peso)),smY=(pyA*peso)+(fY*(1-peso));smX=Math.max(0,Math.min(innerWidth,smX));smY=Math.max(0,Math.min(innerHeight,smY));pxA=smX;pyA=smY;datosGA.push({tiempo:(st-tIniG)/1000,x:Math.round(smX),y:Math.round(smY)})}
+    else if(fase==='validando'){let fX=regIX+regSX*pX,fY=regIY+regSY*pY;if(pv){pxA=fX;pyA=fY;pv=false}let smX=(pxA*peso)+(fX*(1-peso)),smY=(pyA*peso)+(fY*(1-peso));smX=Math.max(0,Math.min(innerWidth,smX));smY=Math.max(0,Math.min(innerHeight,smY));pxA=smX;pyA=smY;const cv=document.getElementById('cursor-val');cv.style.left=smX+'px';cv.style.top=smY+'px'}}}
     requestAnimationFrame(procVid);
 }
+document.addEventListener('click',function(ev){if(fase!=='calibrando')return;if(['BUTTON','TEXTAREA','INPUT','SELECT','LABEL'].includes(ev.target.tagName))return;if(estCal!=='listo'){document.getElementById('txt-cal').textContent='Aún no está verde.';return}const pts=getCalPts(calPtsN);let ax=cRX,ay=cRY;if(muestrasAct.length>=5){ax=muestrasAct.reduce((s,m)=>s+m.x,0)/muestrasAct.length;ay=muestrasAct.reduce((s,m)=>s+m.y,0)/muestrasAct.length}datRawCal.push({rawX:ax,rawY:ay,screenX:pts[calCnt].x,screenY:pts[calCnt].y,tipo:pts[calCnt].t});calCnt++;muestrasAct=[];if(calCnt<pts.length){document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (${calCnt+1} de ${pts.length})`;moverPC(calCnt)}if(calCnt===pts.length)finCal()});
+function finCal(){pv=true;const rX=linReg(datRawCal,'rawX','screenX'),rY=linReg(datRawCal,'rawY','screenY');regIX=rX.intercept;regSX=rX.slope;regIY=rY.intercept;regSY=rY.slope;calErrPx=calcErr();document.getElementById('punto-cal').style.display='none';document.getElementById('p-cal').style.display='none';const ring=document.getElementById('score-ring'),num=document.getElementById('score-num'),cat=document.getElementById('score-cat'),desc=document.getElementById('score-desc');const err=Math.round(calErrPx);num.textContent=err;let col,lab;if(err<40){col='var(--accent)';lab='Excelente'}else if(err<80){col='var(--accent)';lab='Buena'}else if(err<120){col='var(--warn)';lab='Aceptable'}else if(err<200){col='#f97316';lab='Baja'}else{col='var(--danger)';lab='Mala'}ring.style.borderColor=col;num.style.color=col;cat.style.color=col;cat.textContent=lab+' ('+err+'px)';desc.textContent=err<80?'Puede continuar con confianza.':'Se recomienda verificar.';document.getElementById('p-score').style.display='flex';fase='score'}
+window.iniciarVal=function(){document.getElementById('p-score').style.display='none';document.getElementById('p-val').style.display='flex';document.getElementById('punto-cal').style.display='block';document.getElementById('cursor-val').style.display='block';pv=true;valSi=0;valNo=0;valIdx=0;const w=innerWidth,h=innerHeight;valPts=[{x:w*(.2+Math.random()*.6),y:h*(.2+Math.random()*.6)},{x:w*(.1+Math.random()*.8),y:h*(.1+Math.random()*.8)},{x:w*(.15+Math.random()*.7),y:h*(.15+Math.random()*.7)}];fase='validando';mostrarVP(0)};
+function mostrarVP(i){const p=valPts[i];document.getElementById('punto-cal').style.left=p.x+'px';document.getElementById('punto-cal').style.top=p.y+'px';setPC('rojo');document.getElementById('txt-val').textContent=`¿El cursor cyan sigue al punto? (${i+1}/3)`}
+window.valR=function(ok){if(ok)valSi++;else valNo++;valIdx++;if(valIdx<3)mostrarVP(valIdx);else{fase='idle';document.getElementById('punto-cal').style.display='none';document.getElementById('cursor-val').style.display='none';document.getElementById('p-val').style.display='none';if(valSi>=2){toast('Validación OK');iniciarEstEjec(0)}else{toast('Validación fallida','er');document.getElementById('p-score').style.display='flex';document.getElementById('btn-ver').innerHTML='<i class="fas fa-crosshairs"></i> Reintentar'}}};
+window.saltarVal=function(){document.getElementById('p-score').style.display='none';if(calErrPx>150)toast('Error alto','er');iniciarEstEjec(0)};
+window.recalibrar=function(){document.getElementById('p-score').style.display='none';document.getElementById('p-cal').style.display='flex';document.getElementById('punto-cal').style.display='block';calCnt=0;datRawCal=[];pv=true;pxA=0;pyA=0;estCal='esp';muestrasAct=[];const pts=getCalPts(calPtsN);moverPC(0);document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (1 de ${pts.length})`;fase='calibrando'};
 
-document.addEventListener('click',function(ev){
-    if(fase!=='calibrando')return;
-    if(ev.target.tagName==='BUTTON'||ev.target.tagName==='TEXTAREA'||ev.target.tagName==='INPUT'||ev.target.tagName==='SELECT'||ev.target.tagName==='LABEL')return;
-    if(estCal!=='listo'){document.getElementById('txt-cal').textContent='Aún no está verde. Mantenga la mirada.';return}
-    const pts=ptsC();
-    datRawCal.push({rawX:cRX,rawY:cRY,screenX:pts[calCnt].x,screenY:pts[calCnt].y,tipo:pts[calCnt].t});
-    calCnt++;
-    if(calCnt<5){document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (${calCnt+1} de 5)`;moverPC(calCnt)}
-    if(calCnt===5)finCal();
-});
-
-function finCal(){
-    pv=true;
-    const rI=datRawCal.filter(p=>p.t.includes('izq')),rD=datRawCal.filter(p=>p.t.includes('der'));
-    const rA=datRawCal.filter(p=>p.t.includes('arriba')),rB=datRawCal.filter(p=>p.t.includes('abajo'));
-    const prIx=rI.reduce((s,p)=>s+p.rawX,0)/rI.length,prDx=rD.reduce((s,p)=>s+p.rawX,0)/rD.length;
-    const prAy=rA.reduce((s,p)=>s+p.rawY,0)/rA.length,prBy=rB.reduce((s,p)=>s+p.rawY,0)/rB.length;
-    const psIx=rI.reduce((s,p)=>s+p.screenX,0)/rI.length,psDx=rD.reduce((s,p)=>s+p.screenX,0)/rD.length;
-    const psAy=rA.reduce((s,p)=>s+p.screenY,0)/rA.length,psBy=rB.reduce((s,p)=>s+p.screenY,0)/rB.length;
-    const dxO=prDx-prIx,dxP=psDx-psIx;if(Math.abs(dxO)>.001)sX=dxP/dxO;
-    const dyO=prBy-prAy,dyP=psBy-psAy;if(Math.abs(dyO)>.001)sY=dyP/dyO;
-    const rc=datRawCal.find(p=>p.t==='centro');
-    oX=innerWidth/2-(rc.rawX*sX);oY=innerHeight/2-(rc.rawY*sY);
-    document.getElementById('punto-cal').style.display='none';document.getElementById('p-cal').style.display='none';
-    iniciarEst(0);
-}
-
-function iniciarEst(idx){
-    const e=gE(estId);if(!e||idx>=e.estimulos.length){terminarPart();return}
-    estIdxAct=idx;datosGA=[];pv=true;
-    const est=e.estimulos[idx];
+// ESTÍMULOS CON RESPUESTAS
+function iniciarEstEjec(idx){
+    if(idx>=ordenEjecucion.length){terminarPart();return}
+    const estIdxReal=ordenEjecucion[idx];const e=gE(estId);if(!e){terminarPart();return}
+    const es=e.estimulos[estIdxReal];ejecIdx=idx;datosGA=[];pv=true;
     document.getElementById('p-trans').style.display='flex';
-    document.getElementById('txt-trans').textContent=`Imagen ${idx+1} de ${e.estimulos.length}: ${est.nombre}`;
-    const img=document.getElementById('est-p');img.src=est.imageUrl;img.style.display='none';
-    const go=()=>{document.getElementById('p-trans').style.display='none';img.style.display='block';fase='rastreando';tIniG=performance.now();let rest=est.duracion;let tm=document.createElement('div');tm.id='timer-p';tm.style.cssText='position:fixed;top:14px;right:14px;z-index:500;background:rgba(7,7,11,.88);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:9px;padding:8px 16px;font-weight:800;font-size:1.1rem;color:var(--accent);font-family:Outfit,sans-serif';tm.textContent=rest+'s';document.getElementById('sec-p').appendChild(tm);const iv=setInterval(()=>{rest--;tm.textContent=rest+'s';if(rest<=5)tm.style.color='var(--danger)';if(rest<=0){clearInterval(iv);tm.remove();finEst(idx)}},1000)};
-    if(img.complete&&img.naturalWidth)go();else{img.onload=go;img.onerror=()=>{toast('Error cargando imagen','er');finEst(idx)}}
+    document.getElementById('txt-trans').textContent=`${idx+1} de ${ordenEjecucion.length}: ${es.nombre}`;
+    const img=document.getElementById('est-p');img.src=es.imageUrl;img.style.display='none';
+    const go=()=>{document.getElementById('p-trans').style.display='none';img.style.display='block';fase='rastreando';tIniG=performance.now();let rest=es.duracion;let tm=document.createElement('div');tm.id='timer-p';tm.style.cssText='position:fixed;top:12px;right:12px;z-index:500;background:rgba(7,7,11,.88);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-weight:800;font-size:1rem;color:var(--accent);font-family:Outfit,sans-serif';tm.textContent=rest+'s';document.getElementById('sec-p').appendChild(tm);const iv=setInterval(()=>{rest--;tm.textContent=rest+'s';if(rest<=5)tm.style.color='var(--danger)';if(rest<=0){clearInterval(iv);tm.remove();finEstEjec(estIdxReal,es.pausa||e.pausaGlobal||2)}},1000)};
+    if(img.complete&&img.naturalWidth)go();else{img.onload=go;img.onerror=()=>{toast('Error cargando imagen','er');finEstEjec(estIdxReal,0)}}
 }
-function finEst(idx){fase='idle';datosPorEst[idx]={gazeData:[...datosGA],viewportWidth:innerWidth,viewportHeight:innerHeight};document.getElementById('est-p').style.display='none';const e=gE(estId);iniciarEst(idx+1)}
+function finEstEjec(estIdxReal,pausa){
+    fase='idle';datosPorEst[estIdxReal]={gazeData:[...datosGA],viewportWidth:innerWidth,viewportHeight:innerHeight};
+    document.getElementById('est-p').style.display='none';
+    const e=gE(estId),es=e.estimulos[estIdxReal];
+    // Si tiene pregunta, mostrar pantalla de respuesta
+    if(es.tipoRespuesta!=='ninguna'&&es.instruccion){mostrarPregunta(estIdxReal,es);return}
+    // Si no, esperar pausa y seguir
+    if(pausa>0){setTimeout(()=>iniciarEstEjec(ejecIdx+1),pausa*1000)}else{iniciarEstEjec(ejecIdx+1)}
+}
+function mostrarPregunta(estIdxReal,es){
+    respActual='';
+    const pantalla=document.getElementById('p-resp');
+    document.getElementById('resp-inst').textContent=es.instruccion;
+    const optsDiv=document.getElementById('resp-opts');const rateDiv=document.getElementById('resp-rate');
+    optsDiv.innerHTML='';rateDiv.innerHTML='';optsDiv.style.display='none';rateDiv.style.display='none';
+    document.getElementById('btn-resp-ok').disabled=true;
+    if(es.tipoRespuesta==='opcion'){
+        optsDiv.style.display='flex';
+        const ops=es.opciones.split(',').map(o=>o.trim()).filter(o=>o);
+        optsDiv.innerHTML=ops.map((o,i)=>`<div class="resp-opt" onclick="selRespOpt(this,'${o.replace(/'/g,"\\'")}')">${o}</div>`).join('');
+    }else if(es.tipoRespuesta==='valoracion'){
+        rateDiv.style.display='flex';
+        rateDiv.innerHTML=[1,2,3,4,5].map(n=>`<div class="resp-rate" onclick="selRespRate(this,${n})">${n}</div>`).join('');
+    }
+    pantalla.style.display='flex';fase='respondiendo';
+}
+window.selRespOpt=function(el,val){document.querySelectorAll('.resp-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');respActual=val;document.getElementById('btn-resp-ok').disabled=false};
+window.selRespRate=function(el,val){document.querySelectorAll('.resp-rate').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');respActual=''+val;document.getElementById('btn-resp-ok').disabled=false};
+window.confirmarResp=function(){
+    document.getElementById('p-resp').style.display='none';
+    const e=gE(estId);if(!e)return;
+    if(!window._respuestas)window._respuestas={};
+    window._respuestas[ordenEjecucion[ejecIdx]]=respActual;
+    const es=e.estimulos[ordenEjecucion[ejecIdx]];
+    const pausa=es.pausa||e.pausaGlobal||2;
+    if(pausa>0){setTimeout(()=>iniciarEstEjec(ejecIdx+1),pausa*1000)}else{iniciarEstEjec(ejecIdx+1)}
+};
 
 function terminarPart(){
     fase='fin';const vid=document.getElementById('vid-p');if(vid.srcObject)vid.srcObject.getTracks().forEach(t=>t.stop());
-    const part={id:gid(),timestamp:new Date().toISOString(),genero:window._partGen||'',edad:window._partEdad||'',datos:datosPorEst};
+    const part={id:gid(),timestamp:new Date().toISOString(),genero:window._pG||'',edad:window._pE||'',calError:calErrPx,datos:datosPorEst,respuestas:window._respuestas||{}};
     const e=gE(estId);if(e){e.participantes.push(part);save()}
-    const codigo=JSON.stringify({studyId:estId,participantId:part.id,timestamp:part.timestamp,genero:part.genero,edad:part.edad,datosEstimulos:part.datos});
-    document.getElementById('codigo-d').value=codigo;document.getElementById('p-fin').style.display='flex';
+    document.getElementById('codigo-d').value=JSON.stringify({studyId:estId,participantId:part.id,timestamp:part.timestamp,genero:part.genero,edad:part.edad,calError:part.calError,datosEstimulos:part.datos,respuestas:part.respuestas});
+    document.getElementById('p-fin').style.display='flex';
 }
-window.copiarCodigo=function(){const ta=document.getElementById('codigo-d');ta.select();navigator.clipboard.writeText(ta.value).then(()=>toast('Copiado'))};
-
-// INIT
+window.copiarCod=function(){const ta=document.getElementById('codigo-d');ta.select();navigator.clipboard.writeText(ta.value).then(()=>toast('Copiado'))};
 handleHash();
 </script>
 </body>
