@@ -165,8 +165,8 @@
                         rawSmoothY = promedioY;
                         rawSmoothIniciado = true;
                     } else {
-                        rawSmoothX = rawSmoothX * 0.85 + promedioX * 0.15;
-                        rawSmoothY = rawSmoothY * 0.85 + promedioY * 0.15;
+                        rawSmoothX = rawSmoothX * 0.6 + promedioX * 0.4;
+                        rawSmoothY = rawSmoothY * 0.6 + promedioY * 0.4;
                     }
 
                     if (faseActual === 'calibracion') {
