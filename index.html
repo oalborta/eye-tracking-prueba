@@ -132,7 +132,6 @@
             width: 50px; height: 50px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            /* Se añade transición suave para moverse entre las esquinas */
             transition: background-color 0.4s, box-shadow 0.4s, transform 0.2s, top 0.6s ease-in-out, left 0.6s ease-in-out;
             font-size: 0.75rem; font-weight: 800; color: white; user-select: none;
         }
@@ -163,15 +162,30 @@
 
         #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
+        
         .login-container { max-width: 400px; margin: 0 auto; padding: 4rem 1.5rem; }
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
+        
+        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
+        .toast {
+            padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+            display: flex; align-items: center; gap: 0.5rem; min-width: 280px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
+        .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+        .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
     </style>
 </head>
 <body>
 
     <div class="bg-glow"></div>
     <div class="bg-glow-2"></div>
+    <div id="toast-container"></div>
 
     <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
@@ -295,7 +309,6 @@
 
             <!-- RESULTADOS -->
             <div id="view-results" class="view">
-                <!-- Modificación: Contenedor con botón CSV -->
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
                     <div style="display:flex; align-items:center; gap:1rem;">
                         <button class="btn btn-secondary btn-sm" onclick="navegarA('dashboard')"><i class="fas fa-arrow-left"></i> Volver</button>
@@ -405,7 +418,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
-                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos rojos en las esquinas y centro. <strong>Míralos fijamente y haz clic sobre ellos cuando se pongan verdes</strong>.
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Míralos fijamente y haz clic sobre ellos cuando se pongan verdes</strong>.
                     </p>
                     <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-check"></i> Acepto y calibrar cámara
@@ -434,7 +447,6 @@
             <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado!</h2>
             <p style="color:var(--muted); max-width:400px; text-align:center;">Tus datos de atención ocular han sido guardados correctamente.</p>
-            <!-- Modificado: Regresar al Dashboard internamente sin recargar la página para ver los datos de inmediato -->
             <button class="btn btn-secondary" onclick="volverAlDashboardDesdePrueba()">Volver al Panel de Administrador</button>
         </div>
     </div>
@@ -456,6 +468,18 @@
         let streamCamara = null;
         let estimulosOrdenadosActuales = [];
         let datosDemograficosTemp = {};
+        // MODIFICADO: Aseguramos que se reinicie cada vez que alguien participa
+        let resultadosParticipanteGaze = {};
+
+        // Función global de UI (Toast)
+        window.mostrarToast = (mensaje, tipo = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i> ${mensaje}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000); // 4 segundos de duración
+        };
 
         const urlParams = new URLSearchParams(window.location.search);
         const estudioParam = urlParams.get('estudio');
@@ -481,7 +505,7 @@
                 document.getElementById('admin-nav').style.display = 'flex';
                 actualizarDashboard();
             } else {
-                alert('Contraseña incorrecta. La contraseña de administrador es: ' + PASS_DEFAULT);
+                mostrarToast('Contraseña incorrecta. (Usa: admin2024)', 'error');
             }
         };
 
@@ -509,21 +533,19 @@
 
         window.simularPrueba = (id) => {
             estudioActualId = id;
+            resultadosParticipanteGaze = {}; // Reset vital para no cruzar datos
+            datosDemograficosTemp = {};
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
         };
 
-        // Regresar dinámicamente al Dashboard post-prueba
         window.volverAlDashboardDesdePrueba = () => {
-            // Ocultar todas las pantallas del participante
             document.getElementById('participant-section').style.display = 'none';
             document.getElementById('p-fin').style.display = 'none';
-            document.getElementById('p-demografia').style.display = 'flex'; // Resetear para futura prueba
+            document.getElementById('p-demografia').style.display = 'flex'; 
             
-            // Mostrar Admin
             document.getElementById('admin-section').style.display = 'block';
             
-            // Recargar datos e ir al Dashboard
             estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
             navegarA('dashboard');
         };
@@ -555,7 +577,7 @@
                     <td>
                         <div class="study-link">
                             <code>${linkParticipante}</code>
-                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); alert('¡Link copiado!');" title="Copiar link">
+                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); mostrarToast('Link copiado', 'success');" title="Copiar link">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
@@ -653,7 +675,7 @@
             if (file && file.type.startsWith('image/')) {
                 procesarArchivoImagen(file, box.closest('.estimulo-item-card'));
             } else {
-                alert('Por favor suelta un archivo de imagen válido');
+                mostrarToast('Por favor suelta un archivo de imagen válido', 'error');
             }
         };
 
@@ -682,6 +704,7 @@
             card.querySelector('.preview-txt').style.display = 'none';
         }
 
+        // MODIFICADO: UI Toast explícito para el guardado
         window.guardarEstudio = () => {
             const idEdit = document.getElementById('edit-estudio-id').value;
             const nombre = document.getElementById('create-nombre').value.trim();
@@ -702,7 +725,7 @@
             });
 
             if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
-                alert('⚠️ No se puede guardar: Asigna un nombre al estudio y asegúrate de cargar al menos una imagen en los materiales.');
+                mostrarToast('No se puede guardar: Asigna un nombre y asegúrate de cargar al menos una imagen.', 'error');
                 return;
             }
 
@@ -729,7 +752,8 @@
 
             localStorage.setItem('et_estudios', JSON.stringify(estudios));
             
-            alert('✅ ¡Estudio guardado exitosamente!');
+            // Reemplazado alert por el toast de diseño
+            mostrarToast('Estudio guardado correctamente', 'success');
             navegarA('dashboard');
         };
 
@@ -738,6 +762,7 @@
                 estudios = estudios.filter(e => e.id !== id);
                 localStorage.setItem('et_estudios', JSON.stringify(estudios));
                 actualizarDashboard();
+                mostrarToast('Estudio eliminado', 'info');
             }
         };
 
@@ -825,17 +850,15 @@
 
         window.filtrarResultadosDemografia = () => actualizarSensibilidadHeatmap();
 
-        // NUEVO: Generar y Descargar CSV
         window.exportarCSV = () => {
             if (!estudioActualId) return;
             const estudio = estudios.find(e => e.id === estudioActualId);
             if (!estudio || !estudio.participantes || estudio.participantes.length === 0) {
-                alert('No hay datos de participantes para exportar.');
+                mostrarToast('No hay datos de participantes para exportar.', 'error');
                 return;
             }
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            // Cabeceras del CSV
             csvContent += "Estudio,Participante_ID,Edad,Genero,Ocupacion,Material_ID,Material_Nombre,Tiempo_ms,X,Y\n";
 
             estudio.participantes.forEach(part => {
@@ -864,7 +887,6 @@
                 }
             });
 
-            // Forzar descarga del archivo
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
@@ -881,7 +903,7 @@
             const ocupacion = document.getElementById('part-ocupacion').value;
 
             if (!edadRango || !genero) {
-                alert('Por favor selecciona tu rango de edad y género');
+                mostrarToast('Por favor selecciona tu rango de edad y género', 'error');
                 return;
             }
 
@@ -919,13 +941,13 @@
             }
         };
 
-        // NUEVO: Calibración de 5 Puntos
+        // MODIFICADO: Orden de puntos - Centro (primero), Arriba-Izquierda, Arriba-Derecha, Abajo-Derecha, Abajo-Izquierda
         const puntosCalibracion = [
-            { top: '10%', left: '10%' }, // Arriba - Izquierda
-            { top: '10%', left: '90%' }, // Arriba - Derecha
-            { top: '90%', left: '90%' }, // Abajo - Derecha
-            { top: '90%', left: '10%' }, // Abajo - Izquierda
-            { top: '50%', left: '50%' }  // Centro
+            { top: '50%', left: '50%' },  // Centro
+            { top: '10%', left: '10%' },  // Arriba - Izquierda
+            { top: '10%', left: '90%' },  // Arriba - Derecha
+            { top: '90%', left: '90%' },  // Abajo - Derecha
+            { top: '90%', left: '10%' }   // Abajo - Izquierda
         ];
         let pasoCalibracionActual = 0;
 
@@ -936,7 +958,6 @@
 
         function mostrarPuntoCalibracion() {
             if (pasoCalibracionActual >= puntosCalibracion.length) {
-                // Si ya pasó por los 5 puntos, iniciamos los estímulos
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -945,7 +966,6 @@
             const punto = document.getElementById('punto-calibracion');
             
             punto.style.display = 'flex';
-            // Aplicamos las coordenadas del array
             punto.style.top = pos.top;
             punto.style.left = pos.left;
             
@@ -953,7 +973,6 @@
             punto.innerHTML = ''; 
             punto.onclick = null; 
 
-            // Reducido a 1.5s por punto para no hacer la calibración tan pesada
             setTimeout(() => {
                 punto.className = 'verde';
                 punto.innerHTML = 'CLIC'; 
@@ -962,14 +981,10 @@
                     punto.style.display = 'none';
                     punto.onclick = null;
                     pasoCalibracionActual++;
-                    // Pausa de 300ms antes de mostrar el siguiente punto
                     setTimeout(mostrarPuntoCalibracion, 300);
                 };
             }, 1500); 
         }
-
-        let estudioParticipanteObj = null;
-        let resultadosParticipanteGaze = {};
 
         function iniciarSecuenciaEstimulos() {
             estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
@@ -1042,24 +1057,40 @@
             }, duracionMs);
         };
 
+        // MODIFICADO: Sistema seguro para evitar crash al guardar datos
         function finalizarParticipacion() {
-            if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
-            if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
+            // Control de errores (Try-Catch) para evitar que la cámara congele la página
+            try {
+                if (streamCamara) {
+                    streamCamara.getTracks().forEach(t => t.stop());
+                }
+            } catch (error) {
+                console.warn("La cámara ya estaba detenida o bloqueada por el navegador");
+            }
+
+            // Validar que exista el array de participantes
+            if (!estudioParticipanteObj.participantes) {
+                estudioParticipanteObj.participantes = [];
+            }
             
+            // Empujar el nuevo participante a la memoria
             estudioParticipanteObj.participantes.push({
                 id: 'part_' + Math.random().toString(36).substr(2, 9),
                 fecha: Date.now(),
                 ...datosDemograficosTemp,
-                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial
+                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial || {}
             });
 
-            // Guardar los datos en el sistema
+            // Sobrescribir en la base de datos local
             const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
             if (idx !== -1) {
                 estudios[idx] = estudioParticipanteObj;
                 localStorage.setItem('et_estudios', JSON.stringify(estudios));
+            } else {
+                console.error("Error: No se encontró el estudio para guardar los datos.");
             }
 
+            // Mostrar pantalla de fin de estudio garantizado
             document.getElementById('p-fin').style.display = 'flex';
         }
     </script>
