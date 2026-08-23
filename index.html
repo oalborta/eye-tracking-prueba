@@ -180,7 +180,6 @@
                 <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
                 <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
             </div>
-            <!-- El botón salir limpia la memoria para que puedas volver a ver el login -->
             <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir</button>
         </nav>
 
@@ -191,7 +190,7 @@
                 <div class="login-container">
                     <div style="text-align:center; margin-bottom: 2.5rem;">
                         <div style="font-size: 3rem; font-weight: 900; letter-spacing: -1px;">Eye<span style="color:var(--accent)">Track</span></div>
-                        <p style="color:var(--muted); margin-top: 0.5rem;">Sistema de Eye Tracking para Marketing</p>
+                        <p style="color:var(--muted); margin-top: 0.5rem;">Panel de Administrador (No requiere registro)</p>
                     </div>
                     <div class="card">
                         <div class="form-group">
@@ -199,10 +198,10 @@
                             <input type="password" id="login-pass" class="form-input" placeholder="Ingrese la contraseña" autofocus onkeydown="if(event.key==='Enter') intentarLogin()">
                         </div>
                         <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="intentarLogin()">
-                            <i class="fas fa-lock"></i> Ingresar
+                            <i class="fas fa-lock"></i> Ingresar al Sistema
                         </button>
-                        <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:var(--muted);">
-                            Por defecto: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;">admin2024</code>
+                        <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:var(--warn); font-weight:600;">
+                            Contraseña de acceso: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--fg);">admin2024</code>
                         </p>
                     </div>
                 </div>
@@ -429,7 +428,6 @@
             <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado!</h2>
             <p style="color:var(--muted); max-width:400px; text-align:center;">Tus datos de atención ocular han sido guardados correctamente.</p>
-            <!-- Limpiamos los parámetros de la URL al volver al inicio -->
             <button class="btn btn-secondary" onclick="window.location.href = window.location.href.split('?')[0]">Volver al inicio</button>
         </div>
     </div>
@@ -452,7 +450,7 @@
         let estimulosOrdenadosActuales = [];
         let datosDemograficosTemp = {};
 
-        // Validar si entra por enlace de participante
+        // Validar si entra por enlace de participante REAL
         const urlParams = new URLSearchParams(window.location.search);
         const estudioParam = urlParams.get('estudio');
 
@@ -477,7 +475,7 @@
                 document.getElementById('admin-nav').style.display = 'flex';
                 actualizarDashboard();
             } else {
-                alert('Contraseña incorrecta. Intenta con: ' + PASS_DEFAULT);
+                alert('Contraseña incorrecta. La contraseña de administrador es: ' + PASS_DEFAULT);
             }
         };
 
@@ -503,6 +501,13 @@
             }
         };
 
+        // NUEVO: Función para probar sin recargar la página ni usar URLs
+        window.simularPrueba = (id) => {
+            estudioActualId = id;
+            document.getElementById('admin-section').style.display = 'none';
+            document.getElementById('participant-section').style.display = 'block';
+        };
+
         function actualizarDashboard() {
             const tbody = document.getElementById('tabla-estudios');
             tbody.innerHTML = '';
@@ -517,7 +522,6 @@
             }
             document.getElementById('empty-dashboard').style.display = 'none';
 
-            // PARCHE 3: Limpiar la URL base (quita problemas con el protocolo file:///)
             const urlBase = window.location.href.split('?')[0];
 
             estudios.forEach(est => {
@@ -537,7 +541,8 @@
                         </div>
                     </td>
                     <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
-                        <button class="btn btn-primary btn-sm" onclick="window.open('${linkParticipante}', '_blank')" title="Probar / Simular prueba"><i class="fas fa-play"></i> Probar</button>
+                        <!-- Se ha modificado este botón para simular en la misma pestaña -->
+                        <button class="btn btn-primary btn-sm" onclick="simularPrueba('${est.id}')" title="Probar / Simular prueba"><i class="fas fa-play"></i> Probar</button>
                         <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Dashboard Resultados"><i class="fas fa-chart-bar"></i></button>
                         <button class="btn btn-secondary btn-sm" onclick="navegarA('create', '${est.id}')" title="Editar"><i class="fas fa-edit"></i></button>
                         <button class="btn btn-danger btn-sm" onclick="eliminarEstudio('${est.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
@@ -606,7 +611,6 @@
                             <div class="preview-txt" style="font-size:0.8rem; color:var(--muted); display:${img ? 'none' : 'block'};"><i class="fas fa-upload" style="font-size:1.2rem; margin-bottom:0.4rem; display:block; color:var(--accent);"></i>Sube o arrastra tu imagen</div>
                             <img class="preview-img" src="${img || ''}" style="max-height:85px; margin:0 auto; display:${img ? 'block' : 'none'}; border-radius:4px; object-fit:contain;">
                         </div>
-                        <!-- PARCHE 2: Botón explícito para cargar URL de manera segura -->
                         <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
                             <input type="text" class="form-input url-input" style="font-size: 0.8rem; padding: 0.5rem;" placeholder="O pega una URL aquí...">
                             <button class="btn btn-secondary btn-sm" onclick="cargarImagenURLBtn(this)">Cargar URL</button>
@@ -678,7 +682,6 @@
                 });
             });
 
-            // PARCHE 2: Alerta explícita para asegurar que el usuario vea qué pasó
             if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
                 alert('⚠️ No se puede guardar: Asigna un nombre al estudio y asegúrate de cargar al menos una imagen en los materiales.');
                 return;
@@ -707,7 +710,6 @@
 
             localStorage.setItem('et_estudios', JSON.stringify(estudios));
             
-            // Confirmación explícita mediante Alerta Nativa
             alert('✅ ¡Estudio guardado exitosamente!');
             navegarA('dashboard');
         };
@@ -803,7 +805,6 @@
         };
 
         window.filtrarResultadosDemografia = () => actualizarSensibilidadHeatmap();
-
 
         // PARTICIPANTE FLUJOS
         window.validarDemografiaYConsentimiento = () => {
