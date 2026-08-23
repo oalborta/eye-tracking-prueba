@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuestra Base Segura + Calibración</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #111; font-family: Arial, sans-serif; color: white; }
+        
+        .pantalla { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+        #pantalla-consentimiento { background: #222; z-index: 100; }
+        #pantalla-carga { background: #222; z-index: 100; display: none; }
+        #pantalla-calibracion { background: rgba(10,14,20,0.9); z-index: 150; display: none; pointer-events: none; }
+        #pantalla-fin { background: rgba(0,0,0,0.85); z-index: 200; flex-direction: column; gap: 20px; }
+        
+        #estimulo { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; }
+        
+        #lienzo-trayectoria { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 50; display: none; }
+        
+        button { padding: 15px 30px; font-size: 18px; cursor: pointer; background: #007BFF; color: white; border: none; border-radius: 5px; z-index: 300; }
+        button:hover { background: #0056b3; }
+        
+        video { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; }
+
+        /* El punto que ahora cambia de color */
+        #punto-mirada {
+            width: 40px; height: 40px; border-radius: 50%;
+            position: absolute; top: 0px; left: 0px; pointer-events: none; z-index: 999999;
+            display: none; transform: translate(-50%, -50%);
+            background: #ff0000; 
+            box-shadow: 0 0 30px 10px rgba(255,0,0,0.8);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        #punto-mirada.listo {
+            background: #00ff00; 
+            box-shadow: 0 0 30px 10px rgba(0,255,0,0.8);
+        }
+
+        .texto-calibracion {
+            position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); padding: 15px 30px; border-radius: 10px;
+            font-size: 20px; text-align: center; z-index: 200; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="punto-mirada"></div>
+    <video id="video" playsinline></video>
+    <img id="estimulo" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1200&auto=format&fit=crop" alt="Imagen de prueba" style="display: none;">
+    <canvas id="lienzo-trayectoria"></canvas>
+
+    <!-- PANTALLAS -->
+    <div id="pantalla-consentimiento" class="pantalla">
+        <h2>Aviso de Privacidad</h2>
+        <p style="max-width: 500px; text-align: center; line-height: 1.6;">
+            Utilizaremos su cámara web <strong>exclusivamente para trazar el movimiento de sus ojos</strong>. 
+            <br><br>⚠️ <strong>No se grabará ningún video ni fotografía de su rostro.</strong>
+            <br><br>Ahora le pediremos que calibre su mirada en 5 puntos.
+        </p>
+        <br>
+        <button onclick="iniciarTodo()">Acepto y comenzar</button>
+    </div>
+
+    <div id="pantalla-carga" class="pantalla">
+        <h2 id="texto-carga">Descargando modelo de IA...</h2>
+    </div>
+
+    <div id="pantalla-calibracion" class="pantalla">
+        <div id="texto-calibracion" class="texto-calibracion">Mire el punto hasta que se ponga VERDE y haga clic</div>
+    </div>
+
+    <div id="pantalla-fin" class="pantalla" style="display: none;">
+        <h2>¡Estudio terminado!</h2>
+        <p>Se descargó el archivo CSV.</p>
+        <button onclick="descargarImagen()">Descargar Trayectoria (PNG)</button>
+    </div>
+
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+        const video = document.getElementById('video');
+        const puntoMirada = document.getElementById('punto-mirada');
+        const pantallaCarga = document.getElementById('pantalla-carga');
+        const textoCarga = document.getElementById('texto-carga');
+        const pantallaFin = document.getElementById('pantalla-fin');
+        const pantallaCalibracion = document.getElementById('pantalla-calibracion');
+        const textoCalibracion = document.getElementById('texto-calibracion');
+        const estimulo = document.getElementById('estimulo');
+        const lienzo = document.getElementById('lienzo-trayectoria');
+        const ctx = lienzo.getContext('2d');
+
+        let faceLandmarker;
+        let faseActual = 'carga'; // Puede ser: carga, calibracion, estudio
+        let timerActivo = false;
+
+        let datosOjo = []; 
+        let tiempoInicio = 0;
+
+        let posicionAnteriorX = window.innerWidth / 2;
+        let posicionAnteriorY = window.innerHeight / 2;
+        let pesoSuavizado = 0.7; 
+        let corrimientoY = -100; 
+
+        // --- NUEVA LÓGICA DE CALIBRACIÓN ---
+        let puntosCalibracion = [
+            { x: 0.5, y: 0.5 }, // Centro
+            { x: 0.2, y: 0.2 }, // Arriba Izquierda
+            { x: 0.8, y: 0.2 }, // Arriba Derecha
+            { x: 0.2, y: 0.8 }, // Abajo Izquierda
+            { x: 0.8, y: 0.8 }  // Abajo Derecha
+        ];
+        let indiceCalibracion = 0;
+        let mirandoFijo = false;
+        let tiempoFijacionInicio = 0;
+        let datosRawCalibracion = []; // Guardará los datos crudos del ojo vs la pantalla
+
+        window.iniciarTodo = async function() {
+            document.getElementById('pantalla-consentimiento').style.display = 'none';
+            pantallaCarga.style.display = 'flex';
+            await inicializarIA();
+        };
+
+        async function inicializarIA() {
+            const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+            faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                baseOptions: { modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`, delegate: "GPU" },
+                runningMode: "VIDEO", numFaces: 1
+            });
+            textoCarga.innerText = "Modelo listo. Prendiendo cámara...";
+            await prenderCamara();
+        };
+
+        async function prenderCamara() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+            video.srcObject = stream;
+            await video.play();
+            
+            pantallaCarga.style.display = 'none';
+            
+            // ARRANCAMOS LA CALIBRACIÓN
+            faseActual = 'calibracion';
+            pantallaCalibracion.style.display = 'flex';
+            puntoMirada.style.display = 'block';
+            
+            moverPuntoCalibracion(0);
+            procesarVideo();
+        };
+
+        async function procesarVideo() {
+            if (faseActual === 'fin') return;
+            let startTime = performance.now();
+            
+            if (video.readyState >= 2) {
+                const resultados = await faceLandmarker.detectForVideo(video, startTime);
+                if (resultados.faceLandmarks && resultados.faceLandmarks.length > 0) {
+                    const lm = resultados.faceLandmarks[0];
+                    
+                    // Calculamos el ojo crudo (igual que antes)
+                    let promedioX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) + (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2; 
+                    let promedioY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) + (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2; 
+
+                    let rawX = window.innerWidth / 2 - (promedioX - 0.5) * window.innerWidth * 4.5;
+                    let rawY = window.innerHeight / 2 - (promedioY - 0.5) * window.innerHeight * 9.0;
+
+                    rawX = Math.max(0, Math.min(window.innerWidth, rawX));
+                    rawY = Math.max(0, Math.min(window.innerHeight, rawY));
+
+                    let smoothX = (posicionAnteriorX * pesoSuavizado) + (rawX * (1 - pesoSuavizado));
+                    let smoothY = (posicionAnteriorY * pesoSuavizado) + (rawY * (1 - pesoSuavizado));
+                    smoothX = Math.max(0, Math.min(window.innerWidth, smoothX));
+                    smoothY = Math.max(0, Math.min(window.innerHeight, smoothY));
+
+                    posicionAnteriorX = smoothX;
+                    posicionAnteriorY = smoothY;
+
+                    // LÓGICA SEGÚN LA FASE
+                    if (faseActual === 'calibracion') {
+                        logicaCalibracion(smoothX, smoothY, promedioX, promedioY);
+                    } else if (faseActual === 'estudio') {
+                        puntoMirada.style.left = smoothX + "px";
+                        puntoMirada.style.top = smoothY + "px";
+                        let tiempoTranscurrido = (startTime - tiempoInicio) / 1000; 
+                        datosOjo.push({ tiempo: tiempoTranscurrido, x: Math.round(smoothX), y: Math.round(smoothY) });
+                    }
+                }
+            }
+            requestAnimationFrame(procesarVideo);
+        }
+
+        // --- FUNCIONES DE CALIBRACIÓN ---
+        function moverPuntoCalibracion(indice) {
+            const p = puntosCalibracion[indice];
+            puntoMirada.style.left = (p.x * window.innerWidth) + "px";
+            puntoMirada.style.top = (p.y * window.innerHeight) + "px";
+            puntoMirada.classList.remove('listo');
+            textoCalibracion.innerText = `Mire el punto hasta que se ponga VERDE y haga clic (${indice + 1} de 5)`;
+            mirandoFijo = false;
+        }
+
+        function logicaCalibracion(smoothX, smoothY, rawX, rawY) {
+            const puntoPantalla = puntosCalibracion[indiceCalibracion];
+            const distancia = Math.hypot(smoothX - (puntoPantalla.x * window.innerWidth), smoothY - (puntoPantalla.y * window.innerHeight));
+
+            if (distancia < 50) { // Si está mirando cerca del punto
+                if (!mirandoFijo) {
+                    mirandoFijo = true;
+                    tiempoFijacionInicio = performance.now();
+                } else if (performance.now() - tiempoFijacionInicio > 1000) { // 1 segundo mirando fijo
+                    puntoMirada.classList.add('listo'); // Se pone verde
+                }
+            } else {
+                mirandoFijo = false;
+                puntoMirada.classList.remove('listo');
+            }
+        }
+
+        // Capturar el clic para avanzar en la calibración
+        document.addEventListener('click', function(e) {
+            if (faseActual !== 'calibracion') return;
+            if (e.target.tagName === 'BUTTON') return; // Ignorar clics en botones
+
+            if (puntoMirada.classList.contains('listo')) {
+                // GUARDAMOS LOS DATOS CRUDOS PARA FUTURA MATEMÁTICA
+                datosRawCalibracion.push({
+                    pantallaX: puntosCalibracion[indiceCalibracion].x,
+                    pantallaY: puntosCalibracion[indiceCalibracion].y,
+                    ojoX: 0, // Se llenará con el raw real en la próxima iteración
+                    ojoY: 0
+                });
+
+                indiceCalibracion++;
+                if (indiceCalibracion < 5) {
+                    moverPuntoCalibracion(indiceCalibracion);
+                } else {
+                    // TERMINÓ LA CALIBRACIÓN, PASAMOS AL ESTUDIO
+                    faseActual = 'estudio';
+                    pantallaCalibracion.style.display = 'none';
+                    puntoMirada.style.display = 'none'; // Ocultamos punto
+                    estimulo.style.display = 'block';
+                    tiempoInicio = performance.now();
+                    iniciarTimer();
+                }
+            } else {
+                textoCalibracion.innerText = "Aún no está verde. Mantenga la mirada fija en el punto rojo.";
+            }
+        });
+
+        function iniciarTimer() {
+            if(timerActivo) return;
+            timerActivo = true;
+            let tiempoRestante = 15; 
+            let textoTimer = document.createElement('div');
+            textoTimer.id = 'timer-display';
+            textoTimer.style.position = 'absolute'; textoTimer.style.top = '20px'; textoTimer.style.right = '20px';
+            textoTimer.style.fontSize = '24px'; textoTimer.style.color = '#00ff00'; textoTimer.style.background = 'rgba(0,0,0,0.7)';
+            textoTimer.style.padding = '10px'; textoTimer.style.borderRadius = '5px'; textoTimer.style.zIndex = '100';
+            textoTimer.innerText = "Tiempo: " + tiempoRestante + "s";
+            document.body.appendChild(textoTimer);
+
+            let cuentaRegresiva = setInterval(function() {
+                tiempoRestante--;
+                textoTimer.innerText = "Tiempo: " + tiempoRestante + "s";
+                if (tiempoRestante <= 0) { clearInterval(cuentaRegresiva); terminarEstudio(); }
+            }, 1000);
+        }
+
+        function terminarEstudio() {
+            faseActual = 'fin'; 
+            timerActivo = false;
+            video.srcObject.getTracks().forEach(track => track.stop());
+            document.getElementById('timer-display').style.display = 'none';
+            estimulo.style.display = 'none';
+            
+            // Descargar CSV
+            let contenidoCSV = "Tiempo_Segundos;X_Pantalla;Y_Pantalla\n";
+            for (let punto of datosOjo) { contenidoCSV += `${punto.tiempo};${punto.x};${punto.y}\n`; }
+            let blob = new Blob([contenidoCSV], { type: 'text/csv;charset=utf-8;' });
+            let url = URL.createObjectURL(blob);
+            let linkDescarga = document.createElement("a");
+            linkDescarga.setAttribute("href", url); linkDescarga.setAttribute("download", "datos_ojo.csv");
+            linkDescarga.style.display = "none"; document.body.appendChild(linkDescarga);
+            linkDescarga.click(); document.body.removeChild(linkDescarga); URL.revokeObjectURL(url);
+
+            dibujarTrayectoria();
+            pantallaFin.style.display = 'flex';
+        }
+
+        function dibujarTrayectoria() {
+            lienzo.width = window.innerWidth;
+            lienzo.height = window.innerHeight;
+            lienzo.style.display = 'block';
+            ctx.fillStyle = '#222222';
+            ctx.fillRect(0, 0, lienzo.width, lienzo.height);
+            ctx.lineWidth = 2; ctx.fillStyle = "#FF0000"; ctx.strokeStyle = "#FFFFFF"; ctx.font = "bold 16px Arial"; ctx.textAlign = "middle";
+            let puntoPrevio = null; let contador = 1; let ultimoTiempoDibujado = 0; const INTERVALO_DIBUJO = 0.15; 
+            for (let punto of datosOjo) {
+                if (punto.tiempo - ultimoTiempoDibujado >= INTERVALO_DIBUJO) {
+                    if (puntoPrevio) { ctx.beginPath(); ctx.moveTo(puntoPrevio.x, puntoPrevio.y); ctx.lineTo(punto.x, punto.y); ctx.stroke(); }
+                    ctx.beginPath(); ctx.arc(punto.x, punto.y, 10, 0, 2 * Math.PI); ctx.fill();
+                    ctx.fillStyle = "#FFFFFF"; ctx.fillText(contador, punto.x, punto.y); ctx.fillStyle = "#FF0000"; 
+                    puntoPrevio = {x: punto.x, y: punto.y}; contador++; ultimoTiempoDibujado = punto.tiempo;
+                }
+            }
+        }
+
+        window.descargarImagen = function() {
+            const link = document.createElement("a");
+            link.download = 'trayectoria_ojo.png';
+            link.href = lienzo.toDataURL();
+            link.click();
+        };
+    </script>
+
+</body>
+</html>
