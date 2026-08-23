@@ -3,534 +3,1344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EyeTrack Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>EyeTrack Pro - Eye Tracking para Marketing</title>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bg: '#0a0e14',
+                        card: '#131a24',
+                        surface: '#0d1219',
+                        accent: '#00e5a0',
+                        'accent-dim': '#00b87d',
+                        muted: '#5a6b80',
+                        border: '#1e2d3d',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        txt: '#e2e8f0',
+                    },
+                    fontFamily: {
+                        display: ['"Space Grotesk"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root{--bg:#07070b;--bg2:#0d0d15;--card:#11111b;--border:#1a1a2c;--fg:#e2e2ea;--muted:#5a5a72;--accent:#10b981;--accent2:#059669;--warn:#f59e0b;--danger:#ef4444;--info:#3b82f6}
-        *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;overflow-x:hidden}
-        ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-        .g1{position:fixed;top:-250px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.04) 0%,transparent 70%);pointer-events:none}
-        .anav{position:sticky;top:0;z-index:100;background:rgba(7,7,11,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between}
-        .anav .logo{font-weight:900;font-size:1.05rem}.anav .logo span{color:var(--accent)}
-        .anl{display:flex;gap:2px}.anl a{padding:.4rem .7rem;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.78rem;transition:.2s}.anl a:hover{color:var(--fg);background:rgba(255,255,255,.03)}.anl a.act{color:var(--accent);background:rgba(16,185,129,.07)}
-        .v{display:none;position:relative;z-index:1}.v.act{display:block}
-        .cd{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.1rem;transition:.2s}
-        .b{display:inline-flex;align-items:center;gap:.3rem;padding:.45rem .8rem;border-radius:7px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.78rem;border:none;cursor:pointer;transition:.15s;text-decoration:none;white-space:nowrap}
-        .bp{background:var(--accent);color:#fff}.bp:hover{background:var(--accent2)}
-        .bs{background:rgba(255,255,255,.05);color:var(--fg);border:1px solid var(--border)}.bs:hover{background:rgba(255,255,255,.08)}
-        .bd{background:rgba(239,68,68,.1);color:var(--danger)}.bd:hover{background:rgba(239,68,68,.18)}
-        .bi{background:rgba(59,130,246,.1);color:var(--info)}.bi:hover{background:rgba(59,130,246,.18)}
-        .bw{background:rgba(245,158,11,.1);color:var(--warn)}.bw:hover{background:rgba(245,158,11,.18)}
-        .bsm{padding:.28rem .55rem;font-size:.7rem;border-radius:6px}
-        .fg{margin-bottom:.75rem}.fl{display:block;font-weight:700;font-size:.65rem;color:var(--muted);margin-bottom:.2rem;text-transform:uppercase;letter-spacing:.5px}
-        .fi{width:100%;padding:.5rem .7rem;background:var(--bg2);border:1px solid var(--border);border-radius:7px;color:var(--fg);font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;transition:.2s}
-        .fi:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,185,129,.07)}.fi::placeholder{color:var(--muted)}
-        textarea.fi{resize:vertical;min-height:50px}
-        select.fi{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5a72' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .6rem center;padding-right:1.8rem}
-        .tw{overflow-x:auto}table{width:100%;border-collapse:collapse}
-        thead th{text-align:left;padding:.45rem .6rem;font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border)}
-        tbody td{padding:.55rem .6rem;border-bottom:1px solid rgba(26,26,44,.4);font-size:.8rem}tbody tr:hover{background:rgba(255,255,255,.012)}
-        .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:.85rem;flex-wrap:wrap}
-        .tb{padding:.45rem .75rem;background:none;border:none;color:var(--muted);font-family:'Outfit',sans-serif;font-weight:600;font-size:.78rem;cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
-        .tb:hover{color:var(--fg)}.tb.act{color:var(--accent);border-bottom-color:var(--accent)}
-        .tc{display:none}.tc.act{display:block}
-        #toasts{position:fixed;top:66px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:.3rem}
-        .toast{padding:.55rem .8rem;border-radius:7px;font-size:.78rem;font-weight:600;animation:tI .25s ease,tO .25s ease 2.7s forwards;display:flex;align-items:center;gap:.3rem;box-shadow:0 5px 20px rgba(0,0,0,.4)}
-        .toast.ok{background:#065f46;color:#a7f3d0;border:1px solid #10b981}.toast.er{background:#7f1d1d;color:#fca5a5;border:1px solid #ef4444}.toast.in{background:#1e3a5f;color:#93c5fd;border:1px solid #3b82f6}
-        @keyframes tI{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
-        @keyframes tO{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
-        .pbar{height:4px;background:var(--bg2);border-radius:2px;overflow:hidden}.pbar-f{height:100%;border-radius:2px;transition:width .4s}
-        .hm-w{position:relative;display:inline-block;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:#000}.hm-w canvas{display:block}
-        .aoi-g{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;max-width:480px}
-        .aoi-c{aspect-ratio:16/9;border-radius:6px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:900;font-size:1.1rem;transition:.15s;cursor:default}.aoi-c:hover{transform:scale(1.03)}
-        .aoi-c .al{font-size:.5rem;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-top:.1rem}
-        .pp{position:fixed;top:0;left:0;width:100vw;height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1000;background:var(--bg)}
-        #punto-cal{width:38px;height:38px;border-radius:50%;position:fixed;pointer-events:none;z-index:999999;transform:translate(-50%,-50%);display:none;transition:background .2s,box-shadow .2s}
-        #punto-cal.rojo{background:#ef4444;box-shadow:0 0 24px 8px rgba(239,68,68,.55)}
-        #punto-cal.amarillo{background:#f59e0b;box-shadow:0 0 24px 8px rgba(245,158,11,.55)}
-        #punto-cal.verde{background:#10b981;box-shadow:0 0 24px 8px rgba(16,185,129,.55)}
-        #cursor-val{width:14px;height:14px;border-radius:50%;background:#06b6d4;position:fixed;pointer-events:none;z-index:999998;transform:translate(-50%,-50%);display:none;box-shadow:0 0 10px 4px rgba(6,182,212,.45);transition:left .07s linear,top .07s linear}
-        @keyframes puR{0%{transform:translate(-50%,-50%) scale(1);opacity:.4}100%{transform:translate(-50%,-50%) scale(2);opacity:0}}
-        #punto-cal::before{content:'';position:absolute;top:50%;left:50%;width:38px;height:38px;border-radius:50%;border:2px solid currentColor;animation:puR 1.5s ease-out infinite;pointer-events:none}
-        #vid-p{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:cover;z-index:-1;opacity:0;pointer-events:none}
-        #est-p{position:fixed;top:0;left:0;width:100vw;height:100vh;object-fit:contain;z-index:1;display:none;background:#000}
-        .ita{width:100%;min-height:80px;padding:.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:7px;color:var(--fg);font-family:monospace;font-size:.7rem;resize:vertical;outline:none}.ita:focus{border-color:var(--accent)}
-
-        /* Study cards */
-        .scard{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.2s;cursor:default}
-        .scard:hover{border-color:rgba(16,185,129,.15);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
-        .scard-top{display:flex;gap:1rem;padding:1rem 1.1rem}
-        .scard-thumb{width:100px;height:70px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex-shrink:0;background:var(--bg2)}
-        .scard-body{flex:1;min-width:0}
-        .scard-name{font-weight:800;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .scard-meta{color:var(--muted);font-size:.75rem;margin-top:.2rem}
-        .scard-prog{margin-top:.5rem;display:flex;align-items:center;gap:.5rem}
-        .scard-prog span{font-size:.75rem;font-weight:600;white-space:nowrap}
-        .scard-actions{display:flex;gap:.35rem;padding:.6rem 1.1rem;border-top:1px solid var(--border);flex-wrap:wrap}
-
-        /* Estímulo item */
-        .est-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:.85rem;position:relative;margin-bottom:.6rem}
-        .est-item .en{position:absolute;top:-.4rem;left:.8rem;background:var(--card);border:1px solid var(--border);border-radius:4px;padding:0 .35rem;font-size:.6rem;font-weight:800;color:var(--accent)}
-        .est-thumb{width:64px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--border);flex-shrink:0;background:var(--bg)}
-        .drop-zone{border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:.2s}
-        .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(16,185,129,.03)}
-
-        /* Score ring */
-        .score-ring{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid;flex-shrink:0}
-        .score-ring .sn{font-size:1.8rem;font-weight:900;line-height:1}.score-ring .sl{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:.1rem}
-
-        /* Response screen */
-        .resp-opt{padding:.75rem 1.25rem;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:.15s;font-weight:600;font-size:.9rem;background:var(--bg2);text-align:center}
-        .resp-opt:hover{border-color:var(--accent);background:rgba(16,185,129,.05)}
-        .resp-opt.sel{border-color:var(--accent);background:rgba(16,185,129,.1);color:var(--accent)}
-        .resp-rate{width:52px;height:52px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:.15s;font-weight:800;font-size:1.1rem;display:flex;align-items:center;justify-content:center;background:var(--bg2)}
-        .resp-rate:hover{border-color:var(--accent);background:rgba(16,185,129,.05)}
-        .resp-rate.sel{border-color:var(--accent);background:rgba(16,185,129,.15);color:var(--accent)}
-
-        .viz-c{border-radius:10px;border:1px solid var(--border);display:block;max-width:100%;background:#000}
-        .demo-badge{display:inline-flex;align-items:center;padding:.12rem .45rem;border-radius:16px;font-size:.68rem;font-weight:600}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes fU{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}.fu{animation:fU .35s ease forwards}.fu1{animation-delay:.06s;opacity:0}.fu2{animation-delay:.12s;opacity:0}.fu3{animation-delay:.18s;opacity:0}
-        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-        @media(max-width:640px){.scard-top{flex-direction:column}.scard-thumb{width:100%;height:120px;object-fit:contain}.scard-actions{justify-content:center}}
+        * { box-sizing: border-box; }
+        body { font-family: 'Space Grotesk', sans-serif; background: #0a0e14; color: #e2e8f0; }
+        .pantalla { display: none; }
+        .pantalla.activa { display: flex; }
+        .overlay { position: fixed; inset: 0; z-index: 500; }
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,229,160,0.08); }
+        input[type="text"], input[type="password"], input[type="number"], input[type="url"], select {
+            background: #0d1219; border: 1px solid #1e2d3d; color: #e2e8f0; padding: 10px 14px;
+            border-radius: 8px; outline: none; transition: border-color 0.2s; font-family: inherit;
+        }
+        input:focus, select:focus { border-color: #00e5a0; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: #00e5a0; color: #0a0e14; }
+        .btn-primary:hover { background: #00b87d; }
+        .btn-secondary { background: #1e2d3d; color: #e2e8f0; }
+        .btn-secondary:hover { background: #2a3a4e; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-sm { padding: 6px 14px; font-size: 13px; }
+        /* Punto de calibración */
+        #punto-cal {
+            width: 44px; height: 44px; border-radius: 50%; position: fixed; z-index: 9999;
+            pointer-events: none; transform: translate(-50%, -50%); display: none;
+            background: #ff0000; box-shadow: 0 0 30px 12px rgba(255,0,0,0.85);
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px; padding: 14px 24px; border-radius: 10px;
+            z-index: 10000; font-weight: 500; animation: toastIn 0.3s ease-out;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0e14; }
+        ::-webkit-scrollbar-thumb { background: #1e2d3d; border-radius: 3px; }
+        /* AOI canvas cursor */
+        #canvas-aois { cursor: crosshair; }
+        /* Tab activo */
+        .tab-btn { padding: 10px 20px; border: none; background: transparent; color: #5a6b80; cursor: pointer; font-family: inherit; font-weight: 600; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .tab-btn.activo { color: #00e5a0; border-bottom-color: #00e5a0; }
+        .tab-btn:hover:not(.activo) { color: #e2e8f0; }
+        /* Fondo animado login */
+        .login-bg {
+            background: radial-gradient(ellipse at 20% 50%, rgba(0,229,160,0.06) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(0,180,220,0.04) 0%, transparent 50%),
+                        #0a0e14;
+        }
+        /* Grid patrón sutil */
+        .grid-pattern {
+            background-image: linear-gradient(rgba(30,45,61,0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(30,45,61,0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
     </style>
 </head>
 <body>
-<div class="g1"></div><div id="toasts"></div>
 
-<!-- ==================== ADMIN ==================== -->
-<div id="sec-ad">
-    <nav class="anav" id="anav" style="display:none">
-        <div class="logo">Eye<span>Track</span> Pro</div>
-        <div class="anl"><a href="#dashboard" data-n="dashboard" class="act"><i class="fas fa-th-large" style="margin-right:3px"></i> Estudios</a></div>
-        <div style="display:flex;align-items:center;gap:.5rem">
-            <span style="font-size:.65rem;color:var(--muted)" id="sto-info"></span>
-            <button class="b bsm bs" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i></button>
+<!-- ==================== LOGIN ==================== -->
+<div id="screen-login" class="pantalla activa login-bg grid-pattern" style="min-height:100vh;justify-content:center;align-items:center;">
+    <div class="bg-card border border-border rounded-2xl p-10 w-full max-w-md" style="box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+        <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                <i class="fas fa-eye text-bg text-lg"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight">EyeTrack Pro</h1>
+        </div>
+        <p class="text-muted text-sm mb-8">Sistema de eye tracking para investigaciones de marketing</p>
+        <div class="space-y-4">
+            <div>
+                <label class="text-sm text-muted block mb-1.5">Usuario</label>
+                <input type="text" id="login-user" class="w-full" placeholder="admin" value="admin">
+            </div>
+            <div>
+                <label class="text-sm text-muted block mb-1.5">Contrasena</label>
+                <input type="password" id="login-pass" class="w-full" placeholder="admin123" value="admin123">
+            </div>
+            <div id="login-error" class="text-danger text-sm hidden">Credenciales incorrectas</div>
+            <button class="btn btn-primary w-full text-base" id="btn-login">Iniciar sesion</button>
+        </div>
+        <p class="text-muted text-xs mt-6 text-center">Usuario: admin / Contrasena: admin123</p>
+    </div>
+</div>
+
+<!-- ==================== APP (Dashboard + Vistas) ==================== -->
+<div id="screen-app" class="pantalla" style="min-height:100vh;flex-direction:column;">
+    <!-- Nav -->
+    <nav class="bg-surface border-b border-border px-6 py-3 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+                <i class="fas fa-eye text-bg text-sm"></i>
+            </div>
+            <span class="font-bold text-lg tracking-tight">EyeTrack Pro</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-muted text-sm"><i class="fas fa-user-circle mr-1"></i> Admin</span>
+            <button class="btn btn-secondary btn-sm" id="btn-logout"><i class="fas fa-sign-out-alt mr-1"></i> Salir</button>
         </div>
     </nav>
-    <main style="max-width:900px;margin:0 auto;padding:1.25rem">
 
-        <!-- LOGIN -->
-        <div id="v-login" class="v act">
-            <div style="max-width:340px;margin:0 auto;padding:3rem 1rem" class="fu">
-                <div style="text-align:center;margin-bottom:2rem"><div style="font-size:2.4rem;font-weight:900;letter-spacing:-1px">Eye<span style="color:var(--accent)">Track</span></div><p style="color:var(--muted);margin-top:.3rem;font-size:.82rem">Eye Tracking para Marketing</p></div>
-                <div class="cd"><div class="fg"><label class="fl">Contraseña</label><input type="password" id="inp-pass" class="fi" placeholder="Contraseña" autofocus></div><button class="b bp" style="width:100%;justify-content:center" onclick="login()"><i class="fas fa-lock"></i> Ingresar</button><p style="text-align:center;margin-top:.7rem;font-size:.7rem;color:var(--muted)">Default: <code style="background:var(--bg2);padding:1px 4px;border-radius:3px">admin2024</code></p></div>
-            </div>
-        </div>
-
+    <!-- Contenido -->
+    <div class="flex-1 overflow-auto p-6">
         <!-- DASHBOARD -->
-        <div id="v-dashboard" class="v">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
-                <div><h2 style="font-weight:900;font-size:1.2rem">Mis Estudios</h2><p style="color:var(--muted);font-size:.8rem" id="dash-sub"></p></div>
-                <button class="b bp" onclick="nav('create')"><i class="fas fa-plus"></i> Nuevo estudio</button>
+        <div id="view-dashboard">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl font-extrabold">Estudios</h2>
+                    <p class="text-muted text-sm mt-1">Gestiona tus estudios de eye tracking</p>
+                </div>
+                <button class="btn btn-primary" id="btn-crear-estudio"><i class="fas fa-plus mr-2"></i>Nuevo estudio</button>
             </div>
-            <div id="cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:.85rem"></div>
-            <div id="empty-d" style="display:none;text-align:center;padding:4rem 1rem;color:var(--muted)">
-                <i class="fas fa-flask" style="font-size:3rem;opacity:.15;display:block;margin-bottom:.8rem"></i>
-                <p style="font-weight:700;font-size:1rem">No hay estudios aún</p>
-                <p style="font-size:.82rem;margin-top:.3rem">Crea tu primer estudio para empezar a rastrear miradas</p>
-                <button class="b bp" style="margin-top:1rem" onclick="nav('create')"><i class="fas fa-plus"></i> Crear estudio</button>
+            <div id="lista-estudios" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+            <div id="estado-vacio" class="hidden text-center py-20">
+                <i class="fas fa-flask text-4xl text-border mb-4"></i>
+                <p class="text-muted text-lg">No hay estudios creados</p>
+                <p class="text-muted text-sm mt-1">Crea tu primer estudio para comenzar</p>
             </div>
         </div>
 
-        <!-- CREAR / EDITAR -->
-        <div id="v-create" class="v">
-            <div style="max-width:700px;margin:0 auto">
-                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-                    <button class="b bs bsm" onclick="nav('dashboard')"><i class="fas fa-arrow-left"></i></button>
-                    <h2 style="font-weight:900;font-size:1.2rem" id="create-titulo">Nuevo Estudio</h2>
+        <!-- CREAR ESTUDIO -->
+        <div id="view-crear" class="hidden">
+            <button class="btn btn-secondary btn-sm mb-5" id="btn-volver-dashboard"><i class="fas fa-arrow-left mr-1"></i> Volver</button>
+            <h2 class="text-2xl font-extrabold mb-6">Nuevo estudio</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Formulario -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm text-muted block mb-1.5">Nombre del estudio</label>
+                        <input type="text" id="est-nombre" class="w-full" placeholder="Ej: Landing Page Producto X">
+                    </div>
+                    <div>
+                        <label class="text-sm text-muted block mb-1.5">URL de la imagen estimulo</label>
+                        <input type="url" id="est-imagen-url" class="w-full" placeholder="https://ejemplo.com/imagen.jpg">
+                    </div>
+                    <div>
+                        <label class="text-sm text-muted block mb-1.5">O subi una imagen local</label>
+                        <input type="file" id="est-imagen-file" accept="image/*" class="text-sm text-muted">
+                    </div>
+                    <div>
+                        <label class="text-sm text-muted block mb-1.5">Duracion del estudio (segundos)</label>
+                        <input type="number" id="est-duracion" class="w-full" value="15" min="5" max="120">
+                    </div>
+                    <button class="btn btn-secondary" id="btn-cargar-imagen"><i class="fas fa-image mr-1"></i> Cargar imagen</button>
+                    <div id="img-error" class="text-danger text-sm hidden"></div>
+                    <button class="btn btn-primary w-full mt-4" id="btn-guardar-estudio"><i class="fas fa-save mr-1"></i> Guardar estudio</button>
                 </div>
-                <div class="cd">
-                    <div class="fg"><label class="fl">Nombre del estudio</label><input type="text" id="c-nom" class="fi" placeholder="Ej: Test packaging snacks"></div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-                        <div class="fg"><label class="fl">Participantes objetivo</label><input type="number" id="c-obj" class="fi" value="10" min="1" max="500"></div>
-                        <div class="fg"><label class="fl">Puntos de calibración</label><select class="fi" id="c-cal"><option value="5">5 rápido</option><option value="9" selected>9 recomendado</option><option value="13">13 alta precisión</option></select></div>
+                <!-- Preview + AOIs -->
+                <div>
+                    <p class="text-sm text-muted mb-2">Haz clic y arrastra sobre la imagen para definir Areas de Interes (AOIs)</p>
+                    <div id="contenedor-imagen-aoi" class="relative bg-card border border-border rounded-xl overflow-hidden" style="display:none;">
+                        <img id="preview-img-aoi" style="display:block;max-width:100%;max-height:55vh;margin:auto;">
+                        <canvas id="canvas-aois" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
                     </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-                        <div class="fg"><label class="fl">Orden de estímulos</label><select class="fi" id="c-orden"><option value="secuencial">Secuencial (como se cargan)</option><option value="aleatorio" selected>Aleatorio</option></select></div>
-                        <div class="fg"><label class="fl">Pausa entre estímulos (s)</label><input type="number" id="c-pausa" class="fi" value="2" min="0" max="30"></div>
-                    </div>
-
-                    <hr style="border-color:var(--border);margin:1rem 0">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem">
-                        <label class="fl" style="margin:0">Estímulos (<span id="est-count">0</span>)</label>
-                        <div style="display:flex;gap:.3rem">
-                            <label class="b bp bsm" style="cursor:pointer"><i class="fas fa-folder-open"></i> Subir<img style="display:none" type="file" accept="image/*" multiple id="file-input"></label>
-                            <button class="b bs bsm" onclick="toggleURL()"><i class="fas fa-link"></i> URL</button>
+                    <!-- Form nombre AOI -->
+                    <div id="aoi-form" class="hidden mt-3 bg-card border border-accent rounded-xl p-4">
+                        <label class="text-sm text-muted block mb-1.5">Nombre del AOI</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="aoi-nombre-input" class="flex-1" placeholder="Ej: Boton CTA">
+                            <button class="btn btn-primary btn-sm" id="btn-guardar-aoi">Guardar</button>
+                            <button class="btn btn-secondary btn-sm" id="btn-cancelar-aoi">X</button>
                         </div>
                     </div>
-                    <div id="url-form" style="display:none;margin-bottom:.6rem;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:.5rem"><div style="display:flex;gap:.35rem"><input type="text" class="fi" id="url-inp" placeholder="https://..."><button class="b bp bsm" onclick="addURL()"><i class="fas fa-plus"></i></button></div></div>
-                    <div class="drop-zone" id="drop-zone"><i class="fas fa-cloud-upload-alt" style="font-size:1.5rem;color:var(--muted);display:block;margin-bottom:.3rem"></i><p style="font-size:.85rem;color:var(--muted);font-weight:600">Arrastre imágenes aquí</p></div>
-                    <div id="est-lista" style="margin-top:.75rem"></div>
-                    <div id="est-empty" style="text-align:center;padding:1.2rem;color:var(--muted);font-size:.82rem;border:1px dashed var(--border);border-radius:7px">Sin estímulos</div>
-                    <div style="display:flex;gap:.5rem;margin-top:1rem">
-                        <button class="b bp" id="btn-save" onclick="guardarEstudio()"><i class="fas fa-save"></i> Crear estudio</button>
-                        <button class="b bs" onclick="nav('dashboard')">Cancelar</button>
+                    <!-- Lista de AOIs -->
+                    <div id="lista-aois" class="mt-4 space-y-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETALLE ESTUDIO -->
+        <div id="view-detalle" class="hidden">
+            <button class="btn btn-secondary btn-sm mb-5" id="btn-volver-detalle"><i class="fas fa-arrow-left mr-1"></i> Volver</button>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-1 space-y-4">
+                    <div class="bg-card border border-border rounded-xl p-5">
+                        <h2 id="det-nombre" class="text-xl font-bold mb-3"></h2>
+                        <p class="text-muted text-sm mb-1"><i class="fas fa-clock mr-1"></i> Duracion: <span id="det-duracion"></span>s</p>
+                        <p class="text-muted text-sm mb-1"><i class="fas fa-calendar mr-1"></i> Creado: <span id="det-fecha"></span></p>
+                        <p class="text-muted text-sm"><i class="fas fa-users mr-1"></i> Sesiones: <span id="det-sesiones-count">0</span></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn btn-primary flex-1" id="btn-iniciar-sesion"><i class="fas fa-play mr-1"></i> Iniciar sesion</button>
+                        <button class="btn btn-danger btn-sm" id="btn-eliminar-estudio" title="Eliminar estudio"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <button class="btn btn-secondary w-full" id="btn-ver-resultados"><i class="fas fa-chart-bar mr-1"></i> Ver resultados</button>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-card border border-border rounded-xl p-4 relative">
+                        <img id="det-imagen" style="width:100%;border-radius:8px;">
+                        <canvas id="canvas-det-aois" style="position:absolute;top:16px;left:16px;width:calc(100% - 32px);height:calc(100% - 32px);pointer-events:none;"></canvas>
+                    </div>
+                    <!-- Tabla de sesiones -->
+                    <div class="mt-4 bg-card border border-border rounded-xl overflow-hidden">
+                        <div class="px-5 py-3 border-b border-border font-semibold text-sm">Sesiones registradas</div>
+                        <div id="tabla-sesiones" class="divide-y divide-border"></div>
+                        <div id="sin-sesiones" class="px-5 py-8 text-center text-muted text-sm">No hay sesiones registradas</div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- RESULTADOS -->
-        <div id="v-results" class="v">
-            <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.85rem;flex-wrap:wrap">
-                <button class="b bs bsm" onclick="nav('dashboard')"><i class="fas fa-arrow-left"></i></button>
-                <div style="flex:1;min-width:150px"><h2 style="font-weight:900;font-size:1.15rem" id="r-tit"></h2><p style="color:var(--muted);font-size:.75rem" id="r-sub"></p></div>
-            </div>
-            <div id="r-estsel" style="display:flex;gap:.25rem;margin-bottom:.75rem;flex-wrap:wrap"></div>
-            <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;align-items:flex-end">
-                <div class="fg" style="margin:0;min-width:120px"><label class="fl">Género</label><select class="fi" id="f-gen" onchange="refrescarViz()"><option value="">Todos</option><option>Masculino</option><option>Femenino</option><option>No binario</option><option>Prefiero no decir</option></select></div>
-                <div class="fg" style="margin:0;min-width:100px"><label class="fl">Edad</label><select class="fi" id="f-edad" onchange="refrescarViz()"><option value="">Todos</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55+</option></select></div>
-                <span style="font-size:.75rem;color:var(--muted);padding-bottom:.1rem" id="f-cnt"></span>
-            </div>
-            <div class="tabs"><button class="tb act" onclick="setTab(this,'heatmap')"><i class="fas fa-fire"></i> Calor</button><button class="tb" onclick="setTab(this,'scanpath')"><i class="fas fa-route"></i> Scanpath</button><button class="tb" onclick="setTab(this,'aoi')"><i class="fas fa-th"></i> AOI</button><button class="tb" onclick="setTab(this,'timeline')"><i class="fas fa-chart-line"></i> Timeline</button><button class="tb" onclick="setTab(this,'datos')"><i class="fas fa-users"></i> Datos</button><button class="tb" onclick="setTab(this,'respuestas')"><i class="fas fa-comment-dots"></i> Respuestas</button><button class="tb" onclick="setTab(this,'exportar')"><i class="fas fa-share-alt"></i> Exportar</button></div>
-            <div id="tc-heatmap" class="tc act"><div class="cd" id="hm-box"></div></div>
-            <div id="tc-scanpath" class="tc"><div class="cd" id="sp-box"></div></div>
-            <div id="tc-aoi" class="tc"><div class="cd" id="aoi-box"></div></div>
-            <div id="tc-timeline" class="tc"><div class="cd" id="tl-box"></div></div>
-            <div id="tc-datos" class="tc"><div class="cd"><div class="tw"><table><thead><tr><th>ID</th><th>Fecha</th><th>Género</th><th>Edad</th><th>Error cal.</th><th>Puntos</th><th style="text-align:right">Acciones</th></tr></thead><tbody id="tb-part"></tbody></table></div><div id="empty-p" style="display:none;text-align:center;padding:2rem;color:var(--muted)"><p style="font-weight:600">Sin datos</p></div></div></div>
-            <div id="tc-respuestas" class="tc"><div class="cd" id="resp-box"></div></div>
-            <div id="tc-exportar" class="tc"><div class="cd" style="max-width:500px"><h3 style="font-weight:700;margin-bottom:.5rem;font-size:.9rem">Exportar / Importar</h3><div style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem"><button class="b bp" onclick="expCSV()"><i class="fas fa-file-csv"></i> CSV</button><button class="b bs" onclick="expPNG()"><i class="fas fa-image"></i> Heatmap PNG</button></div><hr style="border-color:var(--border);margin-bottom:.75rem"><p style="font-size:.78rem;color:var(--muted);margin-bottom:.4rem">Importar código de colaborador:</p><textarea id="imp-ta" class="ita" placeholder="JSON..."></textarea><button class="b bs" style="margin-top:.4rem" onclick="importar()"><i class="fas fa-upload"></i> Importar</button></div></div>
-        </div>
-    </main>
-</div>
-
-<!-- ==================== PARTICIPANTE ==================== -->
-<div id="sec-p" style="display:none">
-    <video id="vid-p" playsinline></video>
-    <img id="est-p" alt="">
-    <div id="punto-cal" class="rojo"></div>
-    <div id="cursor-val"></div>
-
-    <div id="p-bien" class="pp" style="background:var(--bg)">
-        <div style="max-width:420px;text-align:center;padding:1.5rem">
-            <div style="font-size:2.2rem;font-weight:900;margin-bottom:.5rem">Eye<span style="color:var(--accent)">Track</span></div>
-            <div class="cd" style="text-align:left">
-                <h3 style="font-weight:700;margin-bottom:.5rem;font-size:.95rem"><i class="fas fa-flask" style="color:var(--accent);margin-right:4px"></i> <span id="bw-nom"></span></h3>
-                <p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">Verá <strong style="color:var(--fg)" id="bw-cant">0</strong> imagen(es) y responderá preguntas.</p>
-                <hr style="border-color:var(--border);margin-bottom:.75rem">
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem">
-                    <div class="fg" style="margin:0"><label class="fl">Género</label><select class="fi" id="p-gen"><option value="">...</option><option>Masculino</option><option>Femenino</option><option>No binario</option><option>Prefiero no decir</option></select></div>
-                    <div class="fg" style="margin:0"><label class="fl">Edad</label><select class="fi" id="p-edad"><option value="">...</option><option>18-24</option><option>25-34</option><option>35-44</option><option>45-54</option><option>55+</option></select></div>
-                </div>
-                <p style="color:var(--muted);font-size:.78rem;line-height:1.5;margin-bottom:.75rem">Cámara usada <strong style="color:var(--fg)">solo para rastrear ojos</strong>. <span style="color:var(--danger);font-weight:700">No se graba video.</span></p>
-                <button class="b bp" style="width:100%;justify-content:center" onclick="partAceptar()"><i class="fas fa-play"></i> Comenzar</button>
-            </div>
-        </div>
-    </div>
-    <div id="p-carga" class="pp" style="background:var(--bg);display:none"><div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-bottom:.75rem"></div><p id="txt-carga" style="font-weight:600;font-size:.9rem">Cargando modelo...</p></div>
-    <div id="p-cal" class="pp" style="background:transparent;display:none;pointer-events:none"><div style="background:rgba(7,7,11,.92);backdrop-filter:blur(10px);padding:.8rem 1.2rem;border-radius:9px;border:1px solid var(--border);pointer-events:auto"><p id="txt-cal" style="color:var(--warn);font-weight:700;font-size:.85rem;white-space:nowrap">...</p></div></div>
-    <div id="p-score" class="pp" style="background:var(--bg);display:none;flex-direction:column;gap:1rem">
-        <h2 style="font-weight:900;font-size:1.3rem">Calibración lista</h2>
-        <div style="display:flex;align-items:center;gap:1.2rem">
-            <div class="score-ring" id="score-ring"><div class="sn" id="score-num">0</div><div class="sl">px</div></div>
-            <div><p style="font-weight:800;font-size:1rem" id="score-cat">...</p><p style="color:var(--muted);font-size:.8rem;margin-top:.2rem" id="score-desc"></p></div>
-        </div>
-        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-            <button class="b bp" id="btn-ver" onclick="iniciarVal()"><i class="fas fa-crosshairs"></i> Verificar</button>
-            <button class="b bs" onclick="saltarVal()"><i class="fas fa-forward"></i> Continuar</button>
-            <button class="b bd" onclick="recalibrar()"><i class="fas fa-redo"></i> Recalibrar</button>
-        </div>
-    </div>
-    <div id="p-val" class="pp" style="background:transparent;display:none;pointer-events:none"><div style="background:rgba(7,7,11,.92);backdrop-filter:blur(10px);padding:.8rem 1.2rem;border-radius:9px;border:1px solid var(--border);pointer-events:auto;text-align:center"><p id="txt-val" style="color:#06b6d4;font-weight:700;font-size:.85rem">¿El cursor sigue al punto?</p><div style="display:flex;gap:.4rem;justify-content:center;margin-top:.5rem"><button class="b bp bsm" onclick="valR(true)"><i class="fas fa-check"></i> Sí</button><button class="b bd bsm" onclick="valR(false)"><i class="fas fa-times"></i> No</button></div></div></div>
-
-    <!-- RESPUESTA -->
-    <div id="p-resp" class="pp" style="background:rgba(7,7,11,.96);display:none;flex-direction:column;gap:1rem;max-width:500px;padding:2rem">
-        <p id="resp-inst" style="font-weight:700;font-size:1.1rem;text-align:center;line-height:1.4"></p>
-        <div id="resp-opts" style="display:flex;flex-direction:column;gap:.4rem"></div>
-        <div id="resp-rate" style="display:flex;gap:.5rem;justify-content:center"></div>
-        <button class="b bp" style="width:100%;justify-content:center" id="btn-resp-ok" onclick="confirmarResp()" disabled><i class="fas fa-check"></i> Confirmar</button>
-    </div>
-
-    <div id="p-trans" class="pp" style="background:var(--bg);display:none;flex-direction:column;gap:.3rem"><div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite"></div><p style="font-weight:700">Siguiente...</p><p style="color:var(--muted);font-size:.8rem" id="txt-trans"></p></div>
-    <div id="p-fin" class="pp" style="background:rgba(7,7,11,.96);display:none;flex-direction:column;gap:.7rem">
-        <div style="font-size:2rem;color:var(--accent)"><i class="fas fa-check-circle"></i></div>
-        <h2 style="font-weight:900;font-size:1.4rem">Completado</h2>
-        <p style="color:var(--muted);font-size:.82rem;text-align:center">Copie el código y envíelo al investigador.</p>
-        <div class="cd" style="max-width:440px;width:92%"><p style="font-size:.65rem;color:var(--muted);margin-bottom:.25rem;font-weight:700;text-transform:uppercase">Código</p><textarea id="codigo-d" class="ita" readonly style="min-height:55px;font-size:.58rem"></textarea><button class="b bp bsm" style="margin-top:.3rem" onclick="copiarCod()"><i class="fas fa-copy"></i> Copiar</button></div>
     </div>
 </div>
+
+<!-- ==================== CONSENTIMIENTO ==================== -->
+<div id="screen-consent" class="pantalla overlay bg-bg/95 flex-col items-center justify-center" style="z-index:600;">
+    <div class="bg-card border border-border rounded-2xl p-10 max-w-lg text-center" style="box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+        <div class="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-5">
+            <i class="fas fa-shield-alt text-accent text-2xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold mb-4">Aviso de Privacidad</h2>
+        <p class="text-muted leading-relaxed mb-2">Utilizaremos su camara web <strong class="text-txt">exclusivamente para trazar el movimiento de sus ojos</strong>.</p>
+        <p class="text-danger font-semibold mb-2">No se grabara ningun video ni fotografia de su rostro.</p>
+        <p class="text-muted text-sm mb-6">Para calibrar, <strong class="text-txt">mire fijamente el punto</strong> hasta que se ponga <span class="text-accent font-bold">VERDE</span> y luego haga clic.</p>
+        <button class="btn btn-primary text-base px-10" id="btn-aceptar-consent">Acepto y comenzar</button>
+    </div>
+</div>
+
+<!-- ==================== CARGA ==================== -->
+<div id="screen-carga" class="pantalla overlay bg-bg flex-col items-center justify-center" style="z-index:700;">
+    <div class="w-12 h-12 border-4 border-border border-t-accent rounded-full animate-spin mb-5"></div>
+    <p id="texto-carga" class="text-lg font-semibold">Descargando modelo de IA...</p>
+</div>
+
+<!-- ==================== CALIBRACION ==================== -->
+<div id="screen-calibracion" class="pantalla overlay flex-col items-center justify-center" style="z-index:800;background:rgba(10,14,20,0.9);pointer-events:none;">
+    <div style="pointer-events:auto;z-index:1000;" class="bg-card/90 backdrop-blur border border-warning rounded-xl px-8 py-5 text-center">
+        <p id="texto-calibracion" class="text-warning font-bold text-lg">Preparando...</p>
+    </div>
+</div>
+
+<!-- ==================== ESTUDIO ACTIVO ==================== -->
+<div id="screen-estudio" class="pantalla overlay flex-col items-center justify-center" style="z-index:850;background:#0a0e14;">
+    <img id="estimulo-activo" style="max-width:100vw;max-height:100vh;object-fit:contain;">
+    <div id="timer-estudio" class="fixed top-5 right-5 bg-card/80 backdrop-blur border border-border rounded-xl px-5 py-3 font-mono text-accent text-xl font-bold" style="z-index:900;"></div>
+</div>
+
+<!-- ==================== RESULTADOS ==================== -->
+<div id="screen-resultados" class="pantalla" style="min-height:100vh;flex-direction:column;">
+    <nav class="bg-surface border-b border-border px-6 py-3 flex items-center justify-between flex-shrink-0">
+        <div class="flex items-center gap-4">
+            <button class="btn btn-secondary btn-sm" id="btn-volver-resultados"><i class="fas fa-arrow-left mr-1"></i> Volver</button>
+            <h2 id="res-titulo" class="font-bold text-lg"></h2>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-exportar-csv"><i class="fas fa-download mr-1"></i> Exportar CSV</button>
+    </nav>
+    <!-- Tabs -->
+    <div class="border-b border-border px-6 flex gap-1">
+        <button class="tab-btn activo" data-tab="heatmap">Mapa de calor</button>
+        <button class="tab-btn" data-tab="aois">Analisis por AOI</button>
+        <button class="tab-btn" data-tab="fijaciones">Fijaciones</button>
+    </div>
+    <!-- Tab contenido -->
+    <div class="flex-1 overflow-auto p-6">
+        <div id="tab-heatmap" class="flex justify-center">
+            <div class="relative inline-block">
+                <canvas id="canvas-heatmap" style="border-radius:12px;"></canvas>
+                <canvas id="canvas-heatmap-aois" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;border-radius:12px;"></canvas>
+            </div>
+        </div>
+        <div id="tab-aois" class="hidden max-w-4xl mx-auto">
+            <div id="res-aois-tabla" class="bg-card border border-border rounded-xl overflow-hidden"></div>
+        </div>
+        <div id="tab-fijaciones" class="hidden max-w-4xl mx-auto">
+            <div class="flex justify-center mb-4">
+                <canvas id="canvas-scatter" style="border-radius:12px;"></canvas>
+            </div>
+            <div id="res-fijaciones-info" class="bg-card border border-border rounded-xl p-5"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Punto de calibración -->
+<div id="punto-cal"></div>
+<!-- Video oculto -->
+<video id="video-et" playsinline style="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none;z-index:-1;"></video>
 
 <script type="module">
-import{FaceLandmarker,FilesetResolver}from"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+    import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
-const PASS_DEF='admin2024';
-let estudios=JSON.parse(localStorage.getItem('et5')||'[]');
-let auth=localStorage.getItem('et5_a')==='true';
-let estId=null,resIdx=0,editId=null;
-let faceLM=null,fase='idle';
-let datosPorEst={},datosGA=[],tIniG=0;
-let pv=true,pxA=0,pyA=0,peso=.6;
-let estCal='esp',tFijI=0;const DUR_F=1500,UMB_M=.15;
-let calCnt=0,datRawCal=[],cRX=.5,cRY=.5;
-let regIX=0,regSX=1,regIY=0,regSY=1;
-let calPtsN=9,estCntr=0,tmpEst=[];
-let muestrasAct=[],calErrPx=0;
-let valPts=[],valIdx=0,valSi=0,valNo=0;
-let ordenEjecucion=[],ejecIdx=0;
-let respActual='';
+    // ===================== CONSTANTES =====================
+    const AOI_COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff6bff','#ff9f43','#a29bfe','#00cec9','#fd79a8','#e17055'];
+    const DURACION_FIJACION_CAL = 1200;
+    const UMBRAL_MOVIMIENTO_CAL = 0.12;
+    const PESO_SUAVIZADO_CAL = 0.55;
+    const PESO_SUAVIZADO_EST = 0.3;
+    const STORAGE_KEY = 'eyetrack_pro_data';
 
-const gid=()=>Date.now().toString(36)+Math.random().toString(36).substr(2,5);
-function save(){try{localStorage.setItem('et5',JSON.stringify(estudios));uSto()}catch(e){toast('Almacenamiento lleno','er')}}
-function toast(m,t='ok'){const c=document.getElementById('toasts'),e=document.createElement('div');e.className='toast '+t;e.innerHTML=`<i class="fas ${t==='ok'?'fa-check-circle':t==='er'?'fa-exclamation-circle':'fa-info-circle'}"></i> ${m}`;c.appendChild(e);setTimeout(()=>e.remove(),3000)}
-function fD(iso){const d=new Date(iso);return d.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}
-function gE(id){return estudios.find(e=>e.id===id)}
-function uSto(){let u=0;for(let k in localStorage)if(localStorage.hasOwnProperty(k))u+=localStorage[k].length*2;const mb=(u/1048576).toFixed(1);const el=document.getElementById('sto-info');if(el)el.innerHTML=`<span style="color:${mb>4?'var(--danger)':mb>3?'var(--warn)':'var(--accent)'}">${mb}MB</span>`}
-function linReg(pts,xk,yk){const n=pts.length;if(n<2)return{slope:1,intercept:0};const mx=pts.reduce((s,p)=>s+p[xk],0)/n,my=pts.reduce((s,p)=>s+p[yk],0)/n;let num=0,den=0;for(const p of pts){const dx=p[xk]-mx;num+=dx*(p[yk]-my);den+=dx*dx}const sl=den>1e-8?num/den:1;return{intercept:my-sl*mx,slope:sl}}
-function calcErr(){let e=0;for(const p of datRawCal){e+=Math.sqrt((regIX+regSX*p.rawX-p.screenX)**2+(regIY+regSY*p.rawY-p.screenY)**2)}return datRawCal.length?e/datRawCal.length:999}
-function getCalPts(n){const w=innerWidth,h=innerHeight;const g=(xs,ys)=>xs.map((x,i)=>({x:w*x,y:h*ys[i],t:'p'+i}));if(n===5)return g([.5,.15,.85,.15,.85],[.5,.15,.15,.85,.85]);if(n===13)return g([.15,.38,.62,.85,.15,.38,.5,.62,.85,.15,.38,.62,.85],[.15,.15,.15,.15,.5,.5,.5,.5,.5,.85,.85,.85,.85]);return g([.15,.5,.85,.15,.5,.85,.15,.5,.85],[.15,.15,.15,.5,.5,.5,.85,.85,.85])}
-function comprimir(file,mw=1024,q=.72){return new Promise((r,j)=>{const rd=new FileReader();rd.onerror=()=>j(0);rd.onload=e=>{const img=new Image();img.onerror=()=>j(0);img.onload=()=>{const ra=Math.min(1,mw/Math.max(1,img.width));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*ra));c.height=Math.max(1,Math.round(img.height*ra));c.getContext('2d').drawImage(img,0,0,c.width,c.height);r({url:c.toDataURL('image/jpeg',q),name:file.name})};img.src=e.target.result};rd.readAsDataURL(file)})}
+    // ===================== ESTADO GLOBAL =====================
+    let estado = {
+        estudios: [],
+        estudioActual: null,    // ID del estudio en sesión
+        sesiones: [],
+        faceLandmarker: null,
+        calibrando: false,
+        estudioActivo: false,
+        // Calibración
+        puntosCal: [],
+        clickCalCount: 0,
+        datosRawCal: [],
+        currentRawX: 0.5,
+        currentRawY: 0.5,
+        estadoPunto: 'esperando',
+        tiempoFijacionInicio: 0,
+        smoothX: 0, smoothY: 0,
+        smoothIniciado: false,
+        // Estudio activo
+        sensX: 4.5, sensY: 9.0, offsetX: 0, offsetY: 0,
+        datosOjo: [],
+        tiempoInicioEst: 0,
+        imgNatW: 0, imgNatH: 0,
+        // AOI dibujo
+        aoisTemp: [],
+        aoiDibujando: null,
+        aoiStart: null,
+        // Resultados
+        resultadosEstudioId: null,
+    };
 
-// ROUTER
-function nav(v){document.querySelectorAll('#sec-ad .v').forEach(e=>e.classList.remove('act'));const t=document.getElementById('v-'+v);if(t)t.classList.add('act');document.querySelectorAll('.anl a').forEach(a=>{a.classList.toggle('act',a.dataset.n===v)});if(v==='dashboard')renderDash();if(v==='create'&&!editId)limpiarCrear();location.hash=v}
-function handleHash(){const h=location.hash.replace('#','');if(h.startsWith('collab/')){iniciarPart(h.split('/')[1]);return}if(h.startsWith('results/')){if(!auth){nav('login');return}mostrarRes(h.split('/')[1]);return}if(h.startsWith('edit/')){if(!auth){nav('login');return}cargarEditar(h.split('/')[1]);return}document.getElementById('sec-ad').style.display='';document.getElementById('sec-p').style.display='none';document.getElementById('anav').style.display=auth?'flex':'none';if(!auth)nav('login');else if(['dashboard','create','results'].includes(h))nav(h);else nav('dashboard')}
-addEventListener('hashchange',handleHash);
-window.login=function(){if(document.getElementById('inp-pass').value===(localStorage.getItem('et5_p')||PASS_DEF)){auth=true;localStorage.setItem('et5_a','true');document.getElementById('inp-pass').value='';handleHash();toast('Bienvenido')}else toast('Incorrecta','er')};
-document.getElementById('inp-pass').addEventListener('keydown',e=>{if(e.key==='Enter')window.login()});
-window.cerrarSesion=function(){auth=false;localStorage.removeItem('et5_a');document.getElementById('anav').style.display='none';nav('login');toast('Sesión cerrada','in')};
-
-// DASHBOARD CON CARDS
-function renderDash(){
-    uSto();const g=document.getElementById('cards-grid'),em=document.getElementById('empty-d');
-    let tp=0;estudios.forEach(e=>tp+=e.participantes.length);
-    document.getElementById('dash-sub').textContent=estudios.length+' estudio'+(estudios.length!==1?'s':'')+' · '+tp+' participantes';
-    if(!estudios.length){g.innerHTML='';em.style.display='';return}em.style.display='none';
-    g.innerHTML=estudios.map(e=>{
-        const np=e.participantes.length,obj=e.participantesObjetivo||10,pct=Math.min(100,Math.round(np/obj*100));
-        const c=pct>=100?'var(--accent)':pct>=50?'var(--warn)':'var(--danger)';
-        const link=location.origin+location.pathname+'#collab/'+e.id;
-        const thumb=e.estimulos[0]?.imageUrl||'';
-        const hasQ=e.estimulos.some(es=>es.tipoRespuesta!=='ninguna');
-        return`<div class="scard fu">
-            <div class="scard-top">
-                <img src="${thumb}" class="scard-thumb" alt="" onerror="this.style.display='none'">
-                <div class="scard-body">
-                    <div class="scard-name">${e.nombre}</div>
-                    <div class="scard-meta">${e.estimulos.length} img · ${e.calibracionPts||9} pts calibración${hasQ?' · Con preguntas':''} · ${e.orden==='aleatorio'?'Aleatorio':'Secuencial'}</div>
-                    <div class="scard-prog"><span style="color:${c}">${np}/${obj}</span><div class="pbar" style="flex:1"><div class="pbar-f" style="width:${pct}%;background:${c}"></div></div></div>
-                </div>
-            </div>
-            <div class="scard-actions">
-                <button class="b bp bsm" onclick="location.hash='results/${e.id}'"><i class="fas fa-chart-bar"></i> Resultados</button>
-                <button class="b bi bsm" onclick="location.hash='edit/${e.id}'"><i class="fas fa-edit"></i> Editar</button>
-                <button class="b bw bsm" onclick="location.hash='collab/${e.id}'"><i class="fas fa-play"></i> Ejecutar</button>
-                <button class="b bs bsm" onclick="navigator.clipboard.writeText('${link}').then(()=>toast('Link copiado'))"><i class="fas fa-link"></i> Copiar link</button>
-                <button class="b bd bsm" onclick="delEst('${e.id}')"><i class="fas fa-trash"></i></button>
-            </div>
-        </div>`}).join('');
-}
-window.delEst=function(id){const e=gE(id);if(!e)return;const c=document.getElementById('toasts'),t=document.createElement('div');t.className='toast er';t.style.animation='tI .25s ease';t.innerHTML=`<span>Eliminar "${e.nombre}"?</span><button class="b bsm bd" style="margin-left:auto" id="dy">Si</button><button class="b bsm bs" id="dn">No</button>`;c.appendChild(t);document.getElementById('dy').onclick=()=>{estudios=estudios.filter(x=>x.id!==id);save();renderDash();t.remove();toast('Eliminado','in')};document.getElementById('dn').onclick=()=>t.remove();setTimeout(()=>{if(t.parentNode)t.remove()},8000)};
-
-// CREAR / EDITAR
-function limpiarCrear(){editId=null;document.getElementById('create-titulo').textContent='Nuevo Estudio';document.getElementById('btn-save').innerHTML='<i class="fas fa-save"></i> Crear estudio';document.getElementById('c-nom').value='';document.getElementById('c-obj').value='10';document.getElementById('c-cal').value='9';document.getElementById('c-orden').value='aleatorio';document.getElementById('c-pausa').value='2';document.getElementById('est-lista').innerHTML='';document.getElementById('est-empty').style.display='';document.getElementById('url-form').style.display='none';document.getElementById('est-count').textContent='0';tmpEst=[];estCntr=0}
-window.cargarEditar=function(id){
-    const e=gE(id);if(!e){toast('No encontrado','er');nav('dashboard');return}
-    editId=id;nav('create');
-    document.getElementById('create-titulo').textContent='Editar: '+e.nombre;
-    document.getElementById('btn-save').innerHTML='<i class="fas fa-save"></i> Guardar cambios';
-    document.getElementById('c-nom').value=e.nombre;
-    document.getElementById('c-obj').value=e.participantesObjetivo||10;
-    document.getElementById('c-cal').value=e.calibracionPts||9;
-    document.getElementById('c-orden').value=e.orden||'aleatorio';
-    document.getElementById('c-pausa').value=e.pausaGlobal||2;
-    tmpEst=[];estCntr=0;document.getElementById('est-lista').innerHTML='';
-    e.estimulos.forEach(es=>{addEstItem(es.imageUrl,es.nombre);const el=document.getElementById('est-'+estCntr);if(!el)return;el.querySelector('.est-nom').value=es.nombre;el.querySelector('.est-inst').value=es.instruccion||'';el.querySelector('.est-tipo').value=es.tipoRespuesta||'ninguna';el.querySelector('.est-opts').value=es.opciones||'';el.querySelector('.est-dur').value=es.duracion;el.querySelector('.est-pausa').value=es.pausa||e.pausaGlobal||2;if(es.fijo)el.querySelector('.est-fijo').checked=true;toggleTipoResp(el)});
-    document.getElementById('est-count').textContent=tmpEst.length;
-    document.getElementById('est-empty').style.display=tmpEst.length?'none':'';
-};
-
-const dz=document.getElementById('drop-zone');
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
-dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');procF(e.dataTransfer.files)});
-dz.addEventListener('click',()=>document.getElementById('file-input').click());
-document.getElementById('file-input').addEventListener('change',e=>{procF(e.target.files);e.target.value=''});
-async function procF(files){const imgs=Array.from(files).filter(f=>f.type.startsWith('image/'));if(!imgs.length)return;toast(`Procesando ${imgs.length}...`,'in');for(const f of imgs){try{const r=await comprimir(f);addEstItem(r.url,f.name.replace(/\.[^.]+$/,''))}catch(e){toast('Error: '+f.name,'er')}}toast('Listo')}
-window.toggleURL=()=>{const f=document.getElementById('url-form');f.style.display=f.style.display==='none'?'':'none'};
-window.addURL=function(){const u=document.getElementById('url-inp').value.trim();if(!u){toast('URL','er');return}addEstItem(u,'Imagen URL');document.getElementById('url-inp').value='';document.getElementById('url-form').style.display='none'};
-
-function addEstItem(src,nom){
-    estCntr++;const id='est-'+estCntr;tmpEst.push({id,src});
-    document.getElementById('est-empty').style.display='none';document.getElementById('est-count').textContent=tmpEst.length;
-    const d=document.createElement('div');d.className='est-item';d.id=id;
-    d.innerHTML=`<div class="en">Estímulo ${estCntr}</div>
-    <div style="display:flex;gap:.5rem;margin-top:.35rem;align-items:flex-start">
-        <img src="${src}" class="est-thumb" alt="" onerror="this.style.background='var(--bg2)'">
-        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:.4rem">
-            <input type="text" class="fi est-nom" value="${nom}" placeholder="Nombre" style="grid-column:1/-1">
-            <textarea class="fi est-inst" placeholder="Instrucción: ¿Cuál le parece más saludable?" rows="2" style="grid-column:1/-1;min-height:44px"></textarea>
-            <div class="fg" style="margin:0"><label class="fl">Tipo respuesta</label><select class="fi est-tipo" onchange="toggleTipoResp(this.closest('.est-item'))"><option value="ninguna">Sin respuesta</option><option value="opcion">Opción múltiple</option><option value="valoracion">Valoración 1-5</option></select></div>
-            <div class="fg" style="margin:0 est-opts-wrap" id="${id}-opts-w"><label class="fl">Opciones (separar con coma)</label><input type="text" class="fi est-opts" placeholder="Opción A, Opción B, Opción C"></div>
-            <div class="fg" style="margin:0"><label class="fl">Duración (s)</label><input type="number" class="fi est-dur" value="15" min="3" max="120"></div>
-            <div class="fg" style="margin:0"><label class="fl">Pausa (s)</label><input type="number" class="fi est-pausa" value="${document.getElementById('c-pausa').value||'2'}" min="0" max="30"></div>
-            <label style="grid-column:1/-1;display:flex;align-items:center;gap:.4rem;cursor:pointer;font-size:.78rem;color:var(--muted)"><input type="checkbox" class="est-fijo" style="accent-color:var(--accent)"> Fijar como primer estímulo</label>
-        </div>
-        <button class="b bsm bd" style="margin-top:.2rem" onclick="rmEst('${id}')"><i class="fas fa-times"></i></button>
-    </div>`;
-    document.getElementById('est-lista').appendChild(d);
-    toggleTipoResp(d);
-}
-window.toggleTipoResp=function(item){
-    const tipo=item.querySelector('.est-tipo').value;
-    const w=item.querySelector('.est-opts-wrap');
-    w.style.display=tipo==='opcion'?'':'none';
-};
-window.rmEst=function(id){tmpEst=tmpEst.filter(e=>e.id!==id);const el=document.getElementById(id);if(el)el.remove();document.getElementById('est-count').textContent=tmpEst.length;if(!tmpEst.length)document.getElementById('est-empty').style.display=''};
-
-window.guardarEstudio=function(){
-    const nombre=document.getElementById('c-nom').value.trim();if(!nombre){toast('Nombre requerido','er');return}
-    if(!tmpEst.length){toast('Agregue estímulos','er');return}
-    const obj=parseInt(document.getElementById('c-obj').value)||10;
-    const cp=parseInt(document.getElementById('c-cal').value)||9;
-    const orden=document.getElementById('c-orden').value;
-    const pausaG=parseInt(document.getElementById('c-pausa').value)||2;
-    const ests=[];let hayFijo=false;
-    tmpEst.forEach(te=>{const el=document.getElementById(te.id);if(!el)return;
-        const fijo=el.querySelector('.est-fijo').checked;
-        if(fijo&&hayFijo){toast('Solo un estímulo puede ser fijo como primero','er');return}
-        if(fijo)hayFijo=true;
-        ests.push({id:editId&&ests.length<estudios.find(x=>x.id===editId)?.estimulos.length?estudios.find(x=>x.id===editId).estimulos[ests.length].id:gid(),imageUrl:te.src,nombre:el.querySelector('.est-nom').value.trim()||'Sin nombre',instruccion:el.querySelector('.est-inst').value.trim(),tipoRespuesta:el.querySelector('.est-tipo').value,opciones:el.querySelector('.est-opts').value.trim(),duracion:Math.max(3,Math.min(120,parseInt(el.querySelector('.est-dur').value)||15)),pausa:Math.max(0,parseInt(el.querySelector('.est-pausa').value)||pausaG),fijo})});
-    if(!ests.length)return;
-    if(editId){const e=gE(editId);if(e){e.nombre=nombre;e.estimulos=ests;e.participantesObjetivo=obj;e.calibracionPts=cp;e.orden=orden;e.pausaGlobal=pausaG;save();toast('Actualizado');nav('dashboard');return}}
-    estudios.push({id:gid(),nombre,estimulos:ests,participantesObjetivo:obj,calibracionPts:cp,orden,pausaGlobal:pausaG,createdAt:new Date().toISOString(),participantes:[]});
-    save();toast('Creado');nav('dashboard');
-};
-
-// RESULTADOS
-function mostrarRes(id){const e=gE(id);if(!e){toast('No encontrado','er');nav('dashboard');return}estId=id;resIdx=0;document.querySelectorAll('#sec-ad .v').forEach(v=>v.classList.remove('act'));document.getElementById('v-results').classList.add('act');document.querySelectorAll('.anl a').forEach(a=>a.classList.remove('act'));document.getElementById('r-tit').textContent=e.nombre;document.getElementById('r-sub').textContent=`${e.participantes.length}/${e.participantesObjetivo} participantes`;const sel=document.getElementById('r-estsel');sel.innerHTML=e.estimulos.map((es,i)=>`<button class="b bsm ${i===0?'bp':'bs'}" id="esel-${i}" onclick="selEst(${i})">${es.nombre}</button>`).join('');document.getElementById('f-gen').value='';document.getElementById('f-edad').value='';renderAll(e,0)}
-window.selEst=function(i){resIdx=i;document.querySelectorAll('#r-estsel button').forEach((b,j)=>{b.className='b bsm '+(j===i?'bp':'bs')});renderAll(gE(estId),i)};
-window.setTab=function(btn,t){document.querySelectorAll('.tb').forEach(b=>b.classList.remove('act'));btn.classList.add('act');document.querySelectorAll('.tc').forEach(c=>c.classList.remove('act'));document.getElementById('tc-'+t).classList.add('act')};
-window.refrescarViz=function(){renderAll(gE(estId),resIdx)};
-function getFilt(e,idx){const fg=document.getElementById('f-gen').value,fe=document.getElementById('f-edad').value;let ps=e.participantes;if(fg)ps=ps.filter(p=>p.genero===fg);if(fe)ps=ps.filter(p=>p.edad===fe);document.getElementById('f-cnt').textContent=ps.length+' participantes';let pts=[];ps.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||innerWidth,vh=d.viewportHeight||innerHeight;d.gazeData.forEach(g=>pts.push({x:g.x/vw,y:g.y/vh}))});return{pts,parts:ps}}
-function renderAll(e,idx){const{pts,parts}=getFilt(e,idx);renderHM(e,idx,pts);renderSP(e,idx,pts);renderAOI(e,idx,parts);renderTL(e,idx,parts);renderPT(e,idx,parts);renderResp(e,idx,parts)}
-
-function renderHM(e,idx,pts){const box=document.getElementById('hm-box');if(!pts.length){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p style="font-weight:600">Sin datos</p></div>';return}const CW=760;box.innerHTML=`<div class="hm-w"><canvas id="hm-c" width="${CW}" height="${CW}"></canvas></div><p style="color:var(--muted);font-size:.7rem;margin-top:.35rem">${pts.length.toLocaleString()} puntos</p>`;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>{const ch=Math.round(CW*img.naturalHeight/Math.max(1,img.naturalWidth));const c=document.getElementById('hm-c');if(!c)return;c.width=CW;c.height=ch;c.style.width=CW+'px';c.style.height='auto';c.getContext('2d').drawImage(img,0,0,CW,ch);const h=simpleheat('hm-c');h.data(pts.map(p=>[p.x*CW,p.y*ch,1]));h.radius(20,30);h.gradient({.08:'#000044',.22:'#0000cc',.38:'#0088ff',.52:'#00ddaa',.68:'#88ff00',.82:'#ffcc00',1:'#ff2200'});h.draw(.012)};img.onerror=()=>{const c=document.getElementById('hm-c');if(!c)return;const ctx=c.getContext('2d');ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CW);const h=simpleheat('hm-c');h.data(pts.map(p=>[p.x*CW,p.y*CW,1]));h.radius(20,30);h.gradient({.08:'#000044',.22:'#0000cc',.38:'#0088ff',.52:'#00ddaa',.68:'#88ff00',.82:'#ffcc00',1:'#ff2200'});h.draw(.012)};img.src=e.estimulos[idx].imageUrl}
-function renderSP(e,idx,pts){const box=document.getElementById('sp-box');if(!pts.length){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p style="font-weight:600">Sin datos</p></div>';return}const CW=760;box.innerHTML=`<canvas id="sp-c" class="viz-c" width="${CW}" height="${CW}"></canvas>`;const img=new Image();img.crossOrigin='anonymous';img.onload=()=>drawSP(pts,CW,Math.round(CW*img.naturalHeight/Math.max(1,img.naturalWidth)),img);img.onerror=()=>drawSP(pts,CW,CW,null);img.src=e.estimulos[idx].imageUrl}
-function drawSP(pts,CW,CH,bg){const c=document.getElementById('sp-c');if(!c)return;c.width=CW;c.height=CH;c.style.width=CW+'px';c.style.height='auto';const ctx=c.getContext('2d');if(bg){ctx.globalAlpha=.2;ctx.drawImage(bg,0,0,CW,CH);ctx.globalAlpha=1}else{ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,CW,CH)}const st=Math.max(1,Math.floor(pts.length/80)),s=pts.filter((_,i)=>i%st===0);if(s.length<2)return;ctx.lineWidth=1.5;for(let i=1;i<s.length;i++){const t=i/(s.length-1);ctx.strokeStyle=`rgba(${16+t*223},${185-t*117},${129-t*61},.6)`;ctx.beginPath();ctx.moveTo(s[i-1].x*CW,s[i-1].y*CH);ctx.lineTo(s[i].x*CW,s[i].y*CH);ctx.stroke()}ctx.font='bold 9px Outfit';ctx.textAlign='center';ctx.textBaseline='middle';const ns=Math.max(1,Math.floor(s.length/20));s.forEach((p,i)=>{if(i%ns!==0&&i!==s.length-1)return;const t=i/(s.length-1);ctx.fillStyle=`rgb(${16+t*223},${185-t*117},${129-t*61})`;ctx.beginPath();ctx.arc(p.x*CW,p.y*CH,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(i+1,p.x*CW,p.y*CH)})}
-function renderAOI(e,idx,parts){const box=document.getElementById('aoi-box');const n=['Sup-Izq','Sup-Cen','Sup-Der','Med-Izq','Med-Cen','Med-Der','Inf-Izq','Inf-Cen','Inf-Der'];let cel=Array(9).fill(0),tot=0;parts.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;for(let i=0;i<d.gazeData.length;i++){const g=d.gazeData[i];const c=Math.min(2,Math.floor(g.x/vw*3)),r=Math.min(2,Math.floor(g.y/vh*3));let dt=.033;if(i>0)dt=g.tiempo-d.gazeData[i-1].tiempo;if(dt<=0||dt>.5)dt=.033;cel[r*3+c]+=dt;tot+=dt}});if(!tot){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p>Sin datos</p></div>';return}const pcts=cel.map(c=>c/tot*100),mx=Math.max(...pcts,1);box.innerHTML=`<h3 style="font-weight:700;margin-bottom:.5rem;font-size:.85rem">Cuadrantes</h3><div class="aoi-g">${pcts.map((p,i)=>{const t=p/mx;return`<div class="aoi-c" style="background:rgba(${16+t*223},${185-t*117},${129-t*61},${.1+t*.5});border:1px solid rgba(${16+t*223},${185-t*117},${129-t*61},${.2+t*.45})"><span>${p.toFixed(1)}%</span><span class="al">${n[i]}</span></div>`}).join('')}</div>`}
-function renderTL(e,idx,parts){const box=document.getElementById('tl-box');let all=[];parts.forEach(p=>{const d=p.datos[idx];if(!d)return;const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>all.push({t:g.tiempo,x:g.x/vw,y:g.y/vh}))});if(!all.length){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p>Sin datos</p></div>';return}const CW=760,CH=240,pad={t:16,r:16,b:28,l:38},w=CW-pad.l-pad.r,h=CH-pad.t-pad.b;box.innerHTML=`<canvas id="tl-c" class="viz-c" width="${CW}" height="${CH}"></canvas><p style="color:var(--muted);font-size:.7rem;margin-top:.35rem"><span style="color:#10b981">— Y</span> <span style="color:#f59e0b">— X</span></p>`;const c=document.getElementById('tl-c');if(!c)return;const ctx=c.getContext('2d');const mT=all[all.length-1].t||1;ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;for(let i=0;i<=4;i++){ctx.beginPath();ctx.moveTo(pad.l,pad.t+h*(i/4));ctx.lineTo(pad.l+w,pad.t+h*(i/4));ctx.stroke()}ctx.strokeStyle='rgba(255,255,255,.1)';ctx.beginPath();ctx.moveTo(pad.l,pad.t);ctx.lineTo(pad.l,pad.t+h);ctx.lineTo(pad.l+w,pad.t+h);ctx.stroke();ctx.fillStyle='#5a5a72';ctx.font='8px Outfit';ctx.textAlign='center';for(let i=0;i<=8;i++)ctx.fillText((mT*i/8).toFixed(1)+'s',pad.l+w*(i/8),pad.t+h+14);const st=Math.max(1,Math.floor(all.length/400)),sa=all.filter((_,i)=>i%st===0);ctx.lineWidth=1;ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/mT)*w,y=pad.t+p.y*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(16,185,129,.5)';ctx.stroke();ctx.beginPath();sa.forEach((p,i)=>{const x=pad.l+(p.t/mT)*w,y=pad.t+p.x*h;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});ctx.strokeStyle='rgba(245,158,11,.5)';ctx.stroke()}
-function renderPT(e,idx,parts){const tb=document.getElementById('tb-part'),em=document.getElementById('empty-p');const v=parts.filter(p=>p.datos[idx]&&p.datos[idx].gazeData.length);if(!v.length){tb.innerHTML='';em.style.display='';return}em.style.display='none';tb.innerHTML=v.map(p=>{const d=p.datos[idx];const dur=d.gazeData.length?d.gazeData[d.gazeData.length-1].tiempo.toFixed(1)+'s':'—';const ri=e.participantes.indexOf(p);const er=p.calError!=null?Math.round(p.calError)+'px':'—';const ec=p.calError!=null?(p.calError<50?'var(--accent)':p.calError<100?'var(--warn)':'var(--danger)'):'var(--muted)';return`<tr><td style="font-family:monospace;font-size:.7rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td style="font-size:.78rem">${fD(p.timestamp)}</td><td style="font-size:.78rem">${p.genero||'—'}</td><td style="font-size:.78rem">${p.edad||'—'}</td><td style="font-size:.78rem;color:${ec};font-weight:600">${er}</td><td>${d.gazeData.length.toLocaleString()}</td><td style="text-align:right"><button class="b bsm bd" onclick="delPart('${e.id}',${ri})"><i class="fas fa-trash"></i></button></td></tr>`}).join('')}
-function renderResp(e,idx,parts){const box=document.getElementById('resp-box');const es=e.estimulos[idx];if(!es||es.tipoRespuesta==='ninguna'){box.innerHTML='<div style="text-align:center;padding:1.5rem;color:var(--muted)"><p>Este estímulo no tiene pregunta asociada</p></div>';return}let html=`<h3 style="font-weight:700;margin-bottom:.5rem;font-size:.9rem">${es.nombre}</h3><p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">${es.instruccion}</p><div class="tw"><table><thead><tr><th>Participante</th><th>Respuesta</th></tr></thead><tbody>`;parts.forEach(p=>{const r=p.respuestas?.[idx]||'—';html+=`<tr><td style="font-family:monospace;font-size:.7rem;color:var(--muted)">${p.id.substr(0,10)}...</td><td>${r}</td></tr>`});html+='</tbody></table></div>';if(!parts.length)html+='<div style="text-align:center;padding:1rem;color:var(--muted)"><p>Sin respuestas</p></div>';box.innerHTML=html}
-window.delPart=function(eid,pi){const e=gE(eid);if(!e)return;e.participantes.splice(pi,1);save();mostrarRes(eid);toast('Eliminado','in')};
-window.expCSV=function(){const e=gE(estId);if(!e)return;let csv='ID;Genero;Edad;ErrorCal;Estimulo;Tiempo;X;Y;X_Norm;Y_Norm;Respuesta\n';e.participantes.forEach(p=>{p.datos.forEach((d,di)=>{const vw=d.viewportWidth||1,vh=d.viewportHeight||1;d.gazeData.forEach(g=>{csv+=`${p.id};${p.genero};${p.edad};${p.calError?.toFixed(1)||''};${e.estimulos[di]?.nombre};${g.tiempo.toFixed(3)};${g.x};${g.y};${(g.x/vw).toFixed(4)};${(g.y/vh).toFixed(4)};${p.respuestas?.[di]||''}\n`})})});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));a.download=`eyetrack_${e.nombre.replace(/\s+/g,'_')}.csv`;a.click();toast('CSV descargado')};
-window.expPNG=function(){const c=document.getElementById('hm-c');if(!c){toast('Genere el mapa','er');return}const a=document.createElement('a');a.download='heatmap.png';a.href=c.toDataURL();a.click();toast('PNG descargado')};
-window.importar=function(){const t=document.getElementById('imp-ta').value.trim();if(!t){toast('Pegue código','er');return}try{const d=JSON.parse(t);if(!d.studyId||!d.participantId)throw 0;const e=gE(d.studyId);if(!e){toast('Estudio no existe','er');return}if(e.participantes.some(p=>p.id===d.participantId)){toast('Ya existe','er');return}e.participantes.push({id:d.participantId,timestamp:d.timestamp,genero:d.genero||'',edad:d.edad||'',calError:d.calError||null,datos:d.datosEstimulos,respuestas:d.respuestas||{}});save();document.getElementById('imp-ta').value='';mostrarRes(d.studyId);toast('Importado')}catch(e){toast('Error en formato','er')}};
-
-// ===== PARTICIPANTE =====
-async function iniciarPart(id){
-    const e=gE(id);if(!e){document.getElementById('sec-ad').style.display='';document.getElementById('sec-p').style.display='none';toast('No encontrado','er');nav('dashboard');return}
-    estId=id;fase='idle';datosPorEst={};datosGA=[];calCnt=0;datRawCal=[];pv=true;pxA=0;pyA=0;estCal='esp';muestrasAct=[];calPtsN=e.calibracionPts||9;respActual='';
-    // Construir orden de ejecución
-    let indices=e.estimulos.map((_,i)=>i);
-    const fijos=indices.filter(i=>e.estimulos[i].fijo);
-    const noFijos=indices.filter(i=>!e.estimulos[i].fijo);
-    if(e.orden==='aleatorio')noFijos.sort(()=>Math.random()-.5);
-    ordenEjecucion=[...fijos,...noFijos];ejecIdx=0;
-    document.getElementById('sec-ad').style.display='none';document.getElementById('sec-p').style.display='';
-    ['p-bien','p-carga','p-cal','p-score','p-val','p-resp','p-trans','p-fin'].forEach(id=>document.getElementById(id).style.display='none');
-    document.getElementById('est-p').style.display='none';document.getElementById('punto-cal').style.display='none';document.getElementById('cursor-val').style.display='none';
-    document.getElementById('p-gen').value='';document.getElementById('p-edad').value='';
-    document.getElementById('bw-nom').textContent=e.nombre;document.getElementById('bw-cant').textContent=e.estimulos.length;
-    document.getElementById('p-bien').style.display='flex';
-}
-window.partAceptar=async function(){
-    const gen=document.getElementById('p-gen').value,edad=document.getElementById('p-edad').value;
-    if(!gen||!edad){toast('Complete género y edad','er');return}
-    window._pG=gen;window._pE=edad;
-    document.getElementById('p-bien').style.display='none';document.getElementById('p-carga').style.display='flex';
-    document.getElementById('txt-carga').textContent='Cargando modelo...';
-    try{
-        const vision=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
-        faceLM=await FaceLandmarker.createFromOptions(vision,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",delegate:"GPU"},runningMode:"VIDEO",numFaces:1});
-        document.getElementById('txt-carga').textContent='Activando cámara...';
-        const stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}});
-        const vid=document.getElementById('vid-p');vid.srcObject=stream;await vid.play();
-        document.getElementById('p-carga').style.display='none';document.getElementById('p-cal').style.display='flex';
-        document.getElementById('punto-cal').style.display='block';setPC('rojo');moverPC(0);
-        const pts=getCalPts(calPtsN);
-        document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (1 de ${pts.length})`;
-        fase='calibrando';procVid();
-    }catch(err){document.getElementById('p-carga').style.display='flex';document.getElementById('txt-carga').innerHTML=`<span style="color:var(--danger)">Error: ${err.message}</span><br><br><button class="b bs" onclick="location.reload()">Reintentar</button>`}
-};
-function setPC(c){document.getElementById('punto-cal').className=c}
-function moverPC(i){const pts=getCalPts(calPtsN),p=document.getElementById('punto-cal');p.style.left=pts[i].x+'px';p.style.top=pts[i].y+'px';estCal='esp';setPC('rojo');muestrasAct=[]}
-async function procVid(){
-    if(fase==='idle'||fase==='fin')return;const st=performance.now(),vid=document.getElementById('vid-p');
-    if(vid.readyState>=2&&faceLM){const res=await faceLM.detectForVideo(vid,st);if(res.faceLandmarks&&res.faceLandmarks.length>0){const lm=res.faceLandmarks[0];let pX=((lm[468].x-lm[33].x)/(lm[133].x-lm[33].x)+(lm[473].x-lm[362].x)/(lm[263].x-lm[362].x))/2;let pY=((lm[468].y-lm[159].y)/(lm[145].y-lm[159].y)+(lm[473].y-lm[386].y)/(lm[374].y-lm[386].y))/2;cRX=pX;cRY=pY;
-    if(fase==='calibrando'){if(pv){pxA=pX;pyA=pY;pv=false}let sX=(pxA*peso)+(pX*(1-peso)),sY=(pyA*peso)+(pY*(1-peso));let dX=Math.abs(sX-pxA),dY=Math.abs(sY-pYA);pxA=sX;pyA=sY;if(estCal==='fijando'||estCal==='listo')muestrasAct.push({x:sX,y:sY});if(dX<UMB_M&&dY<UMB_M){if(estCal==='esp'){estCal='fij';tFijI=performance.now();setPC('amarillo')}else if(estCal==='fij'&&performance.now()-tFijI>=DUR_F){estCal='listo';setPC('verde')}}else{estCal='esp';setPC('rojo');muestrasAct=[]}}
-    else if(fase==='rastreando'){let fX=regIX+regSX*pX,fY=regIY+regSY*pY;if(pv){pxA=fX;pyA=fY;pv=false}let smX=(pxA*peso)+(fX*(1-peso)),smY=(pyA*peso)+(fY*(1-peso));smX=Math.max(0,Math.min(innerWidth,smX));smY=Math.max(0,Math.min(innerHeight,smY));pxA=smX;pyA=smY;datosGA.push({tiempo:(st-tIniG)/1000,x:Math.round(smX),y:Math.round(smY)})}
-    else if(fase==='validando'){let fX=regIX+regSX*pX,fY=regIY+regSY*pY;if(pv){pxA=fX;pyA=fY;pv=false}let smX=(pxA*peso)+(fX*(1-peso)),smY=(pyA*peso)+(fY*(1-peso));smX=Math.max(0,Math.min(innerWidth,smX));smY=Math.max(0,Math.min(innerHeight,smY));pxA=smX;pyA=smY;const cv=document.getElementById('cursor-val');cv.style.left=smX+'px';cv.style.top=smY+'px'}}}
-    requestAnimationFrame(procVid);
-}
-document.addEventListener('click',function(ev){if(fase!=='calibrando')return;if(['BUTTON','TEXTAREA','INPUT','SELECT','LABEL'].includes(ev.target.tagName))return;if(estCal!=='listo'){document.getElementById('txt-cal').textContent='Aún no está verde.';return}const pts=getCalPts(calPtsN);let ax=cRX,ay=cRY;if(muestrasAct.length>=5){ax=muestrasAct.reduce((s,m)=>s+m.x,0)/muestrasAct.length;ay=muestrasAct.reduce((s,m)=>s+m.y,0)/muestrasAct.length}datRawCal.push({rawX:ax,rawY:ay,screenX:pts[calCnt].x,screenY:pts[calCnt].y,tipo:pts[calCnt].t});calCnt++;muestrasAct=[];if(calCnt<pts.length){document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (${calCnt+1} de ${pts.length})`;moverPC(calCnt)}if(calCnt===pts.length)finCal()});
-function finCal(){pv=true;const rX=linReg(datRawCal,'rawX','screenX'),rY=linReg(datRawCal,'rawY','screenY');regIX=rX.intercept;regSX=rX.slope;regIY=rY.intercept;regSY=rY.slope;calErrPx=calcErr();document.getElementById('punto-cal').style.display='none';document.getElementById('p-cal').style.display='none';const ring=document.getElementById('score-ring'),num=document.getElementById('score-num'),cat=document.getElementById('score-cat'),desc=document.getElementById('score-desc');const err=Math.round(calErrPx);num.textContent=err;let col,lab;if(err<40){col='var(--accent)';lab='Excelente'}else if(err<80){col='var(--accent)';lab='Buena'}else if(err<120){col='var(--warn)';lab='Aceptable'}else if(err<200){col='#f97316';lab='Baja'}else{col='var(--danger)';lab='Mala'}ring.style.borderColor=col;num.style.color=col;cat.style.color=col;cat.textContent=lab+' ('+err+'px)';desc.textContent=err<80?'Puede continuar con confianza.':'Se recomienda verificar.';document.getElementById('p-score').style.display='flex';fase='score'}
-window.iniciarVal=function(){document.getElementById('p-score').style.display='none';document.getElementById('p-val').style.display='flex';document.getElementById('punto-cal').style.display='block';document.getElementById('cursor-val').style.display='block';pv=true;valSi=0;valNo=0;valIdx=0;const w=innerWidth,h=innerHeight;valPts=[{x:w*(.2+Math.random()*.6),y:h*(.2+Math.random()*.6)},{x:w*(.1+Math.random()*.8),y:h*(.1+Math.random()*.8)},{x:w*(.15+Math.random()*.7),y:h*(.15+Math.random()*.7)}];fase='validando';mostrarVP(0)};
-function mostrarVP(i){const p=valPts[i];document.getElementById('punto-cal').style.left=p.x+'px';document.getElementById('punto-cal').style.top=p.y+'px';setPC('rojo');document.getElementById('txt-val').textContent=`¿El cursor cyan sigue al punto? (${i+1}/3)`}
-window.valR=function(ok){if(ok)valSi++;else valNo++;valIdx++;if(valIdx<3)mostrarVP(valIdx);else{fase='idle';document.getElementById('punto-cal').style.display='none';document.getElementById('cursor-val').style.display='none';document.getElementById('p-val').style.display='none';if(valSi>=2){toast('Validación OK');iniciarEstEjec(0)}else{toast('Validación fallida','er');document.getElementById('p-score').style.display='flex';document.getElementById('btn-ver').innerHTML='<i class="fas fa-crosshairs"></i> Reintentar'}}};
-window.saltarVal=function(){document.getElementById('p-score').style.display='none';if(calErrPx>150)toast('Error alto','er');iniciarEstEjec(0)};
-window.recalibrar=function(){document.getElementById('p-score').style.display='none';document.getElementById('p-cal').style.display='flex';document.getElementById('punto-cal').style.display='block';calCnt=0;datRawCal=[];pv=true;pxA=0;pyA=0;estCal='esp';muestrasAct=[];const pts=getCalPts(calPtsN);moverPC(0);document.getElementById('txt-cal').textContent=`Mire el punto hasta VERDE (1 de ${pts.length})`;fase='calibrando'};
-
-// ESTÍMULOS CON RESPUESTAS
-function iniciarEstEjec(idx){
-    if(idx>=ordenEjecucion.length){terminarPart();return}
-    const estIdxReal=ordenEjecucion[idx];const e=gE(estId);if(!e){terminarPart();return}
-    const es=e.estimulos[estIdxReal];ejecIdx=idx;datosGA=[];pv=true;
-    document.getElementById('p-trans').style.display='flex';
-    document.getElementById('txt-trans').textContent=`${idx+1} de ${ordenEjecucion.length}: ${es.nombre}`;
-    const img=document.getElementById('est-p');img.src=es.imageUrl;img.style.display='none';
-    const go=()=>{document.getElementById('p-trans').style.display='none';img.style.display='block';fase='rastreando';tIniG=performance.now();let rest=es.duracion;let tm=document.createElement('div');tm.id='timer-p';tm.style.cssText='position:fixed;top:12px;right:12px;z-index:500;background:rgba(7,7,11,.88);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-weight:800;font-size:1rem;color:var(--accent);font-family:Outfit,sans-serif';tm.textContent=rest+'s';document.getElementById('sec-p').appendChild(tm);const iv=setInterval(()=>{rest--;tm.textContent=rest+'s';if(rest<=5)tm.style.color='var(--danger)';if(rest<=0){clearInterval(iv);tm.remove();finEstEjec(estIdxReal,es.pausa||e.pausaGlobal||2)}},1000)};
-    if(img.complete&&img.naturalWidth)go();else{img.onload=go;img.onerror=()=>{toast('Error cargando imagen','er');finEstEjec(estIdxReal,0)}}
-}
-function finEstEjec(estIdxReal,pausa){
-    fase='idle';datosPorEst[estIdxReal]={gazeData:[...datosGA],viewportWidth:innerWidth,viewportHeight:innerHeight};
-    document.getElementById('est-p').style.display='none';
-    const e=gE(estId),es=e.estimulos[estIdxReal];
-    // Si tiene pregunta, mostrar pantalla de respuesta
-    if(es.tipoRespuesta!=='ninguna'&&es.instruccion){mostrarPregunta(estIdxReal,es);return}
-    // Si no, esperar pausa y seguir
-    if(pausa>0){setTimeout(()=>iniciarEstEjec(ejecIdx+1),pausa*1000)}else{iniciarEstEjec(ejecIdx+1)}
-}
-function mostrarPregunta(estIdxReal,es){
-    respActual='';
-    const pantalla=document.getElementById('p-resp');
-    document.getElementById('resp-inst').textContent=es.instruccion;
-    const optsDiv=document.getElementById('resp-opts');const rateDiv=document.getElementById('resp-rate');
-    optsDiv.innerHTML='';rateDiv.innerHTML='';optsDiv.style.display='none';rateDiv.style.display='none';
-    document.getElementById('btn-resp-ok').disabled=true;
-    if(es.tipoRespuesta==='opcion'){
-        optsDiv.style.display='flex';
-        const ops=es.opciones.split(',').map(o=>o.trim()).filter(o=>o);
-        optsDiv.innerHTML=ops.map((o,i)=>`<div class="resp-opt" onclick="selRespOpt(this,'${o.replace(/'/g,"\\'")}')">${o}</div>`).join('');
-    }else if(es.tipoRespuesta==='valoracion'){
-        rateDiv.style.display='flex';
-        rateDiv.innerHTML=[1,2,3,4,5].map(n=>`<div class="resp-rate" onclick="selRespRate(this,${n})">${n}</div>`).join('');
+    // ===================== UTILIDADES =====================
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function guardarDatos() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ estudios: estado.estudios, sesiones: estado.sesiones }));
     }
-    pantalla.style.display='flex';fase='respondiendo';
-}
-window.selRespOpt=function(el,val){document.querySelectorAll('.resp-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');respActual=val;document.getElementById('btn-resp-ok').disabled=false};
-window.selRespRate=function(el,val){document.querySelectorAll('.resp-rate').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');respActual=''+val;document.getElementById('btn-resp-ok').disabled=false};
-window.confirmarResp=function(){
-    document.getElementById('p-resp').style.display='none';
-    const e=gE(estId);if(!e)return;
-    if(!window._respuestas)window._respuestas={};
-    window._respuestas[ordenEjecucion[ejecIdx]]=respActual;
-    const es=e.estimulos[ordenEjecucion[ejecIdx]];
-    const pausa=es.pausa||e.pausaGlobal||2;
-    if(pausa>0){setTimeout(()=>iniciarEstEjec(ejecIdx+1),pausa*1000)}else{iniciarEstEjec(ejecIdx+1)}
-};
+    function cargarDatos() {
+        try {
+            const d = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            if (d) { estado.estudios = d.estudios || []; estado.sesiones = d.sesiones || []; }
+        } catch(e) { estado.estudios = []; estado.sesiones = []; }
+    }
+    function toast(msg, tipo = 'ok') {
+        const t = document.createElement('div');
+        t.className = 'toast';
+        t.style.background = tipo === 'ok' ? '#00e5a0' : tipo === 'error' ? '#ef4444' : '#f59e0b';
+        t.style.color = tipo === 'ok' ? '#0a0e14' : '#fff';
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+    function mostrarPantalla(id) {
+        document.querySelectorAll('.pantalla').forEach(p => p.classList.remove('activa'));
+        document.getElementById(id).classList.add('activa');
+    }
+    // Calcular bounds de imagen con object-fit:contain
+    function getImageBounds(natW, natH, contW, contH) {
+        const imgR = natW / natH, contR = contW / contH;
+        let rW, rH, oX, oY;
+        if (imgR > contR) { rW = contW; rH = contW / imgR; oX = 0; oY = (contH - rH) / 2; }
+        else { rH = contH; rW = contH * imgR; oX = (contW - rW) / 2; oY = 0; }
+        return { rW, rH, oX, oY };
+    }
+    function screenToNorm(sx, sy) {
+        const b = getImageBounds(estado.imgNatW, estado.imgNatH, window.innerWidth, window.innerHeight);
+        return { x: (sx - b.oX) / b.rW, y: (sy - b.oY) / b.rH };
+    }
+    function normToDisplay(nx, ny, canvasW, canvasH) {
+        const b = getImageBounds(estado.imgNatW, estado.imgNatH, canvasW, canvasH);
+        return { x: nx * b.rW + b.oX, y: ny * b.rH + b.oY };
+    }
 
-function terminarPart(){
-    fase='fin';const vid=document.getElementById('vid-p');if(vid.srcObject)vid.srcObject.getTracks().forEach(t=>t.stop());
-    const part={id:gid(),timestamp:new Date().toISOString(),genero:window._pG||'',edad:window._pE||'',calError:calErrPx,datos:datosPorEst,respuestas:window._respuestas||{}};
-    const e=gE(estId);if(e){e.participantes.push(part);save()}
-    document.getElementById('codigo-d').value=JSON.stringify({studyId:estId,participantId:part.id,timestamp:part.timestamp,genero:part.genero,edad:part.edad,calError:part.calError,datosEstimulos:part.datos,respuestas:part.respuestas});
-    document.getElementById('p-fin').style.display='flex';
-}
-window.copiarCod=function(){const ta=document.getElementById('codigo-d');ta.select();navigator.clipboard.writeText(ta.value).then(()=>toast('Copiado'))};
-handleHash();
+    // ===================== NAVEGACION =====================
+    function irDashboard() {
+        mostrarPantalla('screen-app');
+        document.getElementById('view-dashboard').classList.remove('hidden');
+        document.getElementById('view-crear').classList.add('hidden');
+        document.getElementById('view-detalle').classList.add('hidden');
+        renderEstudios();
+    }
+    function irCrearEstudio() {
+        mostrarPantalla('screen-app');
+        document.getElementById('view-dashboard').classList.add('hidden');
+        document.getElementById('view-crear').classList.remove('hidden');
+        document.getElementById('view-detalle').classList.add('hidden');
+        limpiarFormCrear();
+    }
+    function irDetalle(id) {
+        estado.estudioActual = id;
+        mostrarPantalla('screen-app');
+        document.getElementById('view-dashboard').classList.add('hidden');
+        document.getElementById('view-crear').classList.add('hidden');
+        document.getElementById('view-detalle').classList.remove('hidden');
+        renderDetalle(id);
+    }
+    function irResultados(id) {
+        estado.resultadosEstudioId = id;
+        mostrarPantalla('screen-resultados');
+        renderResultados(id);
+    }
+
+    // ===================== AUTH =====================
+    document.getElementById('btn-login').addEventListener('click', () => {
+        const u = document.getElementById('login-user').value;
+        const p = document.getElementById('login-pass').value;
+        if (u === 'admin' && p === 'admin123') {
+            document.getElementById('login-error').classList.add('hidden');
+            irDashboard();
+        } else {
+            document.getElementById('login-error').classList.remove('hidden');
+        }
+    });
+    document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-login').click(); });
+    document.getElementById('btn-logout').addEventListener('click', () => {
+        mostrarPantalla('screen-login');
+    });
+
+    // ===================== ESTUDIOS CRUD =====================
+    document.getElementById('btn-crear-estudio').addEventListener('click', irCrearEstudio);
+    document.getElementById('btn-volver-dashboard').addEventListener('click', irDashboard);
+    document.getElementById('btn-volver-detalle').addEventListener('click', irDashboard);
+    document.getElementById('btn-volver-resultados').addEventListener('click', () => irDetalle(estado.resultadosEstudioId));
+
+    function renderEstudios() {
+        const cont = document.getElementById('lista-estudios');
+        const vacio = document.getElementById('estado-vacio');
+        if (estado.estudios.length === 0) { cont.innerHTML = ''; vacio.classList.remove('hidden'); return; }
+        vacio.classList.add('hidden');
+        cont.innerHTML = estado.estudios.map(est => {
+            const sesCount = estado.sesiones.filter(s => s.estudioId === est.id).length;
+            return `<div class="bg-card border border-border rounded-xl overflow-hidden card-hover cursor-pointer" data-ir="${est.id}">
+                <img src="${est.imagenUrl}" style="width:100%;height:180px;object-fit:cover;" onerror="this.style.background='#1e2d3d';this.style.height='180px';">
+                <div class="p-4">
+                    <h3 class="font-bold text-base mb-1 truncate">${est.nombre}</h3>
+                    <div class="flex items-center gap-3 text-muted text-xs">
+                        <span><i class="fas fa-clock mr-1"></i>${est.duracion}s</span>
+                        <span><i class="fas fa-layer-group mr-1"></i>${est.aois.length} AOIs</span>
+                        <span><i class="fas fa-users mr-1"></i>${sesCount}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+        cont.querySelectorAll('[data-ir]').forEach(el => {
+            el.addEventListener('click', () => irDetalle(el.dataset.ir));
+        });
+    }
+
+    function limpiarFormCrear() {
+        document.getElementById('est-nombre').value = '';
+        document.getElementById('est-imagen-url').value = '';
+        document.getElementById('est-imagen-file').value = '';
+        document.getElementById('est-duracion').value = '15';
+        document.getElementById('contenedor-imagen-aoi').style.display = 'none';
+        document.getElementById('aoi-form').classList.add('hidden');
+        document.getElementById('lista-aois').innerHTML = '';
+        document.getElementById('img-error').classList.add('hidden');
+        estado.aoisTemp = [];
+        estado.aoiDibujando = null;
+    }
+
+    // Cargar imagen
+    document.getElementById('btn-cargar-imagen').addEventListener('click', cargarImagenEstudio);
+    document.getElementById('est-imagen-url').addEventListener('keydown', e => { if (e.key === 'Enter') cargarImagenEstudio(); });
+
+    function cargarImagenEstudio() {
+        const urlInput = document.getElementById('est-imagen-url').value.trim();
+        const fileInput = document.getElementById('est-imagen-file').files[0];
+        const errEl = document.getElementById('img-error');
+        errEl.classList.add('hidden');
+
+        if (fileInput) {
+            const reader = new FileReader();
+            reader.onload = (e) => mostrarPreviewAOI(e.target.result);
+            reader.onerror = () => { errEl.textContent = 'Error al leer el archivo'; errEl.classList.remove('hidden'); };
+            reader.readAsDataURL(fileInput);
+        } else if (urlInput) {
+            mostrarPreviewAOI(urlInput);
+        } else {
+            errEl.textContent = 'Ingresa una URL o selecciona un archivo';
+            errEl.classList.remove('hidden');
+        }
+    }
+
+    function mostrarPreviewAOI(src) {
+        const img = document.getElementById('preview-img-aoi');
+        const cont = document.getElementById('contenedor-imagen-aoi');
+        const canvas = document.getElementById('canvas-aois');
+        img.onload = () => {
+            cont.style.display = 'block';
+            canvas.width = img.clientWidth;
+            canvas.height = img.clientHeight;
+            dibujarAOIsEnCanvas(canvas, img.clientWidth, img.clientHeight, estado.aoisTemp);
+        };
+        img.onerror = () => {
+            document.getElementById('img-error').textContent = 'No se pudo cargar la imagen. Verifica la URL.';
+            document.getElementById('img-error').classList.remove('hidden');
+        };
+        img.src = src;
+    }
+
+    // Dibujo de AOIs
+    const canvasAOIs = document.getElementById('canvas-aois');
+    canvasAOIs.addEventListener('mousedown', (e) => {
+        if (!document.getElementById('preview-img-aoi').src) return;
+        const rect = canvasAOIs.getBoundingClientRect();
+        estado.aoiStart = { x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height };
+        estado.aoiDibujando = { ...estado.aoiStart };
+    });
+    canvasAOIs.addEventListener('mousemove', (e) => {
+        if (!estado.aoiStart) return;
+        const rect = canvasAOIs.getBoundingClientRect();
+        estado.aoiDibujando = {
+            x: Math.min(estado.aoiStart.x, (e.clientX - rect.left) / rect.width),
+            y: Math.min(estado.aoiStart.y, (e.clientY - rect.top) / rect.height),
+            w: Math.abs((e.clientX - rect.left) / rect.width - estado.aoiStart.x),
+            h: Math.abs((e.clientY - rect.top) / rect.height - estado.aoiStart.y),
+        };
+        const img = document.getElementById('preview-img-aoi');
+        const c = document.getElementById('canvas-aois');
+        dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp, estado.aoiDibujando);
+    });
+    canvasAOIs.addEventListener('mouseup', () => {
+        if (!estado.aoiStart || !estado.aoiDibujando || estado.aoiDibujando.w < 0.02 || estado.aoiDibujando.h < 0.02) {
+            estado.aoiStart = null; estado.aoiDibujando = null; return;
+        }
+        estado.aoiStart = null;
+        document.getElementById('aoi-form').classList.remove('hidden');
+        document.getElementById('aoi-nombre-input').value = `AOI ${estado.aoisTemp.length + 1}`;
+        document.getElementById('aoi-nombre-input').focus();
+    });
+
+    document.getElementById('btn-guardar-aoi').addEventListener('click', guardarAOITemp);
+    document.getElementById('aoi-nombre-input').addEventListener('keydown', e => { if (e.key === 'Enter') guardarAOITemp(); });
+    document.getElementById('btn-cancelar-aoi').addEventListener('click', () => {
+        document.getElementById('aoi-form').classList.add('hidden');
+        estado.aoiDibujando = null;
+        const img = document.getElementById('preview-img-aoi');
+        const c = document.getElementById('canvas-aois');
+        dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp);
+    });
+
+    function guardarAOITemp() {
+        const nombre = document.getElementById('aoi-nombre-input').value.trim() || `AOI ${estado.aoisTemp.length + 1}`;
+        const d = estado.aoiDibujando;
+        estado.aoisTemp.push({
+            id: uid(), nombre,
+            x: d.x, y: d.y, w: d.w, h: d.h,
+            color: AOI_COLORS[estado.aoisTemp.length % AOI_COLORS.length]
+        });
+        document.getElementById('aoi-form').classList.add('hidden');
+        estado.aoiDibujando = null;
+        renderListaAOIsTemp();
+        const img = document.getElementById('preview-img-aoi');
+        const c = document.getElementById('canvas-aois');
+        dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp);
+    }
+
+    function renderListaAOIsTemp() {
+        const cont = document.getElementById('lista-aois');
+        cont.innerHTML = estado.aoisTemp.map((aoi, i) => `
+            <div class="flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-2.5">
+                <div class="w-4 h-4 rounded" style="background:${aoi.color};flex-shrink:0;"></div>
+                <span class="flex-1 text-sm font-medium">${aoi.nombre}</span>
+                <button class="text-danger text-sm hover:text-red-400" data-del-aoi="${i}"><i class="fas fa-times"></i></button>
+            </div>
+        `).join('');
+        cont.querySelectorAll('[data-del-aoi]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                estado.aoisTemp.splice(parseInt(btn.dataset.delAoi), 1);
+                // Reasignar colores
+                estado.aoisTemp.forEach((a, i) => a.color = AOI_COLORS[i % AOI_COLORS.length]);
+                renderListaAOIsTemp();
+                const img = document.getElementById('preview-img-aoi');
+                const c = document.getElementById('canvas-aois');
+                dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, estado.aoisTemp);
+            });
+        });
+    }
+
+    function dibujarAOIsEnCanvas(canvas, dispW, dispH, aois, dibujando = null) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        aois.forEach(aoi => {
+            ctx.strokeStyle = aoi.color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 4]);
+            ctx.strokeRect(aoi.x * dispW, aoi.y * dispH, aoi.w * dispW, aoi.h * dispH);
+            ctx.setLineDash([]);
+            ctx.fillStyle = aoi.color + '18';
+            ctx.fillRect(aoi.x * dispW, aoi.y * dispH, aoi.w * dispW, aoi.h * dispH);
+            ctx.fillStyle = aoi.color;
+            ctx.font = 'bold 12px Space Grotesk, sans-serif';
+            ctx.fillText(aoi.nombre, aoi.x * dispW + 4, aoi.y * dispH + 14);
+        });
+        if (dibujando) {
+            ctx.strokeStyle = '#00e5a0';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.strokeRect(dibujando.x * dispW, dibujando.y * dispH, dibujando.w * dispW, dibujando.h * dispH);
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'rgba(0,229,160,0.1)';
+            ctx.fillRect(dibujando.x * dispW, dibujando.y * dispH, dibujando.w * dispW, dibujando.h * dispH);
+        }
+    }
+
+    // Guardar estudio
+    document.getElementById('btn-guardar-estudio').addEventListener('click', () => {
+        const nombre = document.getElementById('est-nombre').value.trim();
+        const imgUrl = document.getElementById('preview-img-aoi').src;
+        const duracion = parseInt(document.getElementById('est-duracion').value) || 15;
+
+        if (!nombre) { toast('Ingresa un nombre para el estudio', 'error'); return; }
+        if (!imgUrl || imgUrl === location.href) { toast('Carga una imagen de estimulo', 'error'); return; }
+
+        const img = document.getElementById('preview-img-aoi');
+        estado.estudios.push({
+            id: uid(), nombre, imagenUrl: imgUrl,
+            imgNatW: img.naturalWidth, imgNatH: img.naturalHeight,
+            duracion: clamp(duracion, 5, 120),
+            aois: JSON.parse(JSON.stringify(estado.aoisTemp)),
+            creadoEn: new Date().toISOString()
+        });
+        guardarDatos();
+        toast('Estudio guardado correctamente');
+        irDashboard();
+    });
+
+    // ===================== DETALLE ESTUDIO =====================
+    function renderDetalle(id) {
+        const est = estado.estudios.find(e => e.id === id);
+        if (!est) return;
+        document.getElementById('det-nombre').textContent = est.nombre;
+        document.getElementById('det-duracion').textContent = est.duracion;
+        document.getElementById('det-fecha').textContent = new Date(est.creadoEn).toLocaleDateString('es-ES');
+        const sesiones = estado.sesiones.filter(s => s.estudioId === id);
+        document.getElementById('det-sesiones-count').textContent = sesiones.length;
+
+        const img = document.getElementById('det-imagen');
+        img.src = est.imagenUrl;
+        img.onload = () => {
+            const c = document.getElementById('canvas-det-aois');
+            // El canvas debe coincidir con el tamaño display de la imagen
+            setTimeout(() => {
+                c.width = img.clientWidth;
+                c.height = img.clientHeight;
+                dibujarAOIsEnCanvas(c, img.clientWidth, img.clientHeight, est.aois);
+            }, 50);
+        };
+
+        const tabla = document.getElementById('tabla-sesiones');
+        const sinSes = document.getElementById('sin-sesiones');
+        if (sesiones.length === 0) { tabla.innerHTML = ''; sinSes.classList.remove('hidden'); }
+        else {
+            sinSes.classList.add('hidden');
+            tabla.innerHTML = sesiones.map((s, i) => `
+                <div class="px-5 py-3 flex items-center justify-between text-sm">
+                    <span><i class="fas fa-user text-muted mr-2"></i>Participante ${i + 1}</span>
+                    <span class="text-muted">${new Date(s.fecha).toLocaleString('es-ES')}</span>
+                    <span class="text-muted">${s.datos.length} puntos</span>
+                    <button class="btn btn-secondary btn-sm" data-del-ses="${s.id}"><i class="fas fa-trash text-danger"></i></button>
+                </div>
+            `).join('');
+            tabla.querySelectorAll('[data-del-ses]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    estado.sesiones = estado.sesiones.filter(s => s.id !== btn.dataset.delSes);
+                    guardarDatos();
+                    renderDetalle(id);
+                    toast('Sesion eliminada');
+                });
+            });
+        }
+    }
+
+    document.getElementById('btn-iniciar-sesion').addEventListener('click', () => {
+        const est = estado.estudios.find(e => e.id === estado.estudioActual);
+        if (!est) return;
+        // Pre-cargar la imagen del estudio
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            estado.imgNatW = img.naturalWidth;
+            estado.imgNatH = img.naturalHeight;
+            mostrarPantalla('screen-consent');
+        };
+        img.onerror = () => toast('Error al cargar la imagen del estimulo', 'error');
+        img.src = est.imagenUrl;
+    });
+
+    document.getElementById('btn-eliminar-estudio').addEventListener('click', () => {
+        if (!confirm('Eliminar este estudio y todas sus sesiones?')) return; // Solo aquí, es acción destructiva irreversibles
+        estado.estudios = estado.estudios.filter(e => e.id !== estado.estudioActual);
+        estado.sesiones = estado.sesiones.filter(s => s.estudioId !== estado.estudioActual);
+        guardarDatos();
+        toast('Estudio eliminado');
+        irDashboard();
+    });
+
+    document.getElementById('btn-ver-resultados').addEventListener('click', () => {
+        const sesiones = estado.sesiones.filter(s => s.estudioId === estado.estudioActual);
+        if (sesiones.length === 0) { toast('No hay sesiones para analizar', 'warning'); return; }
+        irResultados(estado.estudioActual);
+    });
+
+    // ===================== CONSENTIMIENTO =====================
+    document.getElementById('btn-aceptar-consent').addEventListener('click', iniciarCalibracion);
+
+    // ===================== EYE TRACKING - CALIBRACION =====================
+    async function iniciarCalibracion() {
+        mostrarPantalla('screen-carga');
+        document.getElementById('texto-carga').textContent = 'Descargando modelo de IA...';
+
+        try {
+            if (!estado.faceLandmarker) {
+                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+                estado.faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO", numFaces: 1
+                });
+            }
+            document.getElementById('texto-carga').textContent = 'Modelo listo. Activando camara...';
+
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480, facingMode: 'user' } });
+            const video = document.getElementById('video-et');
+            video.srcObject = stream;
+            await video.play();
+
+            // Preparar calibración
+            estado.puntosCal = [
+                { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, tipo: 'centro' },
+                { x: window.innerWidth * 0.15, y: window.innerHeight * 0.15, tipo: 'arriba-izq' },
+                { x: window.innerWidth * 0.85, y: window.innerHeight * 0.15, tipo: 'arriba-der' },
+                { x: window.innerWidth * 0.15, y: window.innerHeight * 0.85, tipo: 'abajo-izq' },
+                { x: window.innerWidth * 0.85, y: window.innerHeight * 0.85, tipo: 'abajo-der' },
+            ];
+            estado.clickCalCount = 0;
+            estado.datosRawCal = [];
+            estado.calibrando = true;
+            estado.smoothIniciado = false;
+            estado.estudioActivo = false;
+
+            mostrarPantalla('screen-calibracion');
+            const punto = document.getElementById('punto-cal');
+            punto.style.display = 'block';
+            punto.style.backgroundColor = '#ff0000';
+            punto.style.boxShadow = '0 0 30px 12px rgba(255,0,0,0.85)';
+            moverPuntoCal(0);
+            document.getElementById('texto-calibracion').textContent = 'Mire el punto hasta que se ponga VERDE (1 de 5)';
+
+            procesarVideo();
+        } catch (err) {
+            console.error(err);
+            document.getElementById('texto-carga').textContent = 'Error: ' + (err.message || 'No se pudo acceder a la camara');
+            setTimeout(() => { irDetalle(estado.estudioActual); }, 2500);
+        }
+    }
+
+    function moverPuntoCal(i) {
+        const p = estado.puntosCal[i];
+        const punto = document.getElementById('punto-cal');
+        punto.style.left = p.x + 'px';
+        punto.style.top = p.y + 'px';
+        estado.estadoPunto = 'esperando';
+        estado.smoothIniciado = false;
+        punto.style.backgroundColor = '#ff0000';
+        punto.style.boxShadow = '0 0 30px 12px rgba(255,0,0,0.85)';
+    }
+
+    async function procesarVideo() {
+        if (!estado.calibrando && !estado.estudioActivo) return;
+        const t0 = performance.now();
+        const video = document.getElementById('video-et');
+
+        if (video.readyState >= 2 && estado.faceLandmarker) {
+            const res = await estado.faceLandmarker.detectForVideo(video, t0);
+            if (res.faceLandmarks && res.faceLandmarks.length > 0) {
+                const lm = res.faceLandmarks[0];
+
+                // CORREGIDO: paréntesis cerrado correctamente
+                let pX = ((lm[468].x - lm[33].x) / (lm[133].x - lm[33].x) +
+                          (lm[473].x - lm[362].x) / (lm[263].x - lm[362].x)) / 2;
+                // CORREGIDO: lm[386].y en vez de lm[386).y
+                let pY = ((lm[468].y - lm[159].y) / (lm[145].y - lm[159].y) +
+                          (lm[473].y - lm[386].y) / (lm[374].y - lm[386].y)) / 2;
+
+                estado.currentRawX = pX;
+                estado.currentRawY = pY;
+
+                if (estado.calibrando) {
+                    // Inicializar suavizado en primer frame
+                    if (!estado.smoothIniciado) {
+                        estado.smoothX = pX;
+                        estado.smoothY = pY;
+                        estado.smoothIniciado = true;
+                    }
+
+                    // Suavizar
+                    let sX = estado.smoothX * PESO_SUAVIZADO_CAL + pX * (1 - PESO_SUAVIZADO_CAL);
+                    let sY = estado.smoothY * PESO_SUAVIZADO_CAL + pY * (1 - PESO_SUAVIZADO_CAL);
+
+                    // CORREGIDO: diffY ahora mide diferencia real
+                    let diffX = Math.abs(sX - estado.smoothX);
+                    let diffY = Math.abs(sY - estado.smoothY);
+
+                    estado.smoothX = sX;
+                    estado.smoothY = sY;
+
+                    const punto = document.getElementById('punto-cal');
+                    const txtCal = document.getElementById('texto-calibracion');
+
+                    if (diffX < UMBRAL_MOVIMIENTO_CAL && diffY < UMBRAL_MOVIMIENTO_CAL) {
+                        if (estado.estadoPunto === 'esperando') {
+                            estado.estadoPunto = 'fijando';
+                            estado.tiempoFijacionInicio = performance.now();
+                            punto.style.backgroundColor = '#ffcc00';
+                            punto.style.boxShadow = '0 0 30px 12px rgba(255,204,0,0.85)';
+                        } else if (estado.estadoPunto === 'fijando') {
+                            if (performance.now() - estado.tiempoFijacionInicio >= DURACION_FIJACION_CAL) {
+                                estado.estadoPunto = 'listo';
+                                punto.style.backgroundColor = '#00ff00';
+                                punto.style.boxShadow = '0 0 30px 12px rgba(0,255,0,0.85)';
+                                txtCal.textContent = `Haga clic ahora (${estado.clickCalCount + 1} de 5)`;
+                            }
+                        }
+                    } else {
+                        estado.estadoPunto = 'esperando';
+                        punto.style.backgroundColor = '#ff0000';
+                        punto.style.boxShadow = '0 0 30px 12px rgba(255,0,0,0.85)';
+                        txtCal.textContent = `Mire el punto hasta que se ponga VERDE (${estado.clickCalCount + 1} de 5)`;
+                    }
+
+                } else if (estado.estudioActivo) {
+                    // Mapeo con regresión
+                    let mX = estado.offsetX - (pX * estado.sensX);
+                    let mY = estado.offsetY - (pY * estado.sensY);
+
+                    if (!estado.smoothIniciado) {
+                        estado.smoothX = mX; estado.smoothY = mY; estado.smoothIniciado = true;
+                    }
+                    let fX = estado.smoothX * PESO_SUAVIZADO_EST + mX * (1 - PESO_SUAVIZADO_EST);
+                    let fY = estado.smoothY * PESO_SUAVIZADO_EST + mY * (1 - PESO_SUAVIZADO_EST);
+                    fX = clamp(fX, 0, window.innerWidth);
+                    fY = clamp(fY, 0, window.innerHeight);
+                    estado.smoothX = fX; estado.smoothY = fY;
+
+                    // Coordenadas normalizadas de la imagen
+                    const norm = screenToNorm(fX, fY);
+
+                    let tiempo = (t0 - estado.tiempoInicioEst) / 1000;
+                    estado.datosOjo.push({
+                        tiempo, x: Math.round(fX), y: Math.round(fY),
+                        nx: norm.x, ny: norm.y
+                    });
+                }
+            }
+        }
+        requestAnimationFrame(procesarVideo);
+    }
+
+    // Click durante calibración
+    document.addEventListener('click', (e) => {
+        if (!estado.calibrando) return;
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+
+        if (estado.estadoPunto !== 'listo') {
+            document.getElementById('texto-calibracion').textContent = 'Aun no esta verde. Mantenga la mirada fija.';
+            return;
+        }
+
+        const pt = estado.puntosCal[estado.clickCalCount];
+        estado.datosRawCal.push({
+            rawX: estado.currentRawX, rawY: estado.currentRawY,
+            screenX: pt.x, screenY: pt.y, tipo: pt.tipo
+        });
+        estado.clickCalCount++;
+
+        if (estado.clickCalCount < 5) {
+            moverPuntoCal(estado.clickCalCount);
+            document.getElementById('texto-calibracion').textContent =
+                `Mire el punto hasta que se ponga VERDE (${estado.clickCalCount + 1} de 5)`;
+        } else {
+            finalizarCalibracion();
+        }
+    });
+
+    function finalizarCalibracion() {
+        estado.calibrando = false;
+
+        const d = estado.datosRawCal;
+        const rawIzq = d.filter(p => p.tipo.includes('izq'));
+        const rawDer = d.filter(p => p.tipo.includes('der'));
+        const rawArriba = d.filter(p => p.tipo.includes('arriba'));
+        const rawAbajo = d.filter(p => p.tipo.includes('abajo'));
+
+        // CORREGIDO: calcular promedios de pantalla que antes faltaban
+        const promRawIzqX = rawIzq.reduce((s, p) => s + p.rawX, 0) / rawIzq.length;
+        const promRawDerX = rawDer.reduce((s, p) => s + p.rawX, 0) / rawDer.length;
+        const promRawArribaY = rawArriba.reduce((s, p) => s + p.rawY, 0) / rawArriba.length;
+        const promRawAbajoY = rawAbajo.reduce((s, p) => s + p.rawY, 0) / rawAbajo.length;
+
+        const promScrIzqX = rawIzq.reduce((s, p) => s + p.screenX, 0) / rawIzq.length;
+        const promScrDerX = rawDer.reduce((s, p) => s + p.screenX, 0) / rawDer.length;
+        const promScrArribaY = rawArriba.reduce((s, p) => s + p.screenY, 0) / rawArriba.length;
+        const promScrAbajoY = rawAbajo.reduce((s, p) => s + p.screenY, 0) / rawAbajo.length;
+
+        const deltaXOjo = promRawDerX - promRawIzqX;
+        const deltaXPantalla = promScrDerX - promScrIzqX;
+        if (Math.abs(deltaXOjo) > 0.001) estado.sensX = deltaXPantalla / deltaXOjo;
+
+        const deltaYOjo = promRawAbajoY - promRawArribaY;
+        const deltaYPantalla = promScrAbajoY - promScrArribaY;
+        if (Math.abs(deltaYOjo) > 0.001) estado.sensY = deltaYPantalla / deltaYOjo;
+
+        const rawCentro = d.find(p => p.tipo === 'centro');
+        const scrCentroX = window.innerWidth / 2;
+        const scrCentroY = window.innerHeight / 2;
+        estado.offsetX = scrCentroX - (rawCentro.rawX * estado.sensX);
+        estado.offsetY = scrCentroY - (rawCentro.rawY * estado.sensY);
+
+        // Pasar al estudio activo
+        document.getElementById('punto-cal').style.display = 'none';
+        iniciarEstudioActivo();
+    }
+
+    // ===================== ESTUDIO ACTIVO =====================
+    function iniciarEstudioActivo() {
+        const est = estado.estudios.find(e => e.id === estado.estudioActual);
+        if (!est) return;
+
+        const imgEl = document.getElementById('estimulo-activo');
+        imgEl.src = est.imagenUrl;
+        imgEl.style.display = 'block';
+
+        estado.datosOjo = [];
+        estado.smoothIniciado = false;
+        estado.estudioActivo = true;
+        estado.tiempoInicioEst = performance.now();
+
+        mostrarPantalla('screen-estudio');
+
+        // Timer
+        let restante = est.duracion;
+        const timerEl = document.getElementById('timer-estudio');
+        timerEl.textContent = restante + 's';
+        const interval = setInterval(() => {
+            restante--;
+            timerEl.textContent = restante + 's';
+            if (restante <= 5) timerEl.style.color = '#ef4444';
+            if (restante <= 0) {
+                clearInterval(interval);
+                terminarEstudio();
+            }
+        }, 1000);
+
+        // Reiniciar procesamiento de video
+        procesarVideo();
+    }
+
+    function terminarEstudio() {
+        estado.estudioActivo = false;
+
+        // Detener cámara
+        const video = document.getElementById('video-et');
+        if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+
+        document.getElementById('estimulo-activo').style.display = 'none';
+        document.getElementById('timer-estudio').style.color = '#00e5a0';
+
+        // Guardar sesión
+        estado.sesiones.push({
+            id: uid(),
+            estudioId: estado.estudioActual,
+            fecha: new Date().toISOString(),
+            datos: estado.datosOjo,
+            calibracion: { sensX: estado.sensX, sensY: estado.sensY, offsetX: estado.offsetX, offsetY: estado.offsetY }
+        });
+        guardarDatos();
+        toast('Sesion registrada correctamente');
+
+        irDetalle(estado.estudioActual);
+    }
+
+    // ===================== RESULTADOS =====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
+            btn.classList.add('activo');
+            document.getElementById('tab-heatmap').classList.toggle('hidden', btn.dataset.tab !== 'heatmap');
+            document.getElementById('tab-aois').classList.toggle('hidden', btn.dataset.tab !== 'aois');
+            document.getElementById('tab-fijaciones').classList.toggle('hidden', btn.dataset.tab !== 'fijaciones');
+        });
+    });
+
+    function renderResultados(estudioId) {
+        const est = estado.estudios.find(e => e.id === estudioId);
+        if (!est) return;
+        document.getElementById('res-titulo').textContent = 'Resultados: ' + est.nombre;
+
+        const sesiones = estado.sesiones.filter(s => s.estudioId === estudioId);
+        // Combinar todos los datos
+        const todosDatos = sesiones.flatMap(s => s.datos);
+
+        // Resetear tabs
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('activo'));
+        document.querySelector('.tab-btn[data-tab="heatmap"]').classList.add('activo');
+        document.getElementById('tab-heatmap').classList.remove('hidden');
+        document.getElementById('tab-aois').classList.add('hidden');
+        document.getElementById('tab-fijaciones').classList.add('hidden');
+
+        renderHeatmap(est, todosDatos);
+        renderAOIAnalysis(est, todosDatos, sesiones);
+        renderFijaciones(est, todosDatos);
+    }
+
+    function renderHeatmap(est, datos) {
+        const canvas = document.getElementById('canvas-heatmap');
+        const canvasAOIs = document.getElementById('canvas-heatmap-aois');
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            // Tamaño del canvas: ajustar al viewport manteniendo aspect ratio
+            const maxW = Math.min(window.innerWidth - 48, 1100);
+            const maxH = window.innerHeight - 200;
+            const imgR = img.naturalWidth / img.naturalHeight;
+            let cW, cH;
+            if (imgR > maxW / maxH) { cW = maxW; cH = maxW / imgR; }
+            else { cH = maxH; cW = maxH * imgR; }
+            cW = Math.round(cW); cH = Math.round(cH);
+
+            canvas.width = cW; canvas.height = cH;
+            canvasAOIs.width = cW; canvasAOIs.height = cH;
+            canvasAOIs.style.width = cW + 'px';
+            canvasAOIs.style.height = cH + 'px';
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, cW, cH);
+
+            // Mapear datos normalizados al canvas
+            const bounds = getImageBounds(img.naturalWidth, img.naturalHeight, cW, cH);
+            const heatData = datos.map(p => {
+                const px = p.nx * bounds.rW + bounds.oX;
+                const py = p.ny * bounds.rH + bounds.oY;
+                return [px, py, 1];
+            });
+
+            if (heatData.length > 0) {
+                const heat = simpleheat(canvas);
+                heat.data(heatData);
+                heat.radius(25, 35);
+                heat.gradient({ 0.15: '#0000ff', 0.3: '#00ccff', 0.5: '#00ff88', 0.7: '#ffff00', 0.9: '#ff4400', 1.0: '#ff0000' });
+                heat.draw(0.02);
+            }
+
+            // Dibujar AOIs sobre el heatmap
+            const ctxA = canvasAOIs.getContext('2d');
+            ctxA.clearRect(0, 0, cW, cH);
+            est.aois.forEach(aoi => {
+                ctxA.strokeStyle = aoi.color;
+                ctxA.lineWidth = 2;
+                ctxA.setLineDash([6, 4]);
+                ctxA.strokeRect(aoi.x * cW, aoi.y * cH, aoi.w * cW, aoi.h * cH);
+                ctxA.setLineDash([]);
+                ctxA.fillStyle = aoi.color;
+                ctxA.font = 'bold 13px Space Grotesk, sans-serif';
+                ctxA.fillText(aoi.nombre, aoi.x * cW + 4, aoi.y * cH + 15);
+            });
+        };
+        img.src = est.imagenUrl;
+    }
+
+    function renderAOIAnalysis(est, datos, sesiones) {
+        const cont = document.getElementById('res-aois-tabla');
+        if (est.aois.length === 0) {
+            cont.innerHTML = '<div class="p-8 text-center text-muted">No se definieron AOIs en este estudio</div>';
+            return;
+        }
+
+        const totalPuntos = datos.length;
+        // Asumiendo ~30fps
+        const fpsEstimado = 30;
+        const tiempoTotalEst = totalPuntos / fpsEstimado;
+
+        let filas = est.aois.map(aoi => {
+            const puntosDentro = datos.filter(p =>
+                p.nx >= aoi.x && p.nx <= aoi.x + aoi.w &&
+                p.ny >= aoi.y && p.ny <= aoi.y + aoi.h
+            );
+            const tiempoDentro = puntosDentro.length / fpsEstimado;
+            const pctTiempo = tiempoTotalEst > 0 ? (tiempoDentro / tiempoTotalEst * 100) : 0;
+            const primeraFijacion = puntosDentro.length > 0 ? puntosDentro[0].tiempo : null;
+
+            return { ...aoi, puntos: puntosDentro.length, tiempo: tiempoDentro, pct: pctTiempo, primera: primeraFijacion };
+        });
+
+        // Ordenar por tiempo de fijación (mayor primero)
+        filas.sort((a, b) => b.tiempo - a.tiempo);
+
+        cont.innerHTML = `
+            <div class="px-5 py-3 border-b border-border">
+                <h3 class="font-bold">Analisis de Areas de Interes</h3>
+                <p class="text-muted text-xs mt-1">${sesiones.length} participante(s) | ${totalPuntos} puntos de datos | ~${fpsEstimado}fps estimado</p>
+            </div>
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-border text-muted text-xs">
+                        <th class="text-left px-5 py-3 font-semibold">AOI</th>
+                        <th class="text-right px-5 py-3 font-semibold">Puntos</th>
+                        <th class="text-right px-5 py-3 font-semibold">Tiempo (s)</th>
+                        <th class="text-right px-5 py-3 font-semibold">% Atencion</th>
+                        <th class="text-right px-5 py-3 font-semibold">Primera fij. (s)</th>
+                        <th class="px-5 py-3 font-semibold" style="width:120px;">Atencion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filas.map(f => `
+                        <tr class="border-b border-border/50 hover:bg-surface/50">
+                            <td class="px-5 py-3 flex items-center gap-2">
+                                <div class="w-3 h-3 rounded" style="background:${f.color};"></div>
+                                <span class="font-medium">${f.nombre}</span>
+                            </td>
+                            <td class="text-right px-5 py-3 font-mono text-xs">${f.puntos.toLocaleString()}</td>
+                            <td class="text-right px-5 py-3 font-mono text-xs">${f.tiempo.toFixed(1)}</td>
+                            <td class="text-right px-5 py-3 font-mono text-xs font-bold" style="color:${f.pct > 20 ? '#00e5a0' : f.pct > 10 ? '#ffd93d' : '#5a6b80'}">${f.pct.toFixed(1)}%</td>
+                            <td class="text-right px-5 py-3 font-mono text-xs">${f.primera !== null ? f.primera.toFixed(2) : '-'}</td>
+                            <td class="px-5 py-3">
+                                <div class="w-full bg-border rounded-full h-2.5">
+                                    <div class="h-2.5 rounded-full" style="width:${Math.min(f.pct * 3, 100)}%;background:${f.color};"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    function renderFijaciones(est, datos) {
+        const canvas = document.getElementById('canvas-scatter');
+        const info = document.getElementById('res-fijaciones-info');
+
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            const maxW = Math.min(window.innerWidth - 48, 800);
+            const maxH = 500;
+            const imgR = img.naturalWidth / img.naturalHeight;
+            let cW, cH;
+            if (imgR > maxW / maxH) { cW = maxW; cH = maxW / imgR; }
+            else { cH = maxH; cW = maxH * imgR; }
+            cW = Math.round(cW); cH = Math.round(cH);
+            canvas.width = cW; canvas.height = cH;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, cW, cH);
+            ctx.fillStyle = 'rgba(10,14,20,0.5)';
+            ctx.fillRect(0, 0, cW, cH);
+
+            const bounds = getImageBounds(img.naturalWidth, img.naturalHeight, cW, cH);
+
+            // Dibujar todos los puntos como scatter
+            datos.forEach((p, i) => {
+                const px = p.nx * bounds.rW + bounds.oX;
+                const py = p.ny * bounds.rH + bounds.oY;
+                ctx.beginPath();
+                ctx.arc(px, py, 2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,229,160,0.3)';
+                ctx.fill();
+            });
+
+            // Detectar fijaciones (I-DT simplificado)
+            const fijaciones = detectarFijaciones(datos);
+            fijaciones.forEach(f => {
+                const px = f.nx * bounds.rW + bounds.oX;
+                const py = f.ny * bounds.rH + bounds.oY;
+                const radio = clamp(f.duracion / 50, 8, 40);
+                ctx.beginPath();
+                ctx.arc(px, py, radio, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0,229,160,0.15)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(0,229,160,0.6)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                // Numero de fijacion
+                ctx.fillStyle = '#00e5a0';
+                ctx.font = 'bold 10px JetBrains Mono, monospace';
+                ctx.fillText(f.idx + 1, px + radio + 3, py + 3);
+            });
+
+            // Dibujar AOIs
+            est.aois.forEach(aoi => {
+                ctx.strokeStyle = aoi.color;
+                ctx.lineWidth = 1.5;
+                ctx.setLineDash([4, 3]);
+                ctx.strokeRect(aoi.x * cW, aoi.y * cH, aoi.w * cW, aoi.h * cH);
+                ctx.setLineDash([]);
+            });
+
+            // Info de fijaciones
+            const totalDurFij = fijaciones.reduce((s, f) => s + f.duracion, 0);
+            const avgDur = fijaciones.length > 0 ? totalDurFij / fijaciones.length : 0;
+            info.innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <div class="text-3xl font-extrabold text-accent">${fijaciones.length}</div>
+                        <div class="text-muted text-xs mt-1">Fijaciones</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-txt">${avgDur.toFixed(0)}ms</div>
+                        <div class="text-muted text-xs mt-1">Duracion promedio</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-txt">${totalDurFij.toFixed(0)}ms</div>
+                        <div class="text-muted text-xs mt-1">Tiempo total en fijaciones</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-txt">${datos.length}</div>
+                        <div class="text-muted text-xs mt-1">Puntos crudos</div>
+                    </div>
+                </div>
+                <p class="text-muted text-xs mt-4 text-center">Las circulos verdes representan fijaciones (tamano proporcional a la duracion). Los numeros indican el orden.</p>
+            `;
+        };
+        img.src = est.imagenUrl;
+    }
+
+    function detectarFijaciones(datos, umbralPx = 0.015, duracionMinMs = 100) {
+        if (datos.length < 2) return [];
+        const fijaciones = [];
+        let grupo = [datos[0]];
+        let grupoIdx = 0;
+
+        for (let i = 1; i < datos.length; i++) {
+            const prev = grupo[grupo.length - 1];
+            const curr = datos[i];
+            // Usar coordenadas normalizadas para independencia de resolución
+            const dist = Math.sqrt((curr.nx - prev.nx) ** 2 + (curr.ny - prev.ny) ** 2);
+
+            if (dist <= umbralPx) {
+                grupo.push(curr);
+            } else {
+                const durMs = (grupo[grupo.length - 1].tiempo - grupo[0].tiempo) * 1000;
+                if (durMs >= duracionMinMs) {
+                    grupoIdx++;
+                    fijaciones.push({
+                        nx: grupo.reduce((s, p) => s + p.nx, 0) / grupo.length,
+                        ny: grupo.reduce((s, p) => s + p.ny, 0) / grupo.length,
+                        tiempoInicio: grupo[0].tiempo,
+                        duracion: durMs,
+                        numPuntos: grupo.length,
+                        idx: grupoIdx
+                    });
+                }
+                grupo = [curr];
+            }
+        }
+        // Último grupo
+        const durMs = (grupo[grupo.length - 1].tiempo - grupo[0].tiempo) * 1000;
+        if (durMs >= duracionMinMs) {
+            grupoIdx++;
+            fijaciones.push({
+                nx: grupo.reduce((s, p) => s + p.nx, 0) / grupo.length,
+                ny: grupo.reduce((s, p) => s + p.ny, 0) / grupo.length,
+                tiempoInicio: grupo[0].tiempo,
+                duracion: durMs,
+                numPuntos: grupo.length,
+                idx: grupoIdx
+            });
+        }
+        return fijaciones;
+    }
+
+    // Exportar CSV
+    document.getElementById('btn-exportar-csv').addEventListener('click', () => {
+        const est = estado.estudios.find(e => e.id === estado.resultadosEstudioId);
+        const sesiones = estado.sesiones.filter(s => s.estudioId === estado.resultadosEstudioId);
+        if (!est || sesiones.length === 0) { toast('No hay datos para exportar', 'warning'); return; }
+
+        let csv = 'Sesion;Tiempo_s;X_Pantalla;Y_Pantalla;X_Norm;Y_Norm\n';
+        sesiones.forEach((ses, si) => {
+            ses.datos.forEach(p => {
+                csv += `${si + 1};${p.tiempo.toFixed(3)};${p.x};${p.y};${p.nx.toFixed(4)};${p.ny.toFixed(4)}\n`;
+            });
+        });
+
+        // Si hay AOIs, agregar análisis
+        if (est.aois.length > 0) {
+            csv += '\n--- ANALISIS POR AOI ---\n';
+            csv += 'AOI;Sesion;Puntos_Dentro;Tiempo_s;Porcentaje\n';
+            const fps = 30;
+            sesiones.forEach((ses, si) => {
+                const totalPts = ses.datos.length;
+                est.aois.forEach(aoi => {
+                    const dentro = ses.datos.filter(p =>
+                        p.nx >= aoi.x && p.nx <= aoi.x + aoi.w &&
+                        p.ny >= aoi.y && p.ny <= aoi.y + aoi.h
+                    );
+                    const t = dentro.length / fps;
+                    const pct = totalPts > 0 ? (dentro.length / totalPts * 100) : 0;
+                    csv += `${aoi.nombre};${si + 1};${dentro.length};${t.toFixed(2)};${pct.toFixed(1)}%\n`;
+                });
+            });
+        }
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `eyetrack_${est.nombre.replace(/\s+/g, '_')}.csv`;
+        a.style.display = 'none'; document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+        toast('CSV descargado');
+    });
+
+    // ===================== INICIALIZACION =====================
+    cargarDatos();
+    // Si ya hay datos, podrían ir al dashboard directamente, pero mejor siempre mostrar login
+    mostrarPantalla('screen-login');
+
 </script>
 </body>
 </html>
