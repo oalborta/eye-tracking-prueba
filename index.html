@@ -78,7 +78,6 @@
         }
         .stat-card.green::after { background: var(--accent); }
         .stat-card.amber::after { background: var(--warn); }
-        .stat-card.red::after { background: var(--danger); }
         .stat-number { font-size: 2.5rem; font-weight: 900; line-height: 1; }
         .stat-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
 
@@ -98,12 +97,12 @@
 
         .form-group { margin-bottom: 1.25rem; }
         .form-label { display: block; font-weight: 600; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-input {
+        .form-input, .form-select {
             width: 100%; padding: 0.75rem 1rem; background: var(--bg2); border: 1px solid var(--border);
             border-radius: 10px; color: var(--fg); font-family: 'Outfit', sans-serif; font-size: 0.95rem;
             transition: border-color 0.2s, box-shadow 0.2s; outline: none;
         }
-        .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+        .form-input:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
         .form-input::placeholder { color: var(--muted); }
 
         .table-wrap { overflow-x: auto; }
@@ -117,16 +116,14 @@
         tbody tr { transition: background 0.15s; }
         tbody tr:hover { background: rgba(255,255,255,0.02); }
 
-        .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; }
+        .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; }
         .tab-btn {
             padding: 0.75rem 1.25rem; background: none; border: none; color: var(--muted);
             font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.875rem;
-            cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s;
+            cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
         }
         .tab-btn:hover { color: var(--fg); }
         .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
 
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem; }
         .toast {
@@ -145,7 +142,7 @@
         .pantalla-participante {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000; background: var(--bg);
+            z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
 
         #punto-calibracion {
@@ -178,16 +175,14 @@
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
 
-        .import-area {
-            width: 100%; min-height: 120px; padding: 0.75rem; background: var(--bg2);
-            border: 1px solid var(--border); border-radius: 10px; color: var(--fg);
-            font-family: monospace; font-size: 0.8rem; resize: vertical; outline: none;
-        }
-        .import-area:focus { border-color: var(--accent); }
-
         .estimulo-item-card {
-            background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; position: relative;
+            background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; position: relative;
         }
+        .file-upload-box {
+            border: 2px dashed var(--border); border-radius: 10px; padding: 1.5rem; text-align: center;
+            cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01);
+        }
+        .file-upload-box:hover { border-color: var(--accent); background: rgba(16,185,129,0.02); }
     </style>
 </head>
 <body>
@@ -274,23 +269,28 @@
 
             <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
-                <div style="max-width: 700px; margin: 0 auto;">
+                <div style="max-width: 750px; margin: 0 auto;">
                     <h2 style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
-                    <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos múltiples, preguntas e intervalos.</p>
+                    <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos independientes, duraciones y orden aleatorio.</p>
 
                     <div class="card">
                         <div class="form-group">
                             <label class="form-label">Nombre del Estudio</label>
                             <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Banners Campaña Verano">
                         </div>
+
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label class="form-label">Duración por estímulo (segundos)</label>
-                                <input type="number" id="create-duracion" class="form-input" value="10" min="3" max="60">
-                            </div>
                             <div class="form-group">
                                 <label class="form-label">Intervalo entre estímulos (segundos)</label>
                                 <input type="number" id="create-intervalo" class="form-input" value="2" min="1" max="10">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Estrategia de Orden</label>
+                                <select id="create-orden-modo" class="form-select">
+                                    <option value="fijo-primero">Fijar el 1° material, aleatorios los siguientes</option>
+                                    <option value="secuencial">Estricto secuencial (1, 2, 3...)</option>
+                                    <option value="aleatorio">Totalmente aleatorio</option>
+                                </select>
                             </div>
                         </div>
 
@@ -301,9 +301,7 @@
                             <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
                         </div>
 
-                        <div id="lista-estimulos-creacion">
-                            <!-- Se inyectan dinámicamente -->
-                        </div>
+                        <div id="lista-estimulos-creacion"></div>
 
                         <div style="display:flex; gap:0.75rem; margin-top:2rem;">
                             <button class="btn btn-primary" onclick="guardarEstudio()"><i class="fas fa-save"></i> Guardar Estudio Completo</button>
@@ -323,11 +321,30 @@
                     </div>
                 </div>
 
-                <div class="tabs" id="tabs-materiales">
-                    <!-- Se generan tabs dinámicamente por cada material -->
+                <!-- Filtros demográficos y de segmentación -->
+                <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
+                    <div>
+                        <select id="filtro-genero" class="form-select" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
+                            <option value="todos">Todos los géneros</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro / Prefiero no decir</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filtro-edad" class="form-select" style="padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
+                            <option value="todos">Todas las edades</option>
+                            <option value="18-25">18 - 25 años</option>
+                            <option value="26-35">26 - 35 años</option>
+                            <option value="36-50">36 - 50 años</option>
+                            <option value="51+">51+ años</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Contenedor del mapa y controles -->
+                <div class="tabs" id="tabs-materiales"></div>
+
                 <div class="card">
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap;">
                         <div>
@@ -344,8 +361,7 @@
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
                         <i class="fas fa-fire"></i>
-                        <p style="font-weight:600;">Sin datos recolectados todavía</p>
-                        <p style="font-size:0.85rem; margin-top:0.5rem;">Comparte el link del estudio para que los participantes realicen el test.</p>
+                        <p style="font-weight:600;">Sin datos recolectados para este filtro</p>
                     </div>
                 </div>
             </div>
@@ -353,27 +369,63 @@
         </main>
     </div>
 
-    <!-- SECCIÓN PARTICIPANTE -->
+    <!-- SECCIÓN PARTICIPANTE (Flujo externo o de prueba propia) -->
     <div id="participant-section" style="display:none;">
         <video id="video-participante" playsinline></video>
         <img id="estimulo-participante" alt="Estímulo">
         <div id="punto-calibracion" class="rojo"></div>
 
-        <!-- Consentimiento -->
-        <div id="p-consentimiento" class="pantalla-participante">
-            <div style="max-width:500px; text-align:center; padding:2rem;">
+        <!-- Demografía Inicial -->
+        <div id="p-demografia" class="pantalla-participante">
+            <div style="max-width:450px; text-align:center;">
                 <div style="font-size:2.5rem; font-weight:900; margin-bottom:1rem;">Eye<span style="color:var(--accent)">Track</span></div>
                 <div class="card" style="text-align:left;">
-                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
+                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-user-circle" style="color:var(--accent);margin-right:6px;"></i>Datos del Participante</h3>
+                    <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.25rem;">Para analizar correctamente las métricas de atención, por favor completa lo siguiente:</p>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Edad (Años)</label>
+                        <input type="number" id="part-edad" class="form-input" placeholder="Ej: 28" min="10" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Género</label>
+                        <select id="part-genero" class="form-select">
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro / Prefiero no decir</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ocupación / Perfil</label>
+                        <select id="part-ocupacion" class="form-select">
+                            <option value="Consumidor Final">Consumidor Final / Comprador</option>
+                            <option value="Especialista Marketing">Especialista / Diseñador / Marketer</option>
+                            <option value="Estudiante / Investigador">Estudiante / Investigador</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:0.5rem;" onclick="validarDemografiaYConsentimiento()">
+                        Continuar <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consentimiento -->
+        <div id="p-consentimiento" class="pantalla-participante" style="display:none;">
+            <div style="max-width:500px; text-align:center; padding:2rem;">
+                <div class="card" style="text-align:left;">
+                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad de Cámara</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem;">
-                        Utilizaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear el movimiento de tus ojos en tiempo real.</strong>
+                        Utilizaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual en tiempo real.</strong>
                         <br><br>
-                        <span style="color:var(--danger); font-weight:700;">No se grabará ni almacenará ningún video o fotografía de tu rostro.</span>
+                        <span style="color:var(--danger); font-weight:700;">No se graba ni almacena ningún video o foto de tu rostro.</span>
                         <br><br>
-                        Para calibrar, <strong style="color:var(--fg);">mira fijamente el punto rojo</strong> hasta que se ponga <span style="color:var(--accent); font-weight:700;">VERDE</span>.
+                        Para iniciar, <strong style="color:var(--fg);">mira fijamente el punto rojo</strong> hasta que se ponga <span style="color:var(--accent); font-weight:700;">VERDE</span>.
                     </p>
                     <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:1.5rem;" onclick="participanteAceptar()">
-                        <i class="fas fa-check"></i> Acepto y comenzar prueba
+                        <i class="fas fa-check"></i> Acepto y calibrar cámara
                     </button>
                 </div>
             </div>
@@ -383,7 +435,7 @@
         <div id="p-carga" class="pantalla-participante" style="display:none;">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p id="texto-carga-p" style="font-weight:600; font-size:1.1rem;">Cargando motor de IA visual...</p>
+                <p style="font-weight:600; font-size:1.1rem;">Cargando motor de IA visual...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -391,10 +443,10 @@
         <!-- Pregunta previa a cada estímulo -->
         <div id="p-pregunta" class="pantalla-participante" style="display:none; background:rgba(8,8,13,0.95);">
             <div class="card" style="max-width:500px; text-align:center;">
-                <span id="label-num-material" style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Material 1 de 3</span>
-                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.3rem; margin:1rem 0;">¿Cuál de estas opciones te parece más atractiva?</h3>
-                <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;">Haz clic cuando estés listo para visualizar la imagen y analizar tu atención.</p>
-                <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="lanzarSiguienteEstimulo()">Ver imagen</button>
+                <span id="label-num-material" style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
+                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.3rem; margin:1rem 0;">¿Cuál de estas opciones prefieres?</h3>
+                <p style="color:var(--muted); font-size:0.85rem; margin-bottom:1.5rem;">Haz clic cuando estés listo para visualizar la imagen.</p>
+                <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="lanzarSiguienteEstimulo()">Ver estímulo</button>
             </div>
         </div>
 
@@ -402,7 +454,8 @@
         <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:rgba(8,8,13,0.95);">
             <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado con éxito!</h2>
-            <p style="color:var(--muted); max-width:400px; text-align:center; line-height:1.6;">Tus datos de atención ocular han sido guardados. Gracias por participar.</p>
+            <p style="color:var(--muted); max-width:400px; text-align:center; line-height:1.6;">Tus datos de atención ocular han sido guardados localmente en este navegador.</p>
+            <button class="btn btn-secondary" onclick="window.location.href = window.location.pathname">Volver al inicio</button>
         </div>
     </div>
 
@@ -422,6 +475,8 @@
         let tiempoInicioEstimulo = 0;
         let rafId = null;
         let streamCamara = null;
+        let estimulosOrdenadosActuales = [];
+        let datosDemograficosTemp = {};
 
         window.intentarLogin = () => {
             const pass = document.getElementById('login-pass').value;
@@ -493,7 +548,7 @@
                     </td>
                     <td style="text-align:right; display:flex; gap:0.5rem; justify-content:flex-end;">
                         <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Ver Resultados"><i class="fas fa-chart-bar"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="window.open('${linkParticipante}', '_blank')" title="Ejecutar prueba"><i class="fas fa-play"></i></button>
+                        <button class="btn btn-primary btn-sm" onclick="window.open('${linkParticipante}', '_blank')" title="Abrir Link Participante"><i class="fas fa-external-link-alt"></i></button>
                         <button class="btn btn-danger btn-sm" onclick="eliminarEstudio('${est.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                     </td>
                 `;
@@ -501,42 +556,72 @@
             });
         }
 
-        window.agregarCampoEstimulo = (nombre = '', img = '', pregunta = '') => {
+        window.agregarCampoEstimulo = (nombre = '', img = '', pregunta = '', duracion = 10) => {
             const container = document.getElementById('lista-estimulos-creacion');
             const index = container.children.length;
             const div = document.createElement('div');
             div.className = 'estimulo-item-card';
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-                    <span style="font-weight:700; font-size:0.85rem; color:var(--accent);">Material #${index + 1}</span>
+                    <span style="font-weight:700; font-size:0.85rem; color:var(--accent);">Material #${index + 1} ${index === 0 ? '(Fijado como Primero por defecto)' : ''}</span>
                     ${index > 0 ? `<button class="btn btn-danger btn-sm" onclick="this.closest('.estimulo-item-card').remove()"><i class="fas fa-times"></i></button>` : ''}
                 </div>
-                <div class="form-group" style="margin-bottom:0.75rem;">
-                    <label class="form-label">Nombre del Material</label>
-                    <input type="text" class="form-input est-nombre" value="${nombre}" placeholder="Ej: Opción A - Minimalista">
-                </div>
-                <div class="form-group" style="margin-bottom:0.75rem;">
-                    <label class="form-label">URL de la Imagen</label>
-                    <input type="text" class="form-input est-img" value="${img}" placeholder="https://dominio.com/imagen.jpg">
-                </div>
-                <div class="form-group" style="margin-bottom:0;">
-                    <label class="form-label">Pregunta o Instrucción para el participante</label>
-                    <input type="text" class="form-input est-pregunta" value="${pregunta}" placeholder="Ej: ¿Cuál de los dos anuncios te transmite mayor confianza?">
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+                    <div>
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <label class="form-label">Nombre del Material</label>
+                            <input type="text" class="form-input est-nombre" value="${nombre}" placeholder="Ej: Opción A - Minimalista">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0.75rem;">
+                            <label class="form-label">Pregunta o Instrucción</label>
+                            <input type="text" class="form-input est-pregunta" value="${pregunta}" placeholder="Ej: ¿Qué atrae más tu vista?">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label">Duración (segundos)</label>
+                            <input type="number" class="form-input est-duracion" value="${duracion}" min="3" max="60">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label">Imagen del Estímulo</label>
+                        <div class="file-upload-box" onclick="this.querySelector('input').click()">
+                            <input type="file" accept="image/*" style="display:none" onchange="cargarImagenLocal(this)">
+                            <div class="preview-txt" style="font-size:0.8rem; color:var(--muted);"><i class="fas fa-upload" style="font-size:1.2rem; margin-bottom:0.4rem; display:block; color:var(--accent);"></i>Sube o arrastra imagen</div>
+                            <img class="preview-img" src="${img ? img : ''}" style="max-height:80px; margin:0.5 auto 0; display:${img ? 'block' : 'none'}; border-radius:4px;">
+                        </div>
+                        <input type="hidden" class="est-img-base64" value="${img}">
+                    </div>
                 </div>
             `;
             container.appendChild(div);
         };
 
+        window.cargarImagenLocal = (input) => {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const card = input.closest('.estimulo-item-card');
+                    card.querySelector('.est-img-base64').value = e.target.result;
+                    const imgPrev = card.querySelector('.preview-img');
+                    imgPrev.src = e.target.result;
+                    imgPrev.style.display = 'block';
+                    card.querySelector('.preview-txt').style.display = 'none';
+                    mostrarToast('Imagen cargada con éxito', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
         function inicializarCamposCreacion() {
             document.getElementById('create-nombre').value = '';
             document.getElementById('lista-estimulos-creacion').innerHTML = '';
-            window.agregarCampoEstimulo('Banner Principal', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=80', '¿Qué elementos llaman tu atención primero?');
+            window.agregarCampoEstimulo('Banner Principal', '', '¿Qué elementos llaman tu atención primero?', 10);
         }
 
         window.guardarEstudio = () => {
             const nombre = document.getElementById('create-nombre').value.trim();
-            const duracion = Number(document.getElementById('create-duracion').value) || 10;
             const intervalo = Number(document.getElementById('create-intervalo').value) || 2;
+            const ordenModo = document.getElementById('create-orden-modo').value;
             
             const tarjetas = document.querySelectorAll('.estimulo-item-card');
             let estimulos = [];
@@ -545,21 +630,22 @@
                 estimulos.push({
                     id: 'mat_' + Math.random().toString(36).substr(2, 9),
                     nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
-                    imagen: t.querySelector('.est-img').value.trim(),
-                    pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen'
+                    imagen: t.querySelector('.est-img-base64').value.trim(),
+                    pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen',
+                    duracion: Number(t.querySelector('.est-duracion').value) || 10
                 });
             });
 
             if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
-                mostrarToast('Por favor completa el nombre del estudio y al menos una imagen válida.', 'error');
+                mostrarToast('Completa el nombre y asegúrate de subir imagen para todos los materiales.', 'error');
                 return;
             }
 
             const nuevoEstudio = {
                 id: 'est_' + Math.random().toString(36).substr(2, 9),
                 nombre,
-                duracion,
                 intervalo,
+                ordenModo,
                 creado: Date.now(),
                 estimulos,
                 participantes: []
@@ -588,7 +674,6 @@
             document.getElementById('results-titulo').textContent = est.nombre;
             document.getElementById('results-subtitulo').textContent = `${est.participantes.length} participantes registrados`;
 
-            // Generar pestañas de materiales
             const tabsContainer = document.getElementById('tabs-materiales');
             tabsContainer.innerHTML = '';
 
@@ -610,7 +695,7 @@
             }
         };
 
-        window.renderizarMapaCalor = (estudioId, materialIndex) => {
+        window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             const estudio = estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
             wrap.innerHTML = '';
@@ -618,12 +703,15 @@
             if (!estudio || !estudio.estimulos[materialIndex]) return;
             const material = estudio.estimulos[materialIndex];
 
-            document.getElementById('instruccion-badge').textContent = `Instrucción dada: "${material.pregunta}"`;
+            document.getElementById('instruccion-badge').textContent = `Instrucción: "${material.pregunta}"`;
 
-            // Recopilar puntos de todos los participantes para este material específico
             let puntos = [];
             if (estudio.participantes) {
                 estudio.participantes.forEach(p => {
+                    // Aplicar filtros demográficos
+                    if (filtroGenero !== 'todos' && p.genero !== filtroGenero) return;
+                    if (filtroEdad !== 'todos' && p.edadRango !== filtroEdad) return;
+
                     if (p.gazePorMaterial && p.gazePorMaterial[material.id]) {
                         puntos = puntos.concat(p.gazePorMaterial[material.id]);
                     }
@@ -665,7 +753,19 @@
             const activeTab = document.querySelector('#tabs-materiales .tab-btn.active');
             if (activeTab && estudioActualId) {
                 const index = Array.from(activeTab.parentNode.children).indexOf(activeTab);
-                renderizarMapaCalor(estudioActualId, index);
+                const gen = document.getElementById('filtro-genero').value;
+                const edad = document.getElementById('filtro-edad').value;
+                renderizarMapaCalor(estudioActualId, index, gen, edad);
+            }
+        };
+
+        window.filtrarResultadosDemografia = () => {
+            const activeTab = document.querySelector('#tabs-materiales .tab-btn.active');
+            if (activeTab && estudioActualId) {
+                const index = Array.from(activeTab.parentNode.children).indexOf(activeTab);
+                const gen = document.getElementById('filtro-genero').value;
+                const edad = document.getElementById('filtro-edad').value;
+                renderizarMapaCalor(estudioActualId, index, gen, edad);
             }
         };
 
@@ -689,6 +789,27 @@
             document.getElementById('participant-section').style.display = 'block';
             estudioActualId = estudioParam;
         }
+
+        window.validarDemografiaYConsentimiento = () => {
+            const edad = Number(document.getElementById('part-edad').value);
+            const genero = document.getElementById('part-genero').value;
+            const ocupacion = document.getElementById('part-ocupacion').value;
+
+            if (!edad || edad < 10 || edad > 100) {
+                mostrarToast('Por favor introduce una edad válida', 'error');
+                return;
+            }
+
+            // Asignar rango de edad
+            let edadRango = '18-25';
+            if (edad >= 26 && edad <= 35) edadRango = '26-35';
+            else if (edad >= 36 && edad <= 50) edadRango = '36-50';
+            else if (edad > 50) edadRango = '51+';
+
+            datosDemograficosTemp = { edad, genero, ocupacion, edadRango };
+            document.getElementById('p-demografia').style.display = 'none';
+            document.getElementById('p-consentimiento').style.display = 'flex';
+        };
 
         window.participanteAceptar = async () => {
             document.getElementById('p-consentimiento').style.display = 'none';
@@ -722,8 +843,6 @@
         function iniciarCalibracionPasoAPaso() {
             const punto = document.getElementById('punto-calibracion');
             punto.style.display = 'block';
-            
-            // Posición de calibración en el centro
             punto.style.top = '50vh';
             punto.style.left = '50vw';
             punto.className = 'amarillo';
@@ -750,20 +869,33 @@
                 alert('Estudio no encontrado o sin materiales.');
                 return;
             }
+
+            // Organizar estímulos según configuración
+            let arr = [...estudioParticipanteObj.estimulos];
+            if (estudioParticipanteObj.ordenModo === 'fijo-primero' && arr.length > 1) {
+                const primero = arr[0];
+                const resto = arr.slice(1).sort(() => Math.random() - 0.5);
+                estimulosOrdenadosActuales = [primero, ...resto];
+            } else if (estudioParticipanteObj.ordenModo === 'aleatorio') {
+                estimulosOrdenadosActuales = arr.sort(() => Math.random() - 0.5);
+            } else {
+                estimulosOrdenadosActuales = arr; // Secuencial
+            }
+
             materialActualIndex = 0;
             mostrarPreguntaMaterial();
         }
 
         window.mostrarPreguntaMaterial = () => {
-            const mat = estudioParticipanteObj.estimulos[materialActualIndex];
-            document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estudioParticipanteObj.estimulos.length}`;
+            const mat = estimulosOrdenadosActuales[materialActualIndex];
+            document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
             document.getElementById('texto-pregunta-material').textContent = mat.pregunta;
             document.getElementById('p-pregunta').style.display = 'flex';
         };
 
         window.lanzarSiguienteEstimulo = () => {
             document.getElementById('p-pregunta').style.display = 'none';
-            const mat = estudioParticipanteObj.estimulos[materialActualIndex];
+            const mat = estimulosOrdenadosActuales[materialActualIndex];
             
             const imgEl = document.getElementById('estimulo-participante');
             imgEl.src = mat.imagen;
@@ -772,16 +904,14 @@
             datosGazeActuales = [];
             tiempoInicioEstimulo = Date.now();
 
-            const duracionMs = (estudioParticipanteObj.duracion || 10) * 1000;
+            const duracionMs = (mat.duracion || 10) * 1000;
 
-            // Bucle de tracking ocular
             const video = document.getElementById('video-participante');
             function loopTracking() {
                 if (faceLandmarker && video.readyState >= 2) {
                     const results = faceLandmarker.detectForVideo(video, performance.now());
                     if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                         const landmarks = results.faceLandmarks[0];
-                        // Estimación sencilla basada en la punta de la nariz (Landmarker 1)
                         const nose = landmarks[1];
                         const x = (1 - nose.x) * window.innerWidth;
                         const y = nose.y * window.innerHeight;
@@ -806,7 +936,7 @@
                 resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
 
                 materialActualIndex++;
-                if (materialActualIndex < estudioParticipanteObj.estimulos.length) {
+                if (materialActualIndex < estimulosOrdenadosActuales.length) {
                     setTimeout(() => mostrarPreguntaMaterial(), (estudioParticipanteObj.intervalo || 2) * 1000);
                 } else {
                     finalizarParticipacion();
@@ -821,10 +951,17 @@
             estudioParticipanteObj.participantes.push({
                 id: 'part_' + Math.random().toString(36).substr(2, 9),
                 fecha: Date.now(),
+                ...datosDemograficosTemp,
                 gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial
             });
 
-            localStorage.setItem('et_estudios', JSON.stringify(estudios));
+            // Guardar en localStorage compartido
+            const idxEstudio = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
+            if (idxEstudio !== -1) {
+                estudios[idxEstudio] = estudioParticipanteObj;
+                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+            }
+
             document.getElementById('p-fin').style.display = 'flex';
         }
     </script>
