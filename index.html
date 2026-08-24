@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     
-    <!-- MOTOR OFICIAL: WebGazer.js -->
+    <!-- MOTOR OFICIAL: WebGazer.js (True Eye Tracking por Regresión) -->
     <script src="https://unpkg.com/webgazer@3.3.0/dist/webgazer.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
@@ -135,6 +135,7 @@
             z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
 
+        /* DISEÑO DE CALIBRACIÓN REAL */
         #punto-calibracion {
             width: 40px; height: 40px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
@@ -206,7 +207,7 @@
         #p-intervalo .cruz::before { top: 19px; left: 0; width: 40px; height: 2px; }
         #p-intervalo .cruz::after { top: 0; left: 19px; width: 2px; height: 40px; }
         
-        /* Ocultar elementos de WebGazer por defecto */
+        /* Ocultar elementos invasivos de WebGazer por defecto */
         #webgazerVideoContainer { display: none !important; }
     </style>
 </head>
@@ -475,7 +476,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante IA. No se almacena video.
-                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto verde con tus ojos y haz CLIC en él.</strong> Trata de no mover tu cabeza.
+                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto verde con tus ojos y haz CLIC en él.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y calibrar cámara
@@ -570,8 +571,9 @@
         const estudioParam = urlParams.get('estudio');
 
         window.onload = () => {
+            // DETECTOR DE ENTORNO LOCAL (Seguridad Anti-Bug)
             if (window.location.protocol === 'file:') {
-                alert('⚠️ AVISO DE SEGURIDAD: Estás abriendo el archivo localmente.\n\nPara que la cámara funcione, los navegadores requieren un enlace seguro. Sube este archivo a Netlify Drop o usa un Local Server.');
+                alert('🚨 BLOQUEO DE SEGURIDAD DEL NAVEGADOR:\n\nEstás abriendo el archivo haciendo doble clic (file:///). Por seguridad, Chrome y Safari bloquean la cámara web en archivos locales.\n\nSOLUCIÓN: Sube este archivo a Netlify Drop o usa la extensión "Live Server" de VS Code.');
             }
 
             if (estudioParam) {
@@ -612,6 +614,7 @@
         };
 
         window.volverAlDashboardDesdePrueba = () => {
+            // Forzar reseteo completo de WebGazer recargando
             window.location.href = window.location.href.split('?')[0];
         };
 
@@ -1076,7 +1079,10 @@
                 
                 const validPoints = [];
                 puntosBrutos.forEach(p => {
-                    validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
+                    let nx = p.x;
+                    let ny = p.y;
+                    if (nx > 2) { nx = nx / window.screen.width; ny = ny / window.screen.height; }
+                    validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
                 });
 
                 if (visualizacionModo === 'calor') {
@@ -1187,10 +1193,17 @@
             document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inicializando WebGazer...';
             document.getElementById('btn-iniciar-camara').disabled = true;
 
+            // PROTECCIÓN DE ENTORNO LOCAL
+            if (window.location.protocol === 'file:') {
+                alert("🚨 BLOQUEO DE SEGURIDAD DE CHROME/SAFARI:\n\nLos navegadores bloquean el uso de la cámara si abres el archivo haciendo doble clic (file:///).\n\nPor favor sube este archivo a 'Netlify Drop' para tener un enlace seguro o usa 'Live Server'.");
+                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
+                document.getElementById('btn-iniciar-camara').disabled = false;
+                return;
+            }
+
             try {
-                // INTEGRACIÓN DE WEBGAZER: Inicializar y entrenar el modelo Ridge
+                // INTEGRACIÓN WEBGAZER COMPLETA CON TRY/CATCH ESPECÍFICO
                 await webgazer.setRegression('ridge')
-                    .setTracker('TFFacemesh')
                     .setGazeListener((data, elapsedTime) => {
                         if (data && isStimulusActive) {
                             let normX = data.x / window.innerWidth;
@@ -1216,13 +1229,16 @@
                     wgContainer.style.height = '120px';
                     wgContainer.style.borderRadius = '8px';
                     wgContainer.style.zIndex = '999999';
+                    wgContainer.style.display = 'block';
                 }
 
                 document.getElementById('btn-iniciar-camara').disabled = false;
                 iniciarCalibracionPasoAPaso();
             } catch (e) {
-                console.error(e);
-                alert('No se pudo iniciar el Eye Tracker. Comprueba permisos de cámara.');
+                console.error("Error al iniciar WebGazer:", e);
+                alert('No se pudo iniciar el Eye Tracker.\nDetalle: ' + (e.message || e) + '\n\nComprueba que tu cámara no esté en uso por otra app o que tengas buena conexión.');
+                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar';
+                document.getElementById('btn-iniciar-camara').disabled = false;
             }
         };
 
@@ -1325,6 +1341,7 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
+                // ACTIVAR GUARDADO DE WEBGAZER
                 isStimulusActive = true;
 
                 timeoutEstimulo = setTimeout(() => {
@@ -1360,6 +1377,7 @@
         function finalizarParticipacion() {
             isStimulusActive = false;
             try {
+                // Detener WebGazer
                 if(window.webgazer) {
                     webgazer.pause();
                     const wgContainer = document.getElementById('webgazerVideoContainer');
