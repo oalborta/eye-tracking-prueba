@@ -141,7 +141,6 @@
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 20px 8px rgba(239,68,68,0.4); cursor: not-allowed; border: 4px solid transparent; }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); cursor: pointer; border: 4px solid #fff; }
 
-        /* CORRECCIÓN: Contenedor del Heatmap alineado perfectamente */
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
         .heatmap-container canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
@@ -183,14 +182,20 @@
         
         #p-pregunta { background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%); z-index: 99999; }
 
-        /* Botón global para abortar el estudio */
+        /* NUEVO: Diseño sutil tipo "puerta" para el botón de abortar */
         #btn-abortar {
             position: fixed; top: 20px; right: 20px; z-index: 999999;
-            background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid #ef4444;
-            display: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer;
-            backdrop-filter: blur(10px); transition: all 0.2s;
+            background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);
+            display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer;
+            backdrop-filter: blur(10px); transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem;
         }
-        #btn-abortar:hover { background: #ef4444; color: #fff; }
+        #btn-abortar:hover { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: #ef4444; }
+
+        /* NUEVO: Cruz de fijación para el intervalo */
+        #p-intervalo {
+            background: #08080d; z-index: 99999;
+        }
+        #p-intervalo .cruz { font-size: 4rem; color: var(--muted); font-weight: 200; user-select: none; }
     </style>
 </head>
 <body>
@@ -200,8 +205,8 @@
     <div id="toast-container"></div>
 
     <!-- BOTÓN PARA ABORTAR PARTICIPACIÓN -->
-    <button id="btn-abortar" onclick="volverAlDashboardDesdePrueba()">
-        <i class="fas fa-times"></i> Salir de la prueba
+    <button id="btn-abortar" onclick="volverAlDashboardDesdePrueba()" title="Cancelar prueba">
+        <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
     <!-- PANEL ADMINISTRACIÓN -->
@@ -212,8 +217,8 @@
                 <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
                 <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
             </div>
-            <!-- Botón Salir Administrador ultra visible -->
-            <button class="btn btn-danger btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
+            <!-- Botón Salir Administrador -->
+            <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
         </nav>
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
@@ -313,7 +318,11 @@
                             <p style="color:var(--muted); font-size:0.85rem;" id="results-subtitulo"></p>
                         </div>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> Exportar a CSV</button>
+                    <!-- NUEVO: Controles de Datos -->
+                    <div style="display:flex; gap:0.5rem;">
+                        <button class="btn btn-secondary btn-sm" style="border-color:var(--danger); color:var(--danger);" onclick="limpiarResultados()"><i class="fas fa-trash-alt"></i> Borrar Datos</button>
+                        <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> CSV</button>
+                    </div>
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
@@ -348,7 +357,6 @@
                         <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem;"></div>
                     </div>
 
-                    <!-- Contenedor alineado donde ocurre la magia -->
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
@@ -441,12 +449,17 @@
                 </button>
             </div>
         </div>
+        
+        <!-- NUEVA PANTALLA: INTERVALO DE DESCANSO VISUAL -->
+        <div id="p-intervalo" class="pantalla-participante" style="display:none;">
+            <div class="cruz">+</div>
+        </div>
 
-        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:#08080d;">
+        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:#08080d; z-index:99999;">
             <div style="font-size:4rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:2rem;">¡Estudio completado!</h2>
             <p style="color:var(--muted); max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
-            <button class="btn btn-secondary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Volver al Panel</button>
+            <button class="btn btn-secondary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Cerrar esta ventana</button>
         </div>
     </div>
 
@@ -486,7 +499,7 @@
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
-                document.getElementById('btn-abortar').style.display = 'none'; // Esconder botón de aborto si es usuario final
+                document.getElementById('btn-abortar').style.display = 'none'; 
                 estudioActualId = estudioParam;
             } else {
                 actualizarDashboard();
@@ -521,11 +534,12 @@
             
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
-            document.getElementById('btn-abortar').style.display = 'block'; // Muestra botón para el admin
+            document.getElementById('btn-abortar').style.display = 'flex'; // Mostrar botón salir
             
             document.getElementById('punto-calibracion').style.display = 'none';
             document.getElementById('p-fin').style.display = 'none';
             document.getElementById('p-pregunta').style.display = 'none';
+            document.getElementById('p-intervalo').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
             document.getElementById('p-demografia').style.display = 'flex';
         };
@@ -541,19 +555,36 @@
             document.getElementById('participant-section').style.display = 'none';
             document.getElementById('btn-abortar').style.display = 'none';
             document.getElementById('p-fin').style.display = 'none';
+            document.getElementById('p-intervalo').style.display = 'none';
             document.getElementById('p-demografia').style.display = 'flex'; 
             
-            document.getElementById('admin-section').style.display = 'block';
-            
-            estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-            navegarA('dashboard');
+            // Si estaba en modo participante, quita parámetro URL
+            if (estudioParam) {
+                window.location.href = window.location.href.split('?')[0];
+            } else {
+                document.getElementById('admin-section').style.display = 'block';
+                estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+                navegarA('dashboard');
+            }
         };
 
         window.cerrarSesion = () => {
-            // Elimina la sesión y resetea a la url limpia (Dashboard sin parámetros)
             localStorage.removeItem('et_auth');
             window.location.href = window.location.href.split('?')[0];
         }
+
+        // NUEVO: Limpiar resultados de participantes test
+        window.limpiarResultados = () => {
+            if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de los participantes de este estudio? Esta acción no se puede deshacer y borrará los mapas de calor.')) {
+                const idx = estudios.findIndex(e => e.id === estudioActualId);
+                if(idx !== -1) {
+                    estudios[idx].participantes = [];
+                    localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                    verResultados(estudioActualId);
+                    mostrarToast('Datos de participantes borrados exitosamente', 'info');
+                }
+            }
+        };
 
         function actualizarDashboard() {
             const tbody = document.getElementById('tabla-estudios');
@@ -841,7 +872,6 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
-        // CORRECCIÓN: Renderización Exacta del Mapa de Calor
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             const estudio = estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
@@ -879,7 +909,6 @@
             wrap.appendChild(container);
 
             img.onload = () => {
-                // Ajustar resolución interna del canvas al tamaño real de la imagen generada
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
                 canvas.style.width = '100%';
@@ -896,18 +925,15 @@
                     let nx = p.x;
                     let ny = p.y;
                     
-                    // Si tienes datos de la versión anterior que usaba pixeles en vez de porcentaje, se adapta solo:
                     if (nx > 2) {
                         nx = nx / window.screen.width;
                         ny = ny / window.screen.height;
                     }
                     
-                    // Aseguramos que los puntos dibujados caigan dentro del lienzo
                     validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
                 });
                 
                 heat.data(validPoints);
-                // AJUSTE CRÍTICO: Definimos la "temperatura máxima". Si no se pone, el SimpleHeat los dibuja invisibles.
                 heat.max(Math.max(5, validPoints.length / 15)); 
                 heat.draw();
             };
@@ -1038,6 +1064,9 @@
             lastDetectionTime = performance.now();
             verificarRostroParaPunto(); 
             mostrarPuntoCalibracion();
+            
+            // Si es administrador probando, mostramos la puerta de salida
+            if (!estudioParam) document.getElementById('btn-abortar').style.display = 'flex';
         }
 
         function mostrarPuntoCalibracion() {
@@ -1147,6 +1176,9 @@
 
         window.mostrarPreguntaMaterial = () => {
             try {
+                // Si es admin, mostramos el botón de abortar en esta pantalla
+                if (!estudioParam) document.getElementById('btn-abortar').style.display = 'flex';
+                
                 document.getElementById('estimulo-participante').style.display = 'none';
                 const mat = estimulosOrdenadosActuales[materialActualIndex];
                 
@@ -1166,7 +1198,10 @@
 
         window.lanzarSiguienteEstimulo = () => {
             try {
+                // ESCONDEMOS EL BOTON ABORTAR DURANTE EL ESTIMULO
+                document.getElementById('btn-abortar').style.display = 'none';
                 document.getElementById('p-pregunta').style.display = 'none';
+                
                 const mat = estimulosOrdenadosActuales[materialActualIndex];
                 const imgEl = document.getElementById('estimulo-participante');
                 
@@ -1187,20 +1222,17 @@
                             if (results.faceLandmarks?.[0]) {
                                 const nose = results.faceLandmarks[0][1];
                                 
-                                // CORRECCIÓN: Amplificador de mirada algorítmico (2.5x)
                                 const rawX = 1 - nose.x;
                                 const rawY = nose.y;
                                 
-                                // Expandimos el pequeño movimiento del rostro para que cubra la pantalla entera
                                 let amplifiedX = (rawX - 0.5) * 2.5 + 0.5;
                                 let amplifiedY = (rawY - 0.5) * 2.5 + 0.5;
                                 
-                                // Añadimos dispersión micro (ruido) orgánico
                                 amplifiedX += (Math.random() - 0.5) * 0.05;
                                 amplifiedY += (Math.random() - 0.5) * 0.05;
 
                                 datosGazeActuales.push({
-                                    x: Math.max(0, Math.min(1, amplifiedX)), // Clamped entre 0% y 100%
+                                    x: Math.max(0, Math.min(1, amplifiedX)), 
                                     y: Math.max(0, Math.min(1, amplifiedY)),
                                     time: Date.now() - tiempoInicioEstimulo,
                                     intensity: 1
@@ -1221,7 +1253,13 @@
 
                     materialActualIndex++;
                     if (materialActualIndex < estimulosOrdenadosActuales.length) {
-                        setTimeout(() => mostrarPreguntaMaterial(), (estudioParticipanteObj.intervalo || 2) * 1000);
+                        // LA TRANSICIÓN ENTRE ESTÍMULOS: Cruz de Fijación
+                        document.getElementById('p-intervalo').style.display = 'flex';
+                        setTimeout(() => {
+                            document.getElementById('p-intervalo').style.display = 'none';
+                            mostrarPreguntaMaterial();
+                        }, (estudioParticipanteObj.intervalo || 2) * 1000);
+                        
                     } else {
                         finalizarParticipacion();
                     }
@@ -1236,9 +1274,7 @@
         function finalizarParticipacion() {
             try {
                 if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
-            } catch (error) {
-                console.warn("Ignorando error de cámara.", error);
-            }
+            } catch (error) {}
 
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
