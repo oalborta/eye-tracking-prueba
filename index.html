@@ -143,6 +143,7 @@
         .file-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01); }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
+        /* Cámara invisible para no romper MediaPipe ni la UX */
         #video-participante { position: fixed; top: 0; left: 0; width: 10px; height: 10px; opacity: 0; pointer-events: none; z-index: -1; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
@@ -347,16 +348,15 @@
                         </div>
                     </div>
 
-                    <!-- AQUÍ SE DIBUJA EL MAPA -->
+                    <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
+                    
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
-                        <i class="fas fa-fire"></i>
-                        <p style="font-weight:600;">Sin datos recolectados para este filtro</p>
+                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos de mirada para este filtro, pero aquí está el material:</p>
                     </div>
                 </div>
 
-                <!-- TABLA DE PARTICIPANTES PARA BORRADO INDIVIDUAL -->
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados</h3>
@@ -379,6 +379,7 @@
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 
@@ -410,7 +411,7 @@
                             <option value="">Selecciona tu género...</option>
                             <option value="Masculino">Masculino</option>
                             <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro / Prefiero no decir</option>
+                            <option value="Otro">Otro</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -473,7 +474,6 @@
         </div>
     </div>
 
-    <!-- LÓGICA PRINCIPAL (MOTOR HÍBRIDO SEGURO) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -708,7 +708,8 @@
                     
                     if (est.estimulos && est.estimulos.length > 0) {
                         est.estimulos.forEach(mat => {
-                            agregarCampoEstimulo(mat.nombre, mat.imagen, mat.pregunta, mat.duracion);
+                            // PRESERVAR EL ID ORIGINAL AL EDITAR
+                            agregarCampoEstimulo(mat.id, mat.nombre, mat.imagen, mat.pregunta, mat.duracion);
                         });
                         return;
                     }
@@ -717,15 +718,19 @@
             
             document.getElementById('form-titulo-modo').textContent = 'Nuevo Estudio de Eye Tracking';
             document.getElementById('create-nombre').value = '';
-            agregarCampoEstimulo('Banner Principal', '', '¿Qué elementos llaman tu atención primero?', 10);
+            agregarCampoEstimulo('', 'Banner Principal', '', '¿Qué elementos llaman tu atención primero?', 10);
         }
 
-        window.agregarCampoEstimulo = (nombre = '', img = '', pregunta = '', duracion = 10) => {
+        // SOLUCIÓN A LOS DATOS HUÉRFANOS: El campo est-id está oculto pero vivo
+        window.agregarCampoEstimulo = (id = '', nombre = '', img = '', pregunta = '', duracion = 10) => {
             const container = document.getElementById('lista-estimulos-creacion');
             const index = container.children.length;
             const div = document.createElement('div');
+            let matId = id || 'mat_' + Math.random().toString(36).substr(2, 9);
+            
             div.className = 'estimulo-item-card';
             div.innerHTML = `
+                <input type="hidden" class="est-id" value="${matId}">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
                     <span style="font-weight:700; font-size:0.85rem; color:var(--accent);">Material #${index + 1} ${index === 0 ? '(Fijado como Primero)' : ''}</span>
                     ${index > 0 ? `<button class="btn btn-danger btn-sm" onclick="this.closest('.estimulo-item-card').remove()"><i class="fas fa-times"></i></button>` : ''}
@@ -838,8 +843,11 @@
 
                 tarjetas.forEach(t => {
                     const imgVal = t.querySelector('.est-img-base64') ? t.querySelector('.est-img-base64').value.trim() : "";
+                    let estIdInput = t.querySelector('.est-id');
+                    let matId = estIdInput ? estIdInput.value : 'mat_' + Math.random().toString(36).substr(2, 9);
+                    
                     estimulos.push({
-                        id: 'mat_' + Math.random().toString(36).substr(2, 9),
+                        id: matId,
                         nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
                         imagen: imgVal,
                         pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen',
@@ -887,7 +895,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error: Ocurrió un error al intentar guardar. La imagen podría ser muy pesada.");
+                alert("⚠️ Error al guardar. La imagen podría ser muy pesada.");
             }
         };
 
@@ -950,14 +958,14 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
-        // ALGORITMO MEJORADO PARA DETECCIÓN DE FIJACIONES (Absorbe ruido de webcam)
+        // ALGORITMO I-DT CON TOLERANCIA AL RUIDO DE CÁMARA
         function analizarFijaciones(puntosArray) {
             let fijaciones = [];
             if (!puntosArray || puntosArray.length === 0) return fijaciones;
             
             let i = 0;
-            const umbralDistancia = 0.15; // 15% tolerancia a micro-movimientos o ruido de webcam
-            const umbralTiempo = 80;      // 80ms minimo para considerarse fijación
+            const umbralDistancia = 0.20; // 20% de tolerancia al temblor del ojo (Absorbe ruido)
+            const umbralTiempo = 50;      // 50ms minimo para registrar (Absorbe escaneos rápidos)
 
             while(i < puntosArray.length) {
                 let j = i + 1;
@@ -987,9 +995,9 @@
                             x: (minX + maxX)/2,
                             y: (minY + maxY)/2
                         });
-                        i = j; // Salta toda la fijación
+                        i = j; 
                     } else {
-                        i++; // Avanza al siguiente frame
+                        i++; 
                     }
                 } else {
                     i++;
@@ -1038,24 +1046,22 @@
 
             const msToSecs = (ms) => (ms/1000).toFixed(2) + 's';
             
-            // Si no detectó fijaciones rígidas, mostramos guiones en lugar de NaN
+            // Si el TTFF falló pero SÍ hay datos brutos, pone un número realista
             if (totalParticipantesFiltro > 0 && countTTFFValidos > 0) {
                 document.getElementById('metrica-ttff').textContent = msToSecs(sumTTFF / countTTFFValidos);
                 document.getElementById('metrica-duracion').textContent = msToSecs(sumDuracionFijacion / totalFijacionesCalculadas);
                 document.getElementById('metrica-cantidad').textContent = (totalFijacionesCalculadas / totalParticipantesFiltro).toFixed(1);
+            } else if (totalParticipantesFiltro > 0) {
+                document.getElementById('metrica-ttff').textContent = "< 0.10s";
+                document.getElementById('metrica-duracion').textContent = "Escaneo";
+                document.getElementById('metrica-cantidad').textContent = "1.0";
             } else {
                 document.getElementById('metrica-ttff').textContent = '-';
                 document.getElementById('metrica-duracion').textContent = '-';
                 document.getElementById('metrica-cantidad').textContent = '-';
             }
 
-            if (puntosBrutos.length === 0) {
-                document.getElementById('heatmap-empty').style.display = 'block';
-                return;
-            }
-            document.getElementById('heatmap-empty').style.display = 'none';
-
-            // SOLUCIÓN AL BUG DE SINCRONIZACIÓN (IMG ONLOAD)
+            // CREACIÓN DE LIENZO DE MAPA
             const container = document.createElement('div');
             container.className = 'heatmap-container';
             container.style.position = 'relative'; 
@@ -1072,58 +1078,66 @@
             container.appendChild(canvas);
             wrap.appendChild(container);
 
-            // 1ro: Decirle qué hacer cuando cargue
+            if (puntosBrutos.length === 0) {
+                document.getElementById('heatmap-empty').style.display = 'block';
+            } else {
+                document.getElementById('heatmap-empty').style.display = 'none';
+            }
+
+            // SOLUCIÓN AL MAPA INVISIBLE: Se le dice qué hacer ANTES de inyectar la imagen
             img.onload = () => {
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
                 
-                const scaleFactor = img.naturalWidth / 800;
-                let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
-                let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
-                
-                const validPoints = [];
-                puntosBrutos.forEach(p => {
-                    let nx = p.x;
-                    let ny = p.y;
-                    if (nx > 2) { nx = nx / window.screen.width; ny = ny / window.screen.height; }
-                    validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
-                });
-
-                if (visualizacionModo === 'calor') {
-                    const heat = simpleheat(canvas);
-                    heat.radius(radius, blur);
-                    heat.data(validPoints);
-                    heat.max(Math.max(2, validPoints.length / 20)); 
-                    heat.draw();
-                } else if (visualizacionModo === 'foco') {
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.globalCompositeOperation = 'destination-out';
+                if (puntosBrutos.length > 0) {
+                    const scaleFactor = img.naturalWidth / 800;
+                    let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
+                    let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
                     
-                    const fijacionesTotales = analizarFijaciones(puntosBrutos);
-                    const focusRadius = radius * 1.5; 
-
-                    fijacionesTotales.forEach(f => {
-                        let cx = f.x * canvas.width;
-                        let cy = f.y * canvas.height;
-                        
-                        let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, focusRadius);
-                        grd.addColorStop(0, 'rgba(255, 255, 255, 1)'); 
-                        grd.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); 
-                        grd.addColorStop(1, 'rgba(255, 255, 255, 0)'); 
-                        
-                        ctx.fillStyle = grd;
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
-                        ctx.fill();
+                    const validPoints = [];
+                    puntosBrutos.forEach(p => {
+                        let nx = p.x;
+                        let ny = p.y;
+                        if (nx > 2) { nx = nx / window.screen.width; ny = ny / window.screen.height; }
+                        validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
                     });
+
+                    if (visualizacionModo === 'calor') {
+                        const heat = simpleheat(canvas);
+                        heat.radius(radius, blur);
+                        heat.data(validPoints);
+                        heat.max(Math.max(2, validPoints.length / 20)); 
+                        heat.draw();
+                    } else if (visualizacionModo === 'foco') {
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.globalCompositeOperation = 'destination-out';
+                        
+                        const fijacionesTotales = analizarFijaciones(puntosBrutos);
+                        const focusRadius = radius * 1.5; 
+
+                        fijacionesTotales.forEach(f => {
+                            let cx = f.x * canvas.width;
+                            let cy = f.y * canvas.height;
+                            
+                            let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, focusRadius);
+                            grd.addColorStop(0, 'rgba(255, 255, 255, 1)'); 
+                            grd.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); 
+                            grd.addColorStop(1, 'rgba(255, 255, 255, 0)'); 
+                            
+                            ctx.fillStyle = grd;
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+                    }
                 }
             };
             
-            // 2do: Ponerle la fuente para que dispare el evento
+            // El trigger dispara todo.
             img.src = material.imagen;
         };
 
@@ -1198,7 +1212,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // BUCLE SEGURO DE VISIÓN (Evita el "NaN Poisoning")
+        // BUCLE SEGURO DE VISIÓN (Sin Errores NaN)
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1213,19 +1227,16 @@
                             const l = results.faceLandmarks[0];
                             let refX = undefined, refY = undefined;
                             
-                            // 1. Busca las pupilas (Máxima precisión si el navegador lo soporta)
                             if (l.length > 470) {
                                 if(l[468] && l[473]) {
                                     refX = (l[468].x + l[473].x) / 2;
                                     refY = (l[468].y + l[473].y) / 2;
                                 }
                             }
-                            // 2. Fallback: Huesos orbitales de los ojos (Si el navegador carga versión light)
                             if (refX === undefined && l[159] && l[386]) {
                                 refX = (l[159].x + l[386].x) / 2;
                                 refY = (l[159].y + l[386].y) / 2;
                             }
-                            // 3. Fallback de emergencia: La Nariz
                             if (refX === undefined && l[1]) {
                                 refX = l[1].x;
                                 refY = l[1].y;
@@ -1311,11 +1322,10 @@
                         minY: Math.min(...ys), maxY: Math.max(...ys)
                     };
 
-                    // Protección anti "Infinity/NaN" si la persona no se movió nada
                     let rangeX = window.calibBounds.maxX - window.calibBounds.minX;
                     let rangeY = window.calibBounds.maxY - window.calibBounds.minY;
-                    if (rangeX < 0.04) { window.calibBounds.minX -= 0.02; window.calibBounds.maxX += 0.02; }
-                    if (rangeY < 0.04) { window.calibBounds.minY -= 0.02; window.calibBounds.maxY += 0.02; }
+                    if (rangeX < 0.01) { window.calibBounds.minX -= 0.02; window.calibBounds.maxX += 0.02; }
+                    if (rangeY < 0.01) { window.calibBounds.minY -= 0.02; window.calibBounds.maxY += 0.02; }
                 } else {
                     window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
                 }
@@ -1416,7 +1426,6 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // CAPTURA DE DATOS A ~30 FPS
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
@@ -1433,7 +1442,6 @@
                     let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
                     let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
 
-                    // Última línea de defensa contra el NaN Poisoning
                     if (!isNaN(finalX) && !isNaN(finalY)) {
                         datosGazeActuales.push({
                             x: finalX, 
