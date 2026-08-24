@@ -143,7 +143,7 @@
         .file-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01); }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
-        /* VÍDEO OCULTO PARA NO DISTRAER */
+        /* Cámara invisible para no romper MediaPipe ni la UX */
         #video-participante { position: fixed; top: 0; left: 0; width: 10px; height: 10px; opacity: 0; pointer-events: none; z-index: -1; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
@@ -193,7 +193,6 @@
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
-            <!-- DASHBOARD -->
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -228,15 +227,14 @@
                     <div id="empty-dashboard" class="empty-state" style="display:none;">
                         <i class="fas fa-eye"></i>
                         <p style="font-size:1.1rem; font-weight:600;">No hay estudios creados</p>
-                        <p style="font-size:0.85rem; margin-top:0.5rem;">Crea tu primer estudio para comenzar.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- CREAR / EDITAR ESTUDIO -->
+            <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
-                    <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
+                    <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio</h2>
                     <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos independientes, duraciones y orden.</p>
 
                     <div class="card">
@@ -255,8 +253,7 @@
                                 <label class="form-label">Estrategia de Orden</label>
                                 <select id="create-orden-modo" class="form-select">
                                     <option value="fijo-primero">Fijar el 1° material, aleatorios los siguientes</option>
-                                    <option value="secuencial">Estricto secuencial (1, 2, 3...)</option>
-                                    <option value="aleatorio">Totalmente aleatorio</option>
+                                    <option value="secuencial">Estricto secuencial</option>
                                 </select>
                             </div>
                         </div>
@@ -264,7 +261,7 @@
                         <hr style="border-color:var(--border); margin: 1.5rem 0;">
 
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales (Estímulos)</h3>
+                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales</h3>
                             <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
                         </div>
 
@@ -295,7 +292,7 @@
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar:</div>
                     <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
                         <option value="todos">Todos los géneros</option>
                         <option value="Masculino">Masculino</option>
@@ -337,7 +334,7 @@
                                 <input type="range" min="10" max="80" value="40" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
-                                <label class="form-label" style="font-size: 0.75rem;">Desenfoque (Blur)</label>
+                                <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
                                 <input type="range" min="5" max="60" value="30" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
@@ -373,12 +370,11 @@
                             <tbody id="tabla-participantes-resultados"></tbody>
                         </table>
                         <div id="empty-participantes" class="empty-state" style="display:none; padding: 2rem;">
-                            <p style="font-size:0.9rem;">No hay participantes registrados en este estudio aún.</p>
+                            <p style="font-size:0.9rem;">No hay participantes registrados aún.</p>
                         </div>
                     </div>
                 </div>
             </div>
-
         </main>
     </div>
 
@@ -404,14 +400,13 @@
                             <option value="51+">51+ años</option>
                         </select>
                     </div>
-                    
                     <div class="form-group">
                         <label class="form-label">Género</label>
                         <select id="part-genero" class="form-select">
                             <option value="">Selecciona tu género...</option>
                             <option value="Masculino">Masculino</option>
                             <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro / Prefiero no decir</option>
+                            <option value="Otro">Otro</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -419,7 +414,6 @@
                         <select id="part-ocupacion" class="form-select">
                             <option value="Consumidor Final">Consumidor Final / Comprador</option>
                             <option value="Especialista Marketing">Especialista / Marketer</option>
-                            <option value="Estudiante / Investigador">Estudiante / Investigador</option>
                             <option value="Otro">Otro</option>
                         </select>
                     </div>
@@ -436,7 +430,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante IA. No se almacena video.
-                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto con tus ojos y haz CLIC en él cuando se ponga verde.</strong> Trata de no mover la cabeza bruscamente.
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto con la vista y haz CLIC en él cuando se ponga verde.</strong> Trata de no mover la cabeza.
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -448,7 +442,7 @@
         <div id="p-carga" class="pantalla-participante" style="display:none;">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p style="font-weight:600; font-size:1.1rem;">Conectando Motor de IA...</p>
+                <p style="font-weight:600; font-size:1.1rem;">Conectando Motor Visual...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -475,7 +469,7 @@
         </div>
     </div>
 
-    <!-- CARGA DE MEDIAPIPE (EL MOTOR CONFIABLE) -->
+    <!-- CARGA DE MEDIAPIPE (MOTOR HÍBRIDO SEGURO) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -550,7 +544,7 @@
 
         window.onload = () => {
             if (window.location.protocol === 'file:') {
-                alert('⚠️ AVISO DE SEGURIDAD: Estás abriendo el archivo localmente.\n\nPara que la cámara funcione, los navegadores requieren un enlace seguro. Sube este archivo a Netlify Drop o usa un Local Server.');
+                alert('🚨 BLOQUEO DE SEGURIDAD DETECTADO:\n\nEstás abriendo el archivo localmente (file:///). Por seguridad, Chrome y Safari bloquean la cámara web.\n\nSube este archivo a Netlify Drop o usa "Live Server" para que funcione correctamente.');
             }
 
             if (estudioParam) {
@@ -592,7 +586,6 @@
             
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
-            
             mostrarPantalla('p-demografia');
         };
 
@@ -626,7 +619,7 @@
                     localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
                     window.estudios = dbEstudios;
                     verResultados(estudioActualId);
-                    mostrarToast('Datos borrados exitosamente', 'info');
+                    mostrarToast('Todos los datos han sido borrados', 'info');
                 }
             }
         };
@@ -890,11 +883,7 @@
                 }, 1200);
 
             } catch(e) {
-                if(e.name === 'QuotaExceededError') {
-                    alert("⚠️ Error: Archivos muy pesados. Por favor sube imágenes más pequeñas o usa URLs.");
-                } else {
-                    alert("Ocurrió un error al intentar guardar: " + e.message);
-                }
+                alert("⚠️ Error: Ocurrió un error al intentar guardar: " + e.message);
             }
         };
 
@@ -957,11 +946,12 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
+        // ALGORITMO MEJORADO PARA DETECCIÓN DE FIJACIONES (Absorbe ruido de webcam)
         function analizarFijaciones(puntosArray) {
             let fijaciones = [];
             let i = 0;
-            const umbralDistancia = 0.08; 
-            const umbralTiempo = 150; 
+            const umbralDistancia = 0.12; // 12% tolerancia a micro-movimientos o ruido
+            const umbralTiempo = 100; // 100ms para considerarse fijación
 
             while(i < puntosArray.length) {
                 let j = i + 1;
@@ -979,14 +969,16 @@
                     j++;
                 }
 
-                let duracion = puntosArray[j-1].time - puntosArray[i].time;
-                if(duracion >= umbralTiempo) {
-                    fijaciones.push({
-                        inicio: puntosArray[i].time,
-                        duracion: duracion,
-                        x: (minX + maxX)/2,
-                        y: (minY + maxY)/2
-                    });
+                if (j > i) {
+                    let duracion = puntosArray[j-1].time - puntosArray[i].time;
+                    if(duracion >= umbralTiempo) {
+                        fijaciones.push({
+                            inicio: puntosArray[i].time,
+                            duracion: duracion,
+                            x: (minX + maxX)/2,
+                            y: (minY + maxY)/2
+                        });
+                    }
                 }
                 i = j;
             }
@@ -1053,14 +1045,13 @@
             container.className = 'heatmap-container';
             
             const img = document.createElement('img');
-            img.src = material.imagen;
-            
             const canvas = document.createElement('canvas');
             
             container.appendChild(img);
             container.appendChild(canvas);
             wrap.appendChild(container);
 
+            // CORRECCIÓN CRÍTICA: Asignar el onload ANTES de inyectar la imagen
             img.onload = () => {
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
@@ -1073,10 +1064,7 @@
                 
                 const validPoints = [];
                 puntosBrutos.forEach(p => {
-                    let nx = p.x;
-                    let ny = p.y;
-                    if (nx > 2) { nx = nx / window.screen.width; ny = ny / window.screen.height; }
-                    validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
+                    validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
                 });
 
                 if (visualizacionModo === 'calor') {
@@ -1110,6 +1098,9 @@
                     });
                 }
             };
+            
+            // Se inyecta la imagen después para garantizar que el canvas la espere
+            img.src = material.imagen;
         };
 
         window.actualizarSensibilidadHeatmap = () => {
@@ -1183,7 +1174,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // LOOP DE VISIÓN CON "FALLBACK" ANTI-CRASH
+        // BUCLE SEGURO DE VISIÓN
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1196,19 +1187,29 @@
                         
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
-                            let refX, refY;
+                            let refX = undefined, refY = undefined;
                             
-                            // Intenta leer los Iris (468 y 473). Si el navegador no lo soporta,
-                            // automáticamente lee el puente de los ojos (159 y 386) para evitar el error "NaN"
+                            // 1. Busca las pupilas (Máxima precisión)
                             if (l.length > 470) {
-                                refX = (l[468].x + l[473].x) / 2;
-                                refY = (l[468].y + l[473].y) / 2;
-                            } else {
+                                if(l[468] && l[473]) {
+                                    refX = (l[468].x + l[473].x) / 2;
+                                    refY = (l[468].y + l[473].y) / 2;
+                                }
+                            }
+                            // 2. Si el navegador no soporta pupilas, busca la cuenca de los ojos (Anti-NaN)
+                            if (refX === undefined && l[159] && l[386]) {
                                 refX = (l[159].x + l[386].x) / 2;
                                 refY = (l[159].y + l[386].y) / 2;
                             }
+                            // 3. Fallback final, la nariz
+                            if (refX === undefined && l[1]) {
+                                refX = l[1].x;
+                                refY = l[1].y;
+                            }
 
-                            currentGazeSample = { x: 1 - refX, y: refY };
+                            if (refX !== undefined) {
+                                currentGazeSample = { x: 1 - refX, y: refY };
+                            }
                         }
                     } catch(e) {}
                 }
@@ -1242,7 +1243,6 @@
                 const video = document.getElementById('video-participante');
                 video.srcObject = streamCamara;
                 await video.play();
-                
             } catch (e) {
                 alert('Cámara bloqueada o en uso por otra app (Zoom, Teams, Meet). Ciérralas e intenta de nuevo.');
                 location.reload();
@@ -1256,7 +1256,6 @@
             iniciarCalibracionPasoAPaso();
         };
 
-        // CALIBRACIÓN DE 9 PUNTOS
         const puntosCalibracion = [
             { top: '10%', left: '10%' }, { top: '10%', left: '50%' }, { top: '10%', left: '90%' },
             { top: '50%', left: '10%' }, { top: '50%', left: '50%' }, { top: '50%', left: '90%' },
@@ -1279,7 +1278,6 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // CREAR LA MATRIZ MATEMÁTICA
                 if (window.calibPuntosCapturados.length === 9) {
                     let xs = window.calibPuntosCapturados.map(p => p.x);
                     let ys = window.calibPuntosCapturados.map(p => p.y);
@@ -1325,8 +1323,6 @@
                     punto.style.display = 'none';
                     
                     pasoCalibracionActual++;
-                    
-                    // Intervalo sin pantalla negra.
                     setTimeout(mostrarPuntoCalibracion, 250);
                 };
             }, 800); 
@@ -1395,7 +1391,7 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // MAPEO EXACTO Y SEGURO (Milisegundo a milisegundo)
+                // MAPEO EXACTO SEGURO
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
@@ -1405,13 +1401,12 @@
                     normX = 0.10 + 0.80 * normX;
                     normY = 0.10 + 0.80 * normY;
 
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.85 + normX * 0.15 : normX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.85 + normY * 0.15 : normY;
 
-                    // Protección contra el "NaN Poisoning"
                     let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
                     let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
-                    
+
                     if (!isNaN(finalX) && !isNaN(finalY)) {
                         datosGazeActuales.push({
                             x: finalX, 
