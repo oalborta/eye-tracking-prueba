@@ -7,9 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     
-    <!-- CAMBIO ESTRATÉGICO: Servidor CDN más seguro para evitar bloqueos de AdBlockers -->
-    <script src="https://cdn.jsdelivr.net/npm/webgazer@3.3.0/dist/webgazer.min.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -21,7 +18,6 @@
             --fg: #e4e4ec;
             --muted: #5e5e76;
             --accent: #10b981;
-            --accent2: #059669;
             --warn: #f59e0b;
             --danger: #ef4444;
         }
@@ -88,12 +84,11 @@
             transition: all 0.2s; text-decoration: none;
         }
         .btn-primary { background: var(--accent); color: #fff; }
-        .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
+        .btn-primary:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
         .btn-secondary { background: rgba(255,255,255,0.06); color: var(--fg); border: 1px solid var(--border); }
         .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--muted); }
         .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); }
         .btn-danger:hover { background: rgba(239,68,68,0.2); }
-        .btn-success { background: #059669; color: #fff; }
         .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 8px; }
 
         .form-group { margin-bottom: 1.25rem; }
@@ -104,29 +99,19 @@
             transition: border-color 0.2s, box-shadow 0.2s; outline: none;
         }
         .form-input:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-        .form-input::placeholder { color: var(--muted); }
 
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        thead th {
-            text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 700;
-            color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
-            border-bottom: 1px solid var(--border);
-        }
+        thead th { text-align: left; padding: 0.75rem 1rem; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
         tbody td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(28,28,46,0.5); font-size: 0.9rem; }
         tbody tr:hover { background: rgba(255,255,255,0.02); }
 
         .tabs { display: flex; gap: 0.25rem; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; overflow-x: auto; }
-        .tab-btn {
-            padding: 0.75rem 1.25rem; background: none; border: none; color: var(--muted);
-            font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.875rem;
-            cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
-        }
-        .tab-btn:hover { color: var(--fg); }
+        .tab-btn { padding: 0.75rem 1.25rem; background: none; border: none; color: var(--muted); font-weight: 600; font-size: 0.875rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
         .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
         .toggle-group { display: inline-flex; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.25rem; }
-        .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'Outfit'; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
         .pantalla-participante {
@@ -135,6 +120,7 @@
             z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
 
+        /* CALIBRACIÓN 9 PUNTOS */
         #punto-calibracion {
             width: 40px; height: 40px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
@@ -145,39 +131,27 @@
             background: #10b981; box-shadow: 0 0 20px 8px rgba(16,185,129,0.5);
         }
         #punto-calibracion:active { transform: translate(-50%, -50%) scale(0.85); }
+        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 20px 5px rgba(239,68,68,0.4); cursor: default; }
 
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
         .heatmap-container canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; pointer-events: none; z-index: 10; }
 
-        .study-link {
-            display: flex; align-items: center; gap: 0.5rem; background: var(--bg2);
-            border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem;
-            font-size: 0.8rem; color: var(--muted); font-family: monospace; max-width: 250px;
-        }
+        .study-link { display: flex; align-items: center; gap: 0.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.8rem; color: var(--muted); font-family: monospace; max-width: 250px; }
         .study-link code { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        .estimulo-item-card {
-            background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; position: relative;
-        }
-        .file-upload-box {
-            border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center;
-            cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01);
-        }
+        .estimulo-item-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; position: relative; }
+        .file-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01); }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
+        #video-participante { position: fixed; top: 20px; left: 20px; width: 160px; height: 120px; border-radius: 8px; object-fit: cover; z-index: 999998; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scaleX(-1); border: 2px solid var(--accent); }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
         
         #toast-container { position: fixed; top: 80px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 0.5rem; }
-        .toast {
-            padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600;
-            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
-            display: flex; align-items: center; gap: 0.5rem; min-width: 280px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-        }
+        .toast { padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards; display: flex; align-items: center; gap: 0.5rem; min-width: 280px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
         .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
         .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
@@ -186,28 +160,14 @@
         
         #p-pregunta { background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%); z-index: 99999; }
 
-        #btn-abortar {
-            position: fixed; top: 20px; right: 20px; z-index: 999999;
-            background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);
-            display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer;
-            backdrop-filter: blur(10px); transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem;
-        }
+        #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
         #btn-abortar:hover { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: #ef4444; }
 
-        #p-intervalo { 
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            display: none; justify-content: center; align-items: center;
-            background: #08080d; z-index: 99999;
-        }
+        #p-intervalo { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: none; justify-content: center; align-items: center; background: #08080d; z-index: 99999; }
         #p-intervalo .cruz { position: relative; width: 40px; height: 40px; }
-        #p-intervalo .cruz::before, #p-intervalo .cruz::after {
-            content: ''; position: absolute; background: var(--muted); border-radius: 2px;
-        }
+        #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: var(--muted); border-radius: 2px; }
         #p-intervalo .cruz::before { top: 19px; left: 0; width: 40px; height: 2px; }
         #p-intervalo .cruz::after { top: 0; left: 19px; width: 2px; height: 40px; }
-        
-        /* Ocultar elementos de WebGazer por defecto para que no arruinen el diseño */
-        #webgazerVideoContainer { display: none !important; }
     </style>
 </head>
 <body>
@@ -353,6 +313,7 @@
 
                 <div class="tabs" id="tabs-materiales"></div>
 
+                <!-- PANEL DE MÉTRICAS -->
                 <div style="display:flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <div class="stat-card blue" style="padding: 1.25rem; flex: 1; min-width: 200px;">
                         <div class="stat-label" style="margin-top:0; color:#93c5fd;"><i class="fas fa-stopwatch"></i> TTFF Promedio</div>
@@ -423,6 +384,10 @@
 
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
+        
+        <!-- VIDEO FLOTANTE PARA CALIBRACIÓN -->
+        <video id="video-participante" playsinline muted autoplay></video>
+        
         <img id="estimulo-participante" alt="Estímulo">
         <div id="punto-calibracion" class="verde">CLIC</div>
 
@@ -473,7 +438,7 @@
                 <div class="card" style="text-align:left;">
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
-                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante IA. No se almacena video.
+                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante Inteligencia Artificial en tu propio navegador. No se transmite ni almacena video.
                         <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto verde con tus ojos y haz CLIC en él.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
@@ -486,7 +451,7 @@
         <div id="p-carga" class="pantalla-participante" style="display:none;">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p style="font-weight:600; font-size:1.1rem;">Conectando WebGazer.js...</p>
+                <p style="font-weight:600; font-size:1.1rem;">Conectando Motor de IA...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -513,12 +478,15 @@
         </div>
     </div>
 
-    <!-- LÓGICA PRINCIPAL -->
-    <script>
+    <!-- CARGA DE MEDIAPIPE (EL MOTOR CONFIABLE) -->
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
         let estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
         let estudioActualId = null;
         let materialActualIndex = 0;
+        let faceLandmarker = null;
 
         let datosGazeActuales = [];
         let tiempoInicioEstimulo = 0;
@@ -526,10 +494,22 @@
         let datosDemograficosTemp = {};
         let resultadosParticipanteGaze = {};
         
+        let rafId = null;
+        let streamCamara = null;
+        let lastMpTime = -1; 
+        
+        let currentGazeSample = { x: 0.5, y: 0.5 };
         let isStimulusActive = false;
         let timeoutEstimulo = null;
         let timeoutIntervalo = null;
+        let timeoutCalib = null;
         let visualizacionModo = 'calor'; 
+
+        window.calibPuntosCapturados = [];
+        // Matriz de límites geométricos
+        window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
+        window.lastSmoothedX = undefined;
+        window.lastSmoothedY = undefined;
 
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin'];
@@ -565,14 +545,14 @@
             setTimeout(() => toast.remove(), 4000); 
         };
 
+        window.addEventListener('beforeunload', () => {
+            if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
+        });
+
         const urlParams = new URLSearchParams(window.location.search);
         const estudioParam = urlParams.get('estudio');
 
         window.onload = () => {
-            if (window.location.protocol === 'file:') {
-                alert('🚨 BLOQUEO DE SEGURIDAD DETECTADO:\n\nLos navegadores web bloquean el acceso a la cámara cuando abres el archivo localmente (file:///).\n\nPor favor, sube este archivo a Netlify Drop o utiliza un Local Server para que funcione.');
-            }
-
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
@@ -604,14 +584,30 @@
             estudioActualId = id;
             resultadosParticipanteGaze = {}; 
             datosDemograficosTemp = {};
+            window.calibPuntosCapturados = [];
+            window.lastSmoothedX = undefined;
+            window.lastSmoothedY = undefined;
             
+            if (rafId) cancelAnimationFrame(rafId);
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
             mostrarPantalla('p-demografia');
         };
 
         window.volverAlDashboardDesdePrueba = () => {
-            window.location.href = window.location.href.split('?')[0];
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+            try { if (streamCamara) streamCamara.getTracks().forEach(t => t.stop()); } catch(e){}
+
+            document.getElementById('participant-section').style.display = 'none';
+            mostrarPantalla(''); 
+            
+            if (estudioParam) {
+                window.location.href = window.location.href.split('?')[0];
+            } else {
+                document.getElementById('admin-section').style.display = 'block';
+                window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+                navegarA('dashboard');
+            }
         };
 
         window.cerrarSesion = () => {
@@ -1185,56 +1181,78 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        window.participanteAceptar = async () => {
-            // VERIFICACIÓN DE SEGURIDAD EXPRESA DE ENTORNO
-            if (typeof webgazer === 'undefined') {
-                alert("🚨 BLOQUEO DETECTADO:\nTu navegador o un bloqueador de anuncios impidió cargar el motor de Eye Tracking.\n\nPor favor, desactiva tu AdBlocker para esta página o abre este enlace en una ventana de incógnito.");
-                return;
+        // BUCLE CIENTÍFICO DE RASTREO DE PUPILA (MediaPipe Iris)
+        function iniciarLoopVision() {
+            const video = document.getElementById('video-participante');
+            
+            function loop() {
+                let now = performance.now();
+                if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
+                    try {
+                        const results = faceLandmarker.detectForVideo(video, now);
+                        lastMpTime = now;
+                        
+                        if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                            const l = results.faceLandmarks[0];
+                            // Extrae el centro de las pupilas (Puntos 468 y 473)
+                            const irisLeft = l[468];
+                            const irisRight = l[473];
+                            
+                            // Invertido (1 - x) por el efecto espejo de la cámara
+                            currentGazeSample = { 
+                                x: 1 - ((irisLeft.x + irisRight.x) / 2), 
+                                y: (irisLeft.y + irisRight.y) / 2 
+                            };
+                        }
+                    } catch(e) {}
+                }
+                rafId = requestAnimationFrame(loop);
             }
+            loop();
+        }
 
-            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inicializando WebGazer...';
+        window.participanteAceptar = async () => {
+            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando IA...';
             document.getElementById('btn-iniciar-camara').disabled = true;
 
             try {
-                await webgazer.setRegression('ridge')
-                    .setGazeListener((data, elapsedTime) => {
-                        if (data && isStimulusActive) {
-                            let normX = data.x / window.innerWidth;
-                            let normY = data.y / window.innerHeight;
-                            
-                            datosGazeActuales.push({
-                                x: Math.max(0, Math.min(1, normX)),
-                                y: Math.max(0, Math.min(1, normY)),
-                                time: Date.now() - tiempoInicioEstimulo,
-                                intensity: 1
-                            });
-                        }
-                    }).begin();
-
-                webgazer.showVideoPreview(true).showPredictionPoint(false);
-                
-                const wgContainer = document.getElementById('webgazerVideoContainer');
-                if(wgContainer) {
-                    wgContainer.style.position = 'fixed';
-                    wgContainer.style.top = '20px';
-                    wgContainer.style.left = '20px';
-                    wgContainer.style.width = '160px';
-                    wgContainer.style.height = '120px';
-                    wgContainer.style.borderRadius = '8px';
-                    wgContainer.style.zIndex = '999999';
-                    wgContainer.style.display = 'block';
-                }
-
-                document.getElementById('btn-iniciar-camara').disabled = false;
-                iniciarCalibracionPasoAPaso();
+                const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+                faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numFaces: 1
+                });
             } catch (e) {
-                console.error("Error al iniciar WebGazer:", e);
-                alert('No se pudo encender la cámara. Comprueba que no esté ocupada en otra aplicación.');
-                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar';
-                document.getElementById('btn-iniciar-camara').disabled = false;
+                alert('Error de red al descargar IA. Verifica tu conexión.');
+                location.reload();
+                return;
             }
+
+            try {
+                streamCamara = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                const video = document.getElementById('video-participante');
+                video.srcObject = streamCamara;
+                await video.play();
+                
+                // Mostrar el video flotante pequeñito para dar feedback
+                video.style.display = 'block';
+            } catch (e) {
+                alert('Cámara bloqueada o en uso por otra app (Zoom, Teams, Meet). Ciérralas e intenta de nuevo.');
+                location.reload();
+                return;
+            }
+
+            document.getElementById('btn-iniciar-camara').disabled = false;
+            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
+            
+            iniciarLoopVision();
+            iniciarCalibracionPasoAPaso();
         };
 
+        // CALIBRACIÓN CIENTÍFICA DE 9 PUNTOS
         const puntosCalibracion = [
             { top: '10%', left: '10%' }, { top: '10%', left: '50%' }, { top: '10%', left: '90%' },
             { top: '50%', left: '10%' }, { top: '50%', left: '50%' }, { top: '50%', left: '90%' },
@@ -1245,19 +1263,37 @@
 
         function iniciarCalibracionPasoAPaso() {            
             pasoCalibracionActual = 0;
-            mostrarPantalla(''); 
+            window.calibPuntosCapturados = []; 
+            mostrarPantalla('punto-calibracion');
             mostrarPuntoCalibracion();
         }
 
         function mostrarPuntoCalibracion() {
+            if (timeoutCalib) clearTimeout(timeoutCalib);
             const punto = document.getElementById('punto-calibracion');
 
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
+                document.getElementById('video-participante').style.display = 'none'; // Ocultar cámara para la prueba
                 
-                const wgContainer = document.getElementById('webgazerVideoContainer');
-                if(wgContainer) wgContainer.style.display = 'none';
-                
+                // CREAR LA MATRIZ MATEMÁTICA EXACTA CON LOS OJOS DEL USUARIO
+                if (window.calibPuntosCapturados.length === 9) {
+                    let xs = window.calibPuntosCapturados.map(p => p.x);
+                    let ys = window.calibPuntosCapturados.map(p => p.y);
+                    
+                    window.calibBounds = {
+                        minX: Math.min(...xs), maxX: Math.max(...xs),
+                        minY: Math.min(...ys), maxY: Math.max(...ys)
+                    };
+
+                    let rangeX = window.calibBounds.maxX - window.calibBounds.minX;
+                    let rangeY = window.calibBounds.maxY - window.calibBounds.minY;
+                    if (rangeX < 0.01) { window.calibBounds.minX -= 0.02; window.calibBounds.maxX += 0.02; }
+                    if (rangeY < 0.01) { window.calibBounds.minY -= 0.02; window.calibBounds.maxY += 0.02; }
+                } else {
+                    window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
+                }
+
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -1266,12 +1302,29 @@
             punto.style.display = 'flex';
             punto.style.top = pos.top;
             punto.style.left = pos.left;
-            
-            punto.onclick = () => {
-                punto.style.display = 'none';
-                pasoCalibracionActual++;
-                setTimeout(mostrarPuntoCalibracion, 300);
-            };
+            punto.className = 'rojo';
+            punto.innerHTML = ''; 
+            punto.onclick = null;
+
+            timeoutCalib = setTimeout(() => {
+                punto.className = 'verde';
+                punto.innerHTML = 'CLIC';
+                
+                punto.onclick = (e) => {
+                    e.preventDefault();
+                    if(punto.className !== 'verde') return;
+                    
+                    window.calibPuntosCapturados.push({ x: currentGazeSample.x, y: currentGazeSample.y });
+
+                    punto.className = 'rojo';
+                    punto.innerHTML = '';
+                    punto.onclick = null; 
+                    punto.style.display = 'none';
+                    
+                    pasoCalibracionActual++;
+                    setTimeout(mostrarPuntoCalibracion, 250);
+                };
+            }, 800); 
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1333,11 +1386,37 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
-                // ACTIVAR GUARDADO DE WEBGAZER
-                isStimulusActive = true;
+                window.lastSmoothedX = undefined;
+                window.lastSmoothedY = undefined;
+                isStimulusActive = true; 
+
+                // MAPEO EXACTO: Grabación milisegundo a milisegundo
+                const trackingInterval = setInterval(() => {
+                    if(!isStimulusActive) return;
+
+                    // Interpola la pupila actual dentro de los límites calibrados
+                    let normX = (currentGazeSample.x - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
+                    let normY = (currentGazeSample.y - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
+
+                    // Ajuste de centro geométrico para pantallas
+                    normX = 0.10 + 0.80 * normX;
+                    normY = 0.10 + 0.80 * normY;
+
+                    // Promedio exponencial para estabilizar temblores de la pupila
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
+
+                    datosGazeActuales.push({
+                        x: Math.max(0, Math.min(1, window.lastSmoothedX)), 
+                        y: Math.max(0, Math.min(1, window.lastSmoothedY)),
+                        time: Date.now() - tiempoInicioEstimulo,
+                        intensity: 1
+                    });
+                }, 30); 
 
                 timeoutEstimulo = setTimeout(() => {
-                    isStimulusActive = false;
+                    clearInterval(trackingInterval);
+                    isStimulusActive = false; 
                     
                     if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
                     resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
@@ -1368,12 +1447,9 @@
 
         function finalizarParticipacion() {
             isStimulusActive = false;
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
             try {
-                if(window.webgazer) {
-                    webgazer.pause();
-                    const wgContainer = document.getElementById('webgazerVideoContainer');
-                    if(wgContainer) wgContainer.style.display = 'none';
-                }
+                if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
             } catch (error) {}
 
             mostrarPantalla('p-fin');
