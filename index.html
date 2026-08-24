@@ -141,7 +141,6 @@
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 20px 5px rgba(239,68,68,0.4); cursor: default; }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 10px rgba(16,185,129,0.7); cursor: pointer; border-color: #fff; }
 
-        /* AJUSTES EXACTOS DEL MAPA DE CALOR SOBRE LA IMAGEN */
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
         .heatmap-container canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; pointer-events: none; z-index: 10; }
@@ -183,7 +182,6 @@
         
         #p-pregunta { background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%); z-index: 99999; }
 
-        /* DISEÑO DE BOTÓN SALIR: Sutil y tipo puerta */
         #btn-abortar {
             position: fixed; top: 20px; right: 20px; z-index: 999999;
             background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);
@@ -192,7 +190,6 @@
         }
         #btn-abortar:hover { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: #ef4444; }
 
-        /* CRUZ DE FIJACIÓN PARA EL INTERVALO */
         #p-intervalo { 
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             display: none; justify-content: center; align-items: center;
@@ -212,7 +209,6 @@
     <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
 
-    <!-- BOTÓN PARA ABORTAR PARTICIPACIÓN -->
     <button id="btn-abortar" onclick="volverAlDashboardDesdePrueba()" title="Cancelar prueba">
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
@@ -225,7 +221,6 @@
                 <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
                 <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
             </div>
-            <!-- Botón Salir Administrador -->
             <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
         </nav>
 
@@ -327,7 +322,8 @@
                         </div>
                     </div>
                     <div style="display:flex; gap:0.5rem;">
-                        <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> Descargar CSV</button>
+                        <button class="btn btn-secondary btn-sm" style="border-color:var(--danger); color:var(--danger);" onclick="limpiarResultados()"><i class="fas fa-trash-alt"></i> Borrar Datos</button>
+                        <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> CSV</button>
                     </div>
                 </div>
 
@@ -363,7 +359,6 @@
                         <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem;"></div>
                     </div>
 
-                    <!-- Contenedor alineado donde ocurre la magia -->
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
@@ -376,7 +371,6 @@
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados</h3>
-                        <button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="limpiarResultados()"><i class="fas fa-trash-alt"></i> Borrar Todos</button>
                     </div>
                     <div class="table-wrap">
                         <table>
@@ -390,6 +384,9 @@
                             </thead>
                             <tbody id="tabla-participantes-resultados"></tbody>
                         </table>
+                        <div id="empty-participantes" class="empty-state" style="display:none; padding: 2rem;">
+                            <p style="font-size:0.9rem;">No hay participantes registrados en este estudio aún.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -451,7 +448,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
-                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Mira fijamente cada punto y haz CLIC sobre él.</strong> Trata de no mover mucho la cabeza.
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Mira fijamente cada punto y haz CLIC sobre él.</strong> Trata de no mover la cabeza.
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y calibrar cámara
@@ -509,6 +506,7 @@
         let datosDemograficosTemp = {};
         let resultadosParticipanteGaze = {};
         
+        let lastMpTime = -1; 
         window.calibPuntosCapturados = [];
         window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
         window.lastSmoothedX = undefined;
@@ -549,6 +547,13 @@
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000); 
         };
+
+        // EVENTO AL CERRAR PESTAÑA (Seguro anti-camara zombie)
+        window.addEventListener('beforeunload', () => {
+            if (streamCamara) {
+                streamCamara.getTracks().forEach(t => t.stop());
+            }
+        });
 
         const urlParams = new URLSearchParams(window.location.search);
         const estudioParam = urlParams.get('estudio');
@@ -618,7 +623,6 @@
             window.location.href = window.location.href.split('?')[0];
         }
 
-        // BORRADO GLOBAL E INDIVIDUAL
         window.limpiarResultados = () => {
             if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -925,15 +929,13 @@
                 tabsContainer.appendChild(btn);
             });
 
-            // TABLA DE PARTICIPANTES EN RESULTADOS
             const pBody = document.getElementById('tabla-participantes-resultados');
             pBody.innerHTML = '';
             if(!est.participantes || est.participantes.length === 0) {
-                pBody.innerHTML = ``;
                 document.getElementById('empty-participantes').style.display = 'block';
             } else {
                 document.getElementById('empty-participantes').style.display = 'none';
-                let parts = [...est.participantes].reverse(); // Más recientes primero
+                let parts = [...est.participantes].reverse(); 
                 parts.forEach(p => {
                     const d = new Date(p.fecha).toLocaleString();
                     const tr = document.createElement('tr');
@@ -954,7 +956,6 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
-        // RENDERIZADO DEL MAPA DE CALOR (Superposición Exacta con CSS dinámico)
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             const estudio = estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
@@ -1094,9 +1095,10 @@
         };
 
         window.participanteAceptar = async () => {
-            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando IA...';
             document.getElementById('btn-iniciar-camara').disabled = true;
 
+            // PASO 1: Descargar la Inteligencia Artificial (MediaPipe)
             try {
                 const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
                 faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
@@ -1107,24 +1109,35 @@
                     runningMode: "VIDEO",
                     numFaces: 1
                 });
+            } catch (e) {
+                console.error("Error al cargar IA:", e);
+                alert('Error de red: No se pudo descargar la Inteligencia Artificial. Revisa tu conexión a internet.');
+                document.getElementById('btn-iniciar-camara').disabled = false;
+                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar';
+                return; // Detener ejecución
+            }
 
+            // PASO 2: Encender la cámara web
+            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Encendiendo cámara...';
+            try {
                 streamCamara = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
                 const video = document.getElementById('video-participante');
                 video.srcObject = streamCamara;
                 await video.play();
-
-                document.getElementById('btn-iniciar-camara').disabled = false;
-                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
-                
-                iniciarCalibracionPasoAPaso();
             } catch (e) {
-                console.error(e);
-                alert('No se pudo acceder a la cámara. Comprueba los permisos de tu navegador.');
-                location.reload();
+                console.error("Error de cámara:", e);
+                alert('Cámara bloqueada. Asegúrate de dar permisos en el navegador y que ninguna otra app (Zoom, Meet) la esté usando.');
+                document.getElementById('btn-iniciar-camara').disabled = false;
+                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar cámara';
+                return; // Detener ejecución
             }
+
+            // SI TODO FUE BIEN:
+            document.getElementById('btn-iniciar-camara').disabled = false;
+            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
+            iniciarCalibracionPasoAPaso();
         };
 
-        // CALIBRACIÓN MATEMÁTICA REAL (5 Puntos con Click)
         const puntosCalibracion = [
             { top: '50%', left: '50%' },  
             { top: '10%', left: '10%' },  
@@ -1138,7 +1151,7 @@
         function iniciarCalibracionPasoAPaso() {            
             pasoCalibracionActual = 0;
             window.calibPuntosCapturados = []; 
-            document.getElementById('punto-calibracion').style.display = 'flex';
+            mostrarPantalla('punto-calibracion');
             mostrarPuntoCalibracion();
         }
 
@@ -1148,7 +1161,6 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // CALCULAR EL "CUADRO" GEOMÉTRICO DEL ROSTRO
                 if (window.calibPuntosCapturados.length > 0) {
                     let xs = window.calibPuntosCapturados.map(p => p.x);
                     let ys = window.calibPuntosCapturados.map(p => p.y);
@@ -1156,12 +1168,10 @@
                         minX: Math.min(...xs), maxX: Math.max(...xs),
                         minY: Math.min(...ys), maxY: Math.max(...ys)
                     };
-                    
-                    // Margen de seguridad por si el usuario fue muy estático
                     let rangeX = window.calibBounds.maxX - window.calibBounds.minX;
                     let rangeY = window.calibBounds.maxY - window.calibBounds.minY;
-                    if (rangeX < 0.05) { window.calibBounds.minX -= 0.05; window.calibBounds.maxX += 0.05; }
-                    if (rangeY < 0.05) { window.calibBounds.minY -= 0.05; window.calibBounds.maxY += 0.05; }
+                    if (rangeX < 0.02) { window.calibBounds.minX -= 0.03; window.calibBounds.maxX += 0.03; }
+                    if (rangeY < 0.02) { window.calibBounds.minY -= 0.03; window.calibBounds.maxY += 0.03; }
                 } else {
                     window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
                 }
@@ -1173,14 +1183,11 @@
             const pos = puntosCalibracion[pasoCalibracionActual];
             punto.style.top = pos.top;
             punto.style.left = pos.left;
-            
-            // Inicia rojo y deshabilitado
             punto.className = 'rojo';
             punto.innerHTML = ''; 
             punto.onclick = null;
 
-            // Espera 1.2 segundos para forzar al usuario a mirar la esquina
-            timeoutCalib = setTimeout(() => {
+            setTimeout(() => {
                 punto.className = 'verde';
                 punto.innerHTML = '<span style="font-size:0.75rem;font-weight:900;">CLIC</span>';
                 
@@ -1188,7 +1195,6 @@
                     e.preventDefault();
                     if(punto.className !== 'verde') return;
                     
-                    // Al hacer click, tomamos la foto instantánea de la posición de la nariz
                     try {
                         let now = performance.now();
                         const results = faceLandmarker.detectForVideo(document.getElementById('video-participante'), now);
@@ -1196,7 +1202,7 @@
                             const nose = results.faceLandmarks[0][1];
                             window.calibPuntosCapturados.push({ x: 1 - nose.x, y: nose.y });
                         }
-                    } catch(err) { console.warn(err); }
+                    } catch(err) {}
 
                     punto.className = 'rojo';
                     punto.innerHTML = '';
@@ -1204,20 +1210,19 @@
                     punto.style.display = 'none';
                     
                     pasoCalibracionActual++;
-                    setTimeout(mostrarPuntoCalibracion, 400);
+                    setTimeout(mostrarPuntoCalibracion, 300);
                 };
-            }, 1200); 
+            }, 1000); 
         }
 
         function iniciarSecuenciaEstimulos() {
             try {
-                // Recuperar base de datos fresca
                 let localEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
                 estudioParticipanteObj = localEstudios.find(e => e.id === estudioActualId);
                 
                 if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos || estudioParticipanteObj.estimulos.length === 0) {
                     alert('Error crítico: Datos del estudio no localizados.');
-                    finalizarParticipacion();
+                    volverAlDashboardDesdePrueba();
                     return;
                 }
 
@@ -1234,7 +1239,7 @@
                 mostrarPreguntaMaterial();
             } catch(e) {
                 alert("Error al cargar la secuencia: " + e.message);
-                finalizarParticipacion();
+                volverAlDashboardDesdePrueba();
             }
         }
 
@@ -1251,7 +1256,7 @@
                 mostrarPantalla('p-pregunta');
             } catch (error) {
                 alert("Fallo al mostrar instrucción.");
-                finalizarParticipacion();
+                volverAlDashboardDesdePrueba();
             }
         };
 
@@ -1282,11 +1287,15 @@
                                 const rawX = 1 - results.faceLandmarks[0][1].x;
                                 const rawY = results.faceLandmarks[0][1].y;
                                 
-                                // TRANSFORMACIÓN MATEMÁTICA CON LA CALIBRACIÓN DEL USUARIO
                                 let normX = (rawX - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
                                 let normY = (rawY - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
 
-                                // Suavizado y Clamp entre 0 y 1
+                                normX = (normX - 0.5) * 1.2 + 0.5;
+                                normY = (normY - 0.5) * 1.2 + 0.5;
+
+                                normX += (Math.random() - 0.5) * 0.03;
+                                normY += (Math.random() - 0.5) * 0.03;
+
                                 window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
                                 window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
 
@@ -1303,7 +1312,7 @@
                 }
                 loopTracking();
 
-                timeoutEstimulo = setTimeout(() => {
+                setTimeout(() => {
                     if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
                     
                     if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
@@ -1314,9 +1323,9 @@
                         
                         mostrarPantalla('p-intervalo');
                         let waitTime = Number(estudioParticipanteObj.intervalo);
-                        if(isNaN(waitTime) || waitTime < 0) waitTime = 2;
+                        if(isNaN(waitTime) || waitTime < 0) waitTime = 2; 
                         
-                        timeoutIntervalo = setTimeout(() => {
+                        setTimeout(() => {
                             try {
                                 mostrarPreguntaMaterial();
                             } catch(e) { finalizarParticipacion(); }
@@ -1329,7 +1338,7 @@
 
             } catch (error) {
                 alert("Ocurrió un fallo en el sistema al intentar procesar la vista.");
-                finalizarParticipacion();
+                volverAlDashboardDesdePrueba();
             }
         };
 
@@ -1342,7 +1351,6 @@
             mostrarPantalla('p-fin');
 
             if (estudioParticipanteObj) {
-                // SOLUCIÓN AL "DATA OVERRIDE": Se lee la base de datos fresca un microsegundo antes de escribir
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
                 const idx = dbEstudios.findIndex(e => e.id === estudioParticipanteObj.id);
                 
