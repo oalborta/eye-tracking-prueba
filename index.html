@@ -143,7 +143,7 @@
         .file-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01); }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
-        /* Cámara invisible para no romper MediaPipe ni la UX */
+        /* VÍDEO OCULTO */
         #video-participante { position: fixed; top: 0; left: 0; width: 10px; height: 10px; opacity: 0; pointer-events: none; z-index: -1; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
@@ -193,7 +193,6 @@
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
-            <!-- DASHBOARD -->
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -228,12 +227,10 @@
                     <div id="empty-dashboard" class="empty-state" style="display:none;">
                         <i class="fas fa-eye"></i>
                         <p style="font-size:1.1rem; font-weight:600;">No hay estudios creados</p>
-                        <p style="font-size:0.85rem; margin-top:0.5rem;">Crea tu primer estudio para comenzar.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- CREAR / EDITAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -255,8 +252,7 @@
                                 <label class="form-label">Estrategia de Orden</label>
                                 <select id="create-orden-modo" class="form-select">
                                     <option value="fijo-primero">Fijar el 1° material, aleatorios los siguientes</option>
-                                    <option value="secuencial">Estricto secuencial (1, 2, 3...)</option>
-                                    <option value="aleatorio">Totalmente aleatorio</option>
+                                    <option value="secuencial">Estricto secuencial</option>
                                 </select>
                             </div>
                         </div>
@@ -264,7 +260,7 @@
                         <hr style="border-color:var(--border); margin: 1.5rem 0;">
 
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales (Estímulos)</h3>
+                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales</h3>
                             <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
                         </div>
 
@@ -295,7 +291,7 @@
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar:</div>
                     <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
                         <option value="todos">Todos los géneros</option>
                         <option value="Masculino">Masculino</option>
@@ -313,7 +309,6 @@
 
                 <div class="tabs" id="tabs-materiales"></div>
 
-                <!-- PANEL DE MÉTRICAS -->
                 <div style="display:flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <div class="stat-card blue" style="padding: 1.25rem; flex: 1; min-width: 200px;">
                         <div class="stat-label" style="margin-top:0; color:#93c5fd;"><i class="fas fa-stopwatch"></i> TTFF Promedio</div>
@@ -474,6 +469,7 @@
         </div>
     </div>
 
+    <!-- LÓGICA PRINCIPAL (MOTOR MATEMÁTICO CUADRÁTICO) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -500,8 +496,9 @@
         let timeoutCalib = null;
         let visualizacionModo = 'calor'; 
 
+        // NUEVO: Modelo de calibración por cuadrantes para precisión absoluta
         window.calibPuntosCapturados = [];
-        window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
+        window.calibModel = { leftX: 0.4, centerX: 0.5, rightX: 0.6, topY: 0.4, centerY: 0.5, bottomY: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
@@ -708,7 +705,6 @@
                     
                     if (est.estimulos && est.estimulos.length > 0) {
                         est.estimulos.forEach(mat => {
-                            // PRESERVAR EL ID ORIGINAL AL EDITAR
                             agregarCampoEstimulo(mat.id, mat.nombre, mat.imagen, mat.pregunta, mat.duracion);
                         });
                         return;
@@ -721,7 +717,6 @@
             agregarCampoEstimulo('', 'Banner Principal', '', '¿Qué elementos llaman tu atención primero?', 10);
         }
 
-        // SOLUCIÓN A LOS DATOS HUÉRFANOS: El campo est-id está oculto pero vivo
         window.agregarCampoEstimulo = (id = '', nombre = '', img = '', pregunta = '', duracion = 10) => {
             const container = document.getElementById('lista-estimulos-creacion');
             const index = container.children.length;
@@ -845,7 +840,7 @@
                     const imgVal = t.querySelector('.est-img-base64') ? t.querySelector('.est-img-base64').value.trim() : "";
                     let estIdInput = t.querySelector('.est-id');
                     let matId = estIdInput ? estIdInput.value : 'mat_' + Math.random().toString(36).substr(2, 9);
-                    
+
                     estimulos.push({
                         id: matId,
                         nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
@@ -895,7 +890,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error al guardar. La imagen podría ser muy pesada.");
+                alert("⚠️ Error: Ocurrió un error al intentar guardar.");
             }
         };
 
@@ -958,14 +953,14 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
-        // ALGORITMO I-DT CON TOLERANCIA AL RUIDO DE CÁMARA
+        // ALGORITMO I-DT CON ALTA TOLERANCIA AL RUIDO DE CÁMARA WEB
         function analizarFijaciones(puntosArray) {
             let fijaciones = [];
             if (!puntosArray || puntosArray.length === 0) return fijaciones;
             
             let i = 0;
-            const umbralDistancia = 0.20; // 20% de tolerancia al temblor del ojo (Absorbe ruido)
-            const umbralTiempo = 50;      // 50ms minimo para registrar (Absorbe escaneos rápidos)
+            const umbralDistancia = 0.25; // 25% de tolerancia (Absorbe ruido y micro-sacádicos)
+            const umbralTiempo = 100;     // 100ms para considerarse fijación válida
 
             while(i < puntosArray.length) {
                 let j = i + 1;
@@ -1046,7 +1041,7 @@
 
             const msToSecs = (ms) => (ms/1000).toFixed(2) + 's';
             
-            // Si el TTFF falló pero SÍ hay datos brutos, pone un número realista
+            // Si hay datos brutos, mostramos las métricas
             if (totalParticipantesFiltro > 0 && countTTFFValidos > 0) {
                 document.getElementById('metrica-ttff').textContent = msToSecs(sumTTFF / countTTFFValidos);
                 document.getElementById('metrica-duracion').textContent = msToSecs(sumDuracionFijacion / totalFijacionesCalculadas);
@@ -1061,7 +1056,12 @@
                 document.getElementById('metrica-cantidad').textContent = '-';
             }
 
-            // CREACIÓN DE LIENZO DE MAPA
+            if (puntosBrutos.length === 0) {
+                document.getElementById('heatmap-empty').style.display = 'block';
+            } else {
+                document.getElementById('heatmap-empty').style.display = 'none';
+            }
+
             const container = document.createElement('div');
             container.className = 'heatmap-container';
             container.style.position = 'relative'; 
@@ -1078,13 +1078,7 @@
             container.appendChild(canvas);
             wrap.appendChild(container);
 
-            if (puntosBrutos.length === 0) {
-                document.getElementById('heatmap-empty').style.display = 'block';
-            } else {
-                document.getElementById('heatmap-empty').style.display = 'none';
-            }
-
-            // SOLUCIÓN AL MAPA INVISIBLE: Se le dice qué hacer ANTES de inyectar la imagen
+            // SOLUCIÓN MAPA INVISIBLE: Configurar el canvas ANTES de disparar la imagen
             img.onload = () => {
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
@@ -1137,7 +1131,7 @@
                 }
             };
             
-            // El trigger dispara todo.
+            // Disparar carga de imagen (sacada de caché o no, siempre pintará)
             img.src = material.imagen;
         };
 
@@ -1212,7 +1206,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // BUCLE SEGURO DE VISIÓN (Sin Errores NaN)
+        // BUCLE SEGURO DE VISIÓN IA
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1313,21 +1307,25 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
+                // MAPEO BILINEAL POR CUADRANTES
                 if (window.calibPuntosCapturados.length === 9) {
-                    let xs = window.calibPuntosCapturados.map(p => p.x);
-                    let ys = window.calibPuntosCapturados.map(p => p.y);
+                    let pts = window.calibPuntosCapturados;
                     
-                    window.calibBounds = {
-                        minX: Math.min(...xs), maxX: Math.max(...xs),
-                        minY: Math.min(...ys), maxY: Math.max(...ys)
+                    window.calibModel = {
+                        leftX: (pts[0].x + pts[3].x + pts[6].x) / 3,
+                        centerX: (pts[1].x + pts[4].x + pts[7].x) / 3,
+                        rightX: (pts[2].x + pts[5].x + pts[8].x) / 3,
+                        topY: (pts[0].y + pts[1].y + pts[2].y) / 3,
+                        centerY: (pts[3].y + pts[4].y + pts[5].y) / 3,
+                        bottomY: (pts[6].y + pts[7].y + pts[8].y) / 3
                     };
 
-                    let rangeX = window.calibBounds.maxX - window.calibBounds.minX;
-                    let rangeY = window.calibBounds.maxY - window.calibBounds.minY;
-                    if (rangeX < 0.01) { window.calibBounds.minX -= 0.02; window.calibBounds.maxX += 0.02; }
-                    if (rangeY < 0.01) { window.calibBounds.minY -= 0.02; window.calibBounds.maxY += 0.02; }
+                    if (Math.abs(window.calibModel.centerX - window.calibModel.leftX) < 0.005) window.calibModel.leftX -= 0.01;
+                    if (Math.abs(window.calibModel.rightX - window.calibModel.centerX) < 0.005) window.calibModel.rightX += 0.01;
+                    if (Math.abs(window.calibModel.centerY - window.calibModel.topY) < 0.005) window.calibModel.topY -= 0.01;
+                    if (Math.abs(window.calibModel.bottomY - window.calibModel.centerY) < 0.005) window.calibModel.bottomY += 0.01;
                 } else {
-                    window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
+                    window.calibModel = { leftX: 0.4, centerX: 0.5, rightX: 0.6, topY: 0.4, centerY: 0.5, bottomY: 0.6 }; 
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1426,18 +1424,37 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
+                // INTERPOLACIÓN POR CUADRANTES DE ALTA PRECISIÓN
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
-                    let normX = (currentGazeSample.x - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
-                    let normY = (currentGazeSample.y - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
+                    let rawX = currentGazeSample.x;
+                    let rawY = currentGazeSample.y;
+                    let normX, normY;
 
-                    // Expandir la calibración para asegurar que se llegue bien a los bordes
-                    normX = 0.05 + 0.90 * normX;
-                    normY = 0.05 + 0.90 * normY;
+                    // Cuadrante X
+                    if (rawX < window.calibModel.centerX) {
+                        let ratio = (rawX - window.calibModel.leftX) / (window.calibModel.centerX - window.calibModel.leftX);
+                        normX = 0.10 + (ratio * 0.40);
+                    } else {
+                        let ratio = (rawX - window.calibModel.centerX) / (window.calibModel.rightX - window.calibModel.centerX);
+                        normX = 0.50 + (ratio * 0.40);
+                    }
 
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.85 + normX * 0.15 : normX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.85 + normY * 0.15 : normY;
+                    // Cuadrante Y
+                    if (rawY < window.calibModel.centerY) {
+                        let ratio = (rawY - window.calibModel.topY) / (window.calibModel.centerY - window.calibModel.topY);
+                        normY = 0.10 + (ratio * 0.40);
+                    } else {
+                        let ratio = (rawY - window.calibModel.centerY) / (window.calibModel.bottomY - window.calibModel.centerY);
+                        normY = 0.50 + (ratio * 0.40);
+                    }
+
+                    normX = (normX - 0.5) * 1.2 + 0.5;
+                    normY = (normY - 0.5) * 1.2 + 0.5;
+
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.80 + normX * 0.20 : normX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.80 + normY * 0.20 : normY;
 
                     let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
                     let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
