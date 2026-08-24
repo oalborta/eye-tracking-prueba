@@ -161,7 +161,25 @@
         }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
-        #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
+        /* MEJORA UX: El video ahora se usará como espejo (PIP) durante la calibración */
+        #video-participante { 
+            position: fixed; 
+            z-index: -1; 
+            opacity: 0; 
+            pointer-events: none; 
+            object-fit: cover;
+            transition: opacity 0.3s;
+        }
+        /* Clase especial para mostrar la cámara como espejo en la calibración */
+        .video-pip {
+            bottom: 30px !important; right: 30px !important; top: auto !important; left: auto !important;
+            width: 160px !important; height: 160px !important; border-radius: 50%;
+            border: 4px solid var(--danger); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 999999 !important; opacity: 1 !important; transform: scaleX(-1);
+            transition: border-color 0.3s !important;
+        }
+        .video-pip.detectado { border-color: var(--accent) !important; }
+
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
@@ -174,9 +192,13 @@
             display: flex; align-items: center; gap: 0.5rem; min-width: 280px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.4);
         }
+        .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
+        .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
+        
+        #p-pregunta { background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%); z-index: 99999; }
     </style>
 </head>
 <body>
@@ -341,7 +363,7 @@
 
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
-        <video id="video-participante" playsinline></video>
+        <video id="video-participante" playsinline muted autoplay></video>
         <img id="estimulo-participante" alt="Estímulo">
         <div id="punto-calibracion" class="rojo"></div>
 
@@ -393,9 +415,9 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
-                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Míralos fijamente y mantén tu rostro visible.</strong> Cuando se ponga verde, haz clic.
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla y verás un espejo de tu cámara. <strong>Mantén tu rostro en cuadro y mira los puntos fijamente hasta que se pongan verdes para hacer clic.</strong>
                     </p>
-                    <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
+                    <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y calibrar cámara
                     </button>
                 </div>
@@ -408,9 +430,9 @@
                 <p style="font-weight:600; font-size:1.1rem;">Conectando IA Visual...</p>
             </div>
         </div>
-        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-        <div id="p-pregunta" class="pantalla-participante" style="display:none; background: #08080d;">
+        <!-- Aseguramos z-index máximo para que no quede detrás del video -->
+        <div id="p-pregunta" class="pantalla-participante" style="display:none;">
             <div class="card" style="max-width:500px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); background: #12121c; padding: 2rem;">
                 <span id="label-num-material" style="font-size:0.85rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
                 <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.5rem; margin:1rem 0;">Instrucción</h3>
@@ -486,20 +508,34 @@
             }
         };
 
+        // KILL SWITCH: Reseteo total de variables al entrar a modo prueba
         window.simularPrueba = (id) => {
             estudioActualId = id;
             resultadosParticipanteGaze = {}; 
             datosDemograficosTemp = {};
+            
+            // Destruir loops anteriores si existían
+            validandoRostro = false;
+            calibracionActiva = false;
+            if (rafId) cancelAnimationFrame(rafId);
+            
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
             
+            document.getElementById('punto-calibracion').style.display = 'none';
             document.getElementById('p-fin').style.display = 'none';
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
+            document.getElementById('video-participante').className = ''; // Quita clase PIP
             document.getElementById('p-demografia').style.display = 'flex';
         };
 
+        // KILL SWITCH: Reseteo total al volver
         window.volverAlDashboardDesdePrueba = () => {
+            validandoRostro = false;
+            calibracionActiva = false;
+            if (rafId) cancelAnimationFrame(rafId);
+
             document.getElementById('participant-section').style.display = 'none';
             document.getElementById('p-fin').style.display = 'none';
             document.getElementById('p-demografia').style.display = 'flex'; 
@@ -639,7 +675,6 @@
             }
         };
 
-        // CORRECCIÓN PANTALLA NEGRA: Pintar fondo blanco antes del PNG
         function comprimirYProcesarImagen(file, card) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -664,13 +699,12 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     
-                    // Rellenamos el lienzo de blanco para evitar que fondos transparentes se vuelvan negros.
+                    // Fondo blanco obligatorio para evitar pantallas negras al comprimir PNGs transparentes
                     ctx.fillStyle = "#ffffff";
                     ctx.fillRect(0, 0, width, height);
                     
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Compresión ligera a JPEG para evitar QuotaExceededError
                     const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.8);
                     actualizarPreviewImagen(card, dataUrlComprimida);
                 };
@@ -745,7 +779,6 @@
 
                 localStorage.setItem('et_estudios', JSON.stringify(estudios));
                 
-                // Efecto visual directo en el botón
                 const btn = document.getElementById('btn-guardar-estudio');
                 const textoOriginal = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> ¡Guardado Exitosamente!';
@@ -758,7 +791,6 @@
                 }, 1200);
 
             } catch(e) {
-                // Controlamos si la memoria del navegador explotó
                 if(e.name === 'QuotaExceededError') {
                     alert("⚠️ Error: Archivos muy pesados. Por favor sube imágenes más pequeñas o usa URLs.");
                 } else {
@@ -911,7 +943,7 @@
             const ocupacion = document.getElementById('part-ocupacion').value;
 
             if (!edadRango || !genero) {
-                alert('Por favor selecciona tu rango de edad y género');
+                mostrarToast('Por favor selecciona tu rango de edad y género', 'error');
                 return;
             }
 
@@ -921,8 +953,8 @@
         };
 
         window.participanteAceptar = async () => {
-            document.getElementById('p-consentimiento').style.display = 'none';
-            document.getElementById('p-carga').style.display = 'flex';
+            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+            document.getElementById('btn-iniciar-camara').disabled = true;
 
             try {
                 const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
@@ -940,16 +972,17 @@
                 video.srcObject = streamCamara;
                 await video.play();
 
-                document.getElementById('p-carga').style.display = 'none';
+                document.getElementById('p-consentimiento').style.display = 'none';
+                document.getElementById('btn-iniciar-camara').disabled = false;
+                
                 iniciarCalibracionPasoAPaso();
             } catch (e) {
                 console.error(e);
-                alert('No se pudo acceder a la cámara o cargar la IA.');
+                alert('No se pudo acceder a la cámara o cargar la IA. Asegúrate de dar permisos en tu navegador.');
                 location.reload();
             }
         };
 
-        // CORRECCIÓN: Calibración más estable y solución al bug del CLIC
         const puntosCalibracion = [
             { top: '50%', left: '50%' },  
             { top: '10%', left: '10%' },  
@@ -965,6 +998,10 @@
         let lastDetectionTime = 0;
 
         function iniciarCalibracionPasoAPaso() {
+            // Activamos el Modo Espejo (PIP)
+            const video = document.getElementById('video-participante');
+            video.className = 'video-pip';
+            
             pasoCalibracionActual = 0;
             calibracionActiva = true;
             validandoRostro = true;
@@ -978,6 +1015,10 @@
                 calibracionActiva = false;
                 validandoRostro = false;
                 document.getElementById('punto-calibracion').style.display = 'none';
+                
+                // Ocultar la cámara (espejo) antes del estímulo
+                document.getElementById('video-participante').className = '';
+                
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -989,7 +1030,7 @@
             punto.style.top = pos.top;
             punto.style.left = pos.left;
             
-            faceContinuouslyDetectedMs = 0; // Reinicio de reloj por punto
+            faceContinuouslyDetectedMs = 0; 
             punto.className = 'rojo';
             punto.innerHTML = '<i class="fas fa-eye-slash"></i>'; 
             punto.style.borderColor = 'transparent';
@@ -1002,12 +1043,10 @@
             let rostroDetectado = false;
             let now = performance.now();
             
-            // Limitador de cuellos de botella de MediaPipe
             if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
                 try {
                     const results = faceLandmarker.detectForVideo(video, now);
                     lastMpTime = now;
-                    // Confirmamos si efectivamente hay una cara en cuadro
                     if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                         rostroDetectado = true;
                     }
@@ -1017,14 +1056,14 @@
             const punto = document.getElementById('punto-calibracion');
             if (calibracionActiva) {
                 let deltaTime = now - lastDetectionTime;
-                if (deltaTime > 100) deltaTime = 16; // Evita falsos positivos si la pestaña del navegador se congela
+                if (deltaTime > 100) deltaTime = 16; 
 
                 if (rostroDetectado) {
                     faceContinuouslyDetectedMs += deltaTime;
+                    video.classList.add('detectado'); // Espejo en Verde
                     
                     if (faceContinuouslyDetectedMs <= 1500) {
                         punto.style.borderColor = `rgba(255,255,255, ${Math.min(faceContinuouslyDetectedMs / 1500, 1)})`;
-                        // Pintamos el ojo solo si no está dibujado para que no parpadee (bug fix)
                         if (!punto.innerHTML.includes('fa-eye') || punto.innerHTML.includes('fa-eye-slash')) {
                             punto.innerHTML = '<i class="fas fa-eye"></i>';
                         }
@@ -1043,6 +1082,8 @@
                     }
                 } else {
                     faceContinuouslyDetectedMs = 0;
+                    video.classList.remove('detectado'); // Espejo en Rojo
+                    
                     if (punto.className !== 'rojo') {
                         punto.className = 'rojo';
                         punto.style.borderColor = 'transparent';
@@ -1056,33 +1097,49 @@
             requestAnimationFrame(verificarRostroParaPunto);
         }
 
-        // CONTROL DE PANTALLA NEGRA EXTREMO EN EL ESTÍMULO
         function iniciarSecuenciaEstimulos() {
-            estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
-            if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos.length) {
-                alert('Error: Datos del estudio no localizados.');
-                return;
-            }
+            try {
+                estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
+                if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos || estudioParticipanteObj.estimulos.length === 0) {
+                    alert('Error crítico: Datos del estudio no localizados.');
+                    finalizarParticipacion();
+                    return;
+                }
 
-            let arr = [...estudioParticipanteObj.estimulos];
-            if (estudioParticipanteObj.ordenModo === 'fijo-primero' && arr.length > 1) {
-                estimulosOrdenadosActuales = [arr[0], ...arr.slice(1).sort(() => Math.random() - 0.5)];
-            } else if (estudioParticipanteObj.ordenModo === 'aleatorio') {
-                estimulosOrdenadosActuales = arr.sort(() => Math.random() - 0.5);
-            } else {
-                estimulosOrdenadosActuales = arr;
-            }
+                let arr = [...estudioParticipanteObj.estimulos];
+                if (estudioParticipanteObj.ordenModo === 'fijo-primero' && arr.length > 1) {
+                    estimulosOrdenadosActuales = [arr[0], ...arr.slice(1).sort(() => Math.random() - 0.5)];
+                } else if (estudioParticipanteObj.ordenModo === 'aleatorio') {
+                    estimulosOrdenadosActuales = arr.sort(() => Math.random() - 0.5);
+                } else {
+                    estimulosOrdenadosActuales = arr;
+                }
 
-            materialActualIndex = 0;
-            mostrarPreguntaMaterial();
+                materialActualIndex = 0;
+                mostrarPreguntaMaterial();
+            } catch(e) {
+                alert("Error al cargar la secuencia: " + e.message);
+                finalizarParticipacion();
+            }
         }
 
         window.mostrarPreguntaMaterial = () => {
-            document.getElementById('estimulo-participante').style.display = 'none';
-            const mat = estimulosOrdenadosActuales[materialActualIndex];
-            document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
-            document.getElementById('texto-pregunta-material').textContent = mat.pregunta;
-            document.getElementById('p-pregunta').style.display = 'flex';
+            try {
+                document.getElementById('estimulo-participante').style.display = 'none';
+                const mat = estimulosOrdenadosActuales[materialActualIndex];
+                
+                if (!mat) {
+                    finalizarParticipacion();
+                    return;
+                }
+
+                document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
+                document.getElementById('texto-pregunta-material').textContent = mat.pregunta || 'Observa la imagen';
+                document.getElementById('p-pregunta').style.display = 'flex';
+            } catch (error) {
+                alert("Fallo al mostrar instrucción: " + error.message);
+                finalizarParticipacion();
+            }
         };
 
         window.lanzarSiguienteEstimulo = () => {
@@ -1090,10 +1147,6 @@
                 document.getElementById('p-pregunta').style.display = 'none';
                 const mat = estimulosOrdenadosActuales[materialActualIndex];
                 const imgEl = document.getElementById('estimulo-participante');
-                
-                if (!mat.imagen || mat.imagen === '') {
-                    alert('Aviso: Estímulo sin imagen cargada.');
-                }
                 
                 imgEl.src = mat.imagen;
                 imgEl.style.display = 'block';
@@ -1155,19 +1208,21 @@
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
 
-            if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
-            
-            estudioParticipanteObj.participantes.push({
-                id: 'part_' + Math.random().toString(36).substr(2, 9),
-                fecha: Date.now(),
-                ...datosDemograficosTemp,
-                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial || {}
-            });
+            if (estudioParticipanteObj) {
+                if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
+                
+                estudioParticipanteObj.participantes.push({
+                    id: 'part_' + Math.random().toString(36).substr(2, 9),
+                    fecha: Date.now(),
+                    ...datosDemograficosTemp,
+                    gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial || {}
+                });
 
-            const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
-            if (idx !== -1) {
-                estudios[idx] = estudioParticipanteObj;
-                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
+                if (idx !== -1) {
+                    estudios[idx] = estudioParticipanteObj;
+                    localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                }
             }
 
             document.getElementById('p-fin').style.display = 'flex';
