@@ -120,19 +120,24 @@
             z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
 
-        /* AUTO-CALIBRACIÓN UX */
+        /* 
+         * EL PUNTO DE CALIBRACIÓN BLINDADO:
+         * Se ve de 40px, pero tiene un campo invisible de 150px para que el clic NUNCA falle.
+         */
         #punto-calibracion {
             width: 40px; height: 40px; border-radius: 50%; position: fixed;
-            background: rgba(239,68,68,0.15); border: 3px solid #ef4444;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            transition: top 0.4s ease-out, left 0.4s ease-out;
-            box-shadow: 0 0 20px rgba(239,68,68,0.5);
+            background: #ef4444; box-shadow: 0 0 20px 5px rgba(239,68,68,0.5);
+            cursor: pointer;
         }
-        .punto-inner {
-            width: 0%; height: 0%; border-radius: 50%; background: #10b981;
-            transition: width 0.1s linear, height 0.1s linear;
-            box-shadow: 0 0 15px #10b981;
+        /* Zona de clic ampliada invisible */
+        #punto-calibracion::after {
+            content: '';
+            position: absolute;
+            top: -55px; left: -55px; right: -55px; bottom: -55px;
+            border-radius: 50%;
+            cursor: pointer;
         }
 
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
@@ -156,7 +161,6 @@
         .toast { padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards; display: flex; align-items: center; gap: 0.5rem; min-width: 280px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
         .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
-        .toast.warn { background: #78350f; color: #fde68a; border: 1px solid #f59e0b; }
         .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
@@ -195,6 +199,7 @@
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
+            <!-- DASHBOARD -->
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -294,7 +299,7 @@
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar:</div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
                     <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
                         <option value="todos">Todos los géneros</option>
                         <option value="Masculino">Masculino</option>
@@ -383,10 +388,8 @@
         <video id="video-participante" playsinline muted autoplay></video>
         <img id="estimulo-participante" alt="Estímulo">
         
-        <!-- PUNTO DE AUTO-CALIBRACIÓN -->
-        <div id="punto-calibracion">
-            <div class="punto-inner"></div>
-        </div>
+        <!-- PUNTO DE CALIBRACIÓN MANUAL (AMPLIADO Y SIN TEXTO) -->
+        <div id="punto-calibracion"></div>
 
         <div id="p-demografia" class="pantalla-participante">
             <div style="max-width:450px; text-align:center;">
@@ -434,10 +437,11 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong>. No se almacena video.
-                        <br><br><strong>NUEVA AUTO-CALIBRACIÓN:</strong> Aparecerán 9 puntos.<br> 
-                        <strong style="color:var(--accent)">1. Deja tu cabeza completamente inmóvil.<br>
-                        2. MIRA FIJAMENTE cada punto rojo.<br>
-                        3. Al mirarlo se llenará de verde y avanzará SOLO. (NO TIENES QUE HACER CLIC CON EL MOUSE)</strong>
+                        <br><br><strong>CALIBRACIÓN MANUAL:</strong> Aparecerán 9 puntos en pantalla. <br><br>
+                        <strong style="color:var(--accent)">
+                        1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
+                        2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
+                        3. Haz CLIC sobre el punto (El área de clic es muy grande, no tienes que apuntar perfecto).</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -500,15 +504,11 @@
         let isStimulusActive = false;
         let timeoutEstimulo = null;
         let timeoutIntervalo = null;
-        
-        // Control de Fijación Gaze-Triggered Automático
-        let isCalibrating = false;
-        let calibLoopId = null;
-        let calibBuffer = [];
-        let stareTime = 0;
+        let timeoutCalib = null;
 
+        // Base de datos de la Calibración
         window.calibPuntosCapturados = [];
-        window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 };
+        window.calibModel = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
@@ -594,7 +594,6 @@
             window.lastSmoothedY = undefined;
             
             if (rafId) cancelAnimationFrame(rafId);
-            if (calibLoopId) cancelAnimationFrame(calibLoopId);
             
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
@@ -603,7 +602,6 @@
 
         window.volverAlDashboardDesdePrueba = () => {
             if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-            if (calibLoopId) { cancelAnimationFrame(calibLoopId); calibLoopId = null; }
             try { if (streamCamara) streamCamara.getTracks().forEach(t => t.stop()); } catch(e){}
             window.location.href = window.location.href.split('?')[0];
         };
@@ -641,7 +639,7 @@
             }
         };
 
-        // Corrección del Toggle Button de Calor/Foco
+        // EXPORTACIÓN A GLOBAL PARA QUE EL BOTÓN HTML LO ENCUENTRE
         window.cambiarModoVisualizacion = (modo) => {
             visualizacionModo = modo;
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -1026,7 +1024,12 @@
                     
                     if (p.gazePorMaterial && p.gazePorMaterial[material.id] && p.gazePorMaterial[material.id].length > 0) {
                         totalParticipantesFiltro++;
-                        const dataUsuario = p.gazePorMaterial[material.id];
+                        
+                        // FILTRO ANTI-CRASH: Solo permite números reales
+                        const dataUsuario = p.gazePorMaterial[material.id].filter(
+                            pt => typeof pt.x === 'number' && typeof pt.y === 'number' && !isNaN(pt.x) && !isNaN(pt.y) && isFinite(pt.x) && isFinite(pt.y)
+                        );
+                        
                         puntosBrutos = puntosBrutos.concat(dataUsuario);
 
                         const fijacionesUsr = analizarFijaciones(dataUsuario);
@@ -1092,19 +1095,16 @@
                     
                     const validPoints = [];
                     puntosBrutos.forEach(p => {
-                        // Anti-Error para que nunca desaparezca el mapa
-                        if(!isNaN(p.x) && !isNaN(p.y) && isFinite(p.x) && isFinite(p.y)){
-                            validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
-                        }
+                        validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
                     });
 
-                    if (validPoints.length > 0) {
+                    // TRY-CATCH para proteger la UI si la librería gráfica falla
+                    try {
                         if (visualizacionModo === 'calor') {
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            // Sensibilidad Máxima al 300% (10 frames = 1/3 seg para pintarse rojo vivo)
-                            heat.max(8); 
+                            heat.max(Math.max(2, validPoints.length / 30)); // Ajuste de intensidad visible
                             heat.draw();
                         } else if (visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1116,7 +1116,6 @@
                             const focusRadius = radius * 1.5; 
 
                             fijacionesTotales.forEach(f => {
-                                if(isNaN(f.x) || isNaN(f.y)) return;
                                 let cx = f.x * canvas.width;
                                 let cy = f.y * canvas.height;
                                 
@@ -1131,6 +1130,8 @@
                                 ctx.fill();
                             });
                         }
+                    } catch(e) {
+                        console.error("Error al renderizar el mapa:", e);
                     }
                 }
             };
@@ -1209,7 +1210,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // AISLAMIENTO FACIAL PURO 
+        // AISLAMIENTO FACIAL PURO - EXTRACCIÓN DE VECTORES
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1309,13 +1310,12 @@
         }
 
         function mostrarPuntoCalibracion() {
-            if (calibLoopId) cancelAnimationFrame(calibLoopId);
             const punto = document.getElementById('punto-calibracion');
 
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // Mapeo puro con la máxima elasticidad
+                // Mapeo absoluto
                 if (window.calibPuntosCapturados.length === 9) {
                     let xs = window.calibPuntosCapturados.map(p => p.x).filter(v => !isNaN(v));
                     let ys = window.calibPuntosCapturados.map(p => p.y).filter(v => !isNaN(v));
@@ -1342,66 +1342,21 @@
             punto.style.left = pos.left;
             punto.className = 'rojo';
             
-            // LA SOLUCIÓN DEL CÍRCULO: Animación auto-rellenable visual para que el usuario sepa que está funcionando
-            punto.innerHTML = `<div class="punto-inner" style="width:0%; height:0%; border-radius:50%; background:#10b981; transition:all 0.1s linear;"></div>`; 
-            
-            calibBuffer = [];
-            isCalibrating = true;
-            stareTime = 0;
-
-            // EL RADAR AUTOMÁTICO
-            function verificarFijacion() {
-                if (!isCalibrating) return;
+            // LA CLAVE UX: CLIC UNIVERSAL SEGURO
+            punto.onclick = (e) => {
+                e.preventDefault();
                 
-                let sample = currentGazeSample;
-                if (!isNaN(sample.x) && !isNaN(sample.y)) {
-                    calibBuffer.push({x: sample.x, y: sample.y});
-                    
-                    if (calibBuffer.length > 15) calibBuffer.shift(); 
-                    
-                    if (calibBuffer.length === 15) {
-                        let xs = calibBuffer.map(p => p.x);
-                        let ys = calibBuffer.map(p => p.y);
-                        
-                        let dx = Math.max(...xs) - Math.min(...xs);
-                        let dy = Math.max(...ys) - Math.min(...ys);
-                        
-                        // Si el ojo está congelado en el punto (Sin temblor)
-                        if (dx < 0.025 && dy < 0.025) {
-                            stareTime += 30; // Aproximadamente 30ms por frame
-                            
-                            // Animación visual para el usuario
-                            let progress = Math.min(100, (stareTime / 1000) * 100);
-                            punto.querySelector('.punto-inner').style.width = progress + '%';
-                            punto.querySelector('.punto-inner').style.height = progress + '%';
-
-                            // 1 segundo de fijación = Auto Click
-                            if (stareTime >= 1000) {
-                                isCalibrating = false;
-                                cancelAnimationFrame(calibLoopId);
-                                
-                                // Captura de la base de datos perfecta
-                                let avgX = xs.reduce((a, b) => a + b, 0) / xs.length;
-                                let avgY = ys.reduce((a, b) => a + b, 0) / ys.length;
-                                
-                                window.calibPuntosCapturados.push({ x: avgX, y: avgY });
-
-                                punto.style.display = 'none';
-                                pasoCalibracionActual++;
-                                setTimeout(mostrarPuntoCalibracion, 250);
-                                return;
-                            }
-                        } else {
-                            stareTime = 0;
-                            punto.querySelector('.punto-inner').style.width = '0%';
-                            punto.querySelector('.punto-inner').style.height = '0%';
-                        }
-                    }
+                // Filtro para evitar crasheos si la IA parpadeó en ese frame
+                if (!isNaN(currentGazeSample.x) && !isNaN(currentGazeSample.y)) {
+                    window.calibPuntosCapturados.push({ x: currentGazeSample.x, y: currentGazeSample.y });
                 }
-                calibLoopId = requestAnimationFrame(verificarFijacion);
-            }
-            
-            calibLoopId = requestAnimationFrame(verificarFijacion);
+
+                punto.className = 'rojo';
+                punto.style.display = 'none';
+                
+                pasoCalibracionActual++;
+                setTimeout(mostrarPuntoCalibracion, 250);
+            };
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1467,7 +1422,7 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // MAPEO EXTREMO Y PERFECTO
+                // SEGUIMIENTO MATEMÁTICO PURO
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
@@ -1477,31 +1432,29 @@
                     let rangeX = window.calibModel.maxX - window.calibModel.minX;
                     let rangeY = window.calibModel.maxY - window.calibModel.minY;
 
-                    // Seguro dinámico Anti-NaN de división por cero
-                    if (Math.abs(rangeX) < 0.001) rangeX = 0.05;
-                    if (Math.abs(rangeY) < 0.001) rangeY = 0.05;
+                    // Fallback seguro matemático
+                    if (Math.abs(rangeX) < 0.005) rangeX = 0.05;
+                    if (Math.abs(rangeY) < 0.005) rangeY = 0.05;
 
                     let normX = (cX - window.calibModel.minX) / rangeX;
                     let normY = (cY - window.calibModel.minY) / rangeY;
 
-                    // Mapeo a las zonas absolutas (10% a 90%)
+                    // Extrapolación natural a los bordes
                     let screenX = 0.10 + (normX * 0.80);
                     let screenY = 0.10 + (normY * 0.80);
 
-                    // Amplificador para alcanzar los bordes verdaderos (0% y 100%) sin forzar la mirada
-                    screenX = (screenX - 0.5) * 1.3 + 0.5;
-                    screenY = (screenY - 0.5) * 1.3 + 0.5;
+                    // Un empuje extra del 20% para asegurar comodidad en las esquinas reales
+                    screenX = (screenX - 0.5) * 1.20 + 0.5;
+                    screenY = (screenY - 0.5) * 1.20 + 0.5;
 
-                    // Ajuste mínimo hacia arriba para cámaras de laptop 
-                    screenY -= 0.05;
-
-                    // Suavizado dinámico y veloz
+                    // Suavizado dinámico y ágil
                     window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.60 + screenX * 0.40 : screenX;
                     window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.60 + screenY * 0.40 : screenY;
 
-                    let finalX = window.lastSmoothedX;
-                    let finalY = window.lastSmoothedY;
+                    let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
+                    let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
 
+                    // FILTRO DE PURIFICACIÓN: Jamás entra un NaN al sistema
                     if (!isNaN(finalX) && !isNaN(finalY) && isFinite(finalX) && isFinite(finalY)) {
                         datosGazeActuales.push({
                             x: finalX, 
@@ -1546,7 +1499,6 @@
         function finalizarParticipacion() {
             isStimulusActive = false;
             if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-            if (calibLoopId) { cancelAnimationFrame(calibLoopId); calibLoopId = null; }
             try {
                 if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
             } catch (error) {}
