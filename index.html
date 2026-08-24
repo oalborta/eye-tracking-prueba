@@ -130,20 +130,20 @@
         }
 
         #punto-calibracion {
-            width: 55px; height: 55px; border-radius: 50%; position: fixed;
+            width: 50px; height: 50px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
             transition: top 0.4s ease-in-out, left 0.4s ease-in-out, background-color 0.3s;
             font-size: 0.8rem; font-weight: 800; color: white; user-select: none;
             box-sizing: border-box;
         }
-        #punto-calibracion:active { transform: translate(-50%, -50%) scale(0.9); }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 20px 8px rgba(239,68,68,0.4); cursor: not-allowed; border: 4px solid transparent; }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); cursor: pointer; border: 4px solid #fff; }
 
+        /* Ajustes exactos para anclar el canvas sobre la imagen */
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
-        .heatmap-container canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+        .heatmap-container canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; pointer-events: none; z-index: 10; }
 
         .study-link {
             display: flex; align-items: center; gap: 0.5rem; background: var(--bg2);
@@ -182,7 +182,7 @@
         
         #p-pregunta { background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%); z-index: 99999; }
 
-        /* NUEVO: Diseño sutil tipo "puerta" para el botón de abortar */
+        /* Botón de salir perfeccionado (sutil, tipo puerta) */
         #btn-abortar {
             position: fixed; top: 20px; right: 20px; z-index: 999999;
             background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);
@@ -191,11 +191,18 @@
         }
         #btn-abortar:hover { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: #ef4444; }
 
-        /* NUEVO: Cruz de fijación para el intervalo */
-        #p-intervalo {
-            background: #08080d; z-index: 99999;
+        /* Cruz de fijación para el descanso visual */
+        #p-intervalo { 
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: none; justify-content: center; align-items: center;
+            background: var(--bg); z-index: 99999;
         }
-        #p-intervalo .cruz { font-size: 4rem; color: var(--muted); font-weight: 200; user-select: none; }
+        #p-intervalo .cruz { position: relative; width: 40px; height: 40px; }
+        #p-intervalo .cruz::before, #p-intervalo .cruz::after {
+            content: ''; position: absolute; background: var(--muted); border-radius: 2px;
+        }
+        #p-intervalo .cruz::before { top: 19px; left: 0; width: 40px; height: 2px; }
+        #p-intervalo .cruz::after { top: 0; left: 19px; width: 2px; height: 40px; }
     </style>
 </head>
 <body>
@@ -357,6 +364,7 @@
                         <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem;"></div>
                     </div>
 
+                    <!-- Contenedor alineado donde ocurre la magia -->
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
@@ -455,7 +463,7 @@
             <div class="cruz">+</div>
         </div>
 
-        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:#08080d; z-index:99999;">
+        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:#08080d;">
             <div style="font-size:4rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:2rem;">¡Estudio completado!</h2>
             <p style="color:var(--muted); max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
@@ -482,6 +490,22 @@
         let resultadosParticipanteGaze = {};
         
         let lastMpTime = -1; 
+        
+        window.calibPuntosCapturados = [];
+        window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
+
+        // SISTEMA ESTRICTO DE PANTALLAS (Evita bugs de pantallas negras superpuestas)
+        function mostrarPantallaParticipante(idActiva) {
+            const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'estimulo-participante', 'punto-calibracion'];
+            pantallas.forEach(p => {
+                const el = document.getElementById(p);
+                if (el) el.style.display = 'none';
+            });
+            if (idActiva) {
+                const activo = document.getElementById(idActiva);
+                if(activo) activo.style.display = (idActiva === 'estimulo-participante' || idActiva === 'punto-calibracion') ? 'block' : 'flex';
+            }
+        }
 
         window.mostrarToast = (mensaje, tipo = 'success') => {
             const container = document.getElementById('toast-container');
@@ -501,6 +525,7 @@
                 document.getElementById('participant-section').style.display = 'block';
                 document.getElementById('btn-abortar').style.display = 'none'; 
                 estudioActualId = estudioParam;
+                mostrarPantallaParticipante('p-demografia');
             } else {
                 actualizarDashboard();
             }
@@ -527,38 +552,27 @@
             estudioActualId = id;
             resultadosParticipanteGaze = {}; 
             datosDemograficosTemp = {};
+            window.calibPuntosCapturados = [];
             
-            validandoRostro = false;
-            calibracionActiva = false;
             if (rafId) cancelAnimationFrame(rafId);
             
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
-            document.getElementById('btn-abortar').style.display = 'flex'; // Mostrar botón salir
+            document.getElementById('btn-abortar').style.display = 'none'; 
             
-            document.getElementById('punto-calibracion').style.display = 'none';
-            document.getElementById('p-fin').style.display = 'none';
-            document.getElementById('p-pregunta').style.display = 'none';
-            document.getElementById('p-intervalo').style.display = 'none';
-            document.getElementById('estimulo-participante').style.display = 'none';
-            document.getElementById('p-demografia').style.display = 'flex';
+            mostrarPantallaParticipante('p-demografia');
         };
 
         window.volverAlDashboardDesdePrueba = () => {
-            validandoRostro = false;
-            calibracionActiva = false;
             if (rafId) cancelAnimationFrame(rafId);
+            
             try {
                 if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
             } catch(e){}
 
             document.getElementById('participant-section').style.display = 'none';
             document.getElementById('btn-abortar').style.display = 'none';
-            document.getElementById('p-fin').style.display = 'none';
-            document.getElementById('p-intervalo').style.display = 'none';
-            document.getElementById('p-demografia').style.display = 'flex'; 
             
-            // Si estaba en modo participante, quita parámetro URL
             if (estudioParam) {
                 window.location.href = window.location.href.split('?')[0];
             } else {
@@ -573,7 +587,6 @@
             window.location.href = window.location.href.split('?')[0];
         }
 
-        // NUEVO: Limpiar resultados de participantes test
         window.limpiarResultados = () => {
             if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de los participantes de este estudio? Esta acción no se puede deshacer y borrará los mapas de calor.')) {
                 const idx = estudios.findIndex(e => e.id === estudioActualId);
@@ -581,7 +594,7 @@
                     estudios[idx].participantes = [];
                     localStorage.setItem('et_estudios', JSON.stringify(estudios));
                     verResultados(estudioActualId);
-                    mostrarToast('Datos de participantes borrados exitosamente', 'info');
+                    mostrarToast('Datos borrados exitosamente', 'info');
                 }
             }
         };
@@ -872,6 +885,7 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
+        // DIBUJADO EXACTO SOBRE LA IMAGEN 
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             const estudio = estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
@@ -909,14 +923,18 @@
             wrap.appendChild(container);
 
             img.onload = () => {
+                // Sincronización perfecta: El canvas toma el ancho y alto real para que coincida y el CSS lo escala.
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
                 
                 const heat = simpleheat(canvas);
-                const radius = Number(document.getElementById('heatmap-radius').value);
-                const blur = Number(document.getElementById('heatmap-blur').value);
+                
+                // Mantiene el tamaño visual del haz independiente de la resolución de la foto original
+                const scaleFactor = img.naturalWidth / 800;
+                const radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
+                const blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
                 
                 heat.radius(radius, blur);
                 
@@ -925,7 +943,7 @@
                     let nx = p.x;
                     let ny = p.y;
                     
-                    if (nx > 2) {
+                    if (nx > 2) { 
                         nx = nx / window.screen.width;
                         ny = ny / window.screen.height;
                     }
@@ -934,7 +952,7 @@
                 });
                 
                 heat.data(validPoints);
-                heat.max(Math.max(5, validPoints.length / 15)); 
+                heat.max(Math.max(2, validPoints.length / 20)); 
                 heat.draw();
             };
         };
@@ -1007,8 +1025,7 @@
             }
 
             datosDemograficosTemp = { edadRango, genero, ocupacion };
-            document.getElementById('p-demografia').style.display = 'none';
-            document.getElementById('p-consentimiento').style.display = 'flex';
+            mostrarPantallaParticipante('p-consentimiento');
         };
 
         window.participanteAceptar = async () => {
@@ -1031,7 +1048,6 @@
                 video.srcObject = streamCamara;
                 await video.play();
 
-                document.getElementById('p-consentimiento').style.display = 'none';
                 document.getElementById('btn-iniciar-camara').disabled = false;
                 document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
                 
@@ -1052,28 +1068,35 @@
         ];
         
         let pasoCalibracionActual = 0;
-        let calibracionActiva = false;
-        let validandoRostro = false;
-        let faceContinuouslyDetectedMs = 0;
-        let lastDetectionTime = 0;
 
         function iniciarCalibracionPasoAPaso() {            
             pasoCalibracionActual = 0;
-            calibracionActiva = true;
-            validandoRostro = true;
-            lastDetectionTime = performance.now();
-            verificarRostroParaPunto(); 
-            mostrarPuntoCalibracion();
+            window.calibPuntosCapturados = []; 
             
-            // Si es administrador probando, mostramos la puerta de salida
-            if (!estudioParam) document.getElementById('btn-abortar').style.display = 'flex';
+            document.getElementById('btn-abortar').style.display = 'none'; // UX: Ocultar salir en calibración
+            mostrarPantallaParticipante('punto-calibracion');
+            mostrarPuntoCalibracion();
         }
 
         function mostrarPuntoCalibracion() {
             if (pasoCalibracionActual >= puntosCalibracion.length) {
-                calibracionActiva = false;
-                validandoRostro = false;
                 document.getElementById('punto-calibracion').style.display = 'none';
+                
+                // CALCULAR LÍMITES MATEMÁTICOS DE MOVIMIENTO DE CABEZA/OJO
+                if (window.calibPuntosCapturados.length > 0) {
+                    let xs = window.calibPuntosCapturados.map(p => p.x);
+                    let ys = window.calibPuntosCapturados.map(p => p.y);
+                    window.calibBounds = {
+                        minX: Math.min(...xs), maxX: Math.max(...xs),
+                        minY: Math.min(...ys), maxY: Math.max(...ys)
+                    };
+                    // Aseguramos un rango mínimo por si el usuario fue muy rígido
+                    if (window.calibBounds.maxX - window.calibBounds.minX < 0.01) { window.calibBounds.minX -= 0.05; window.calibBounds.maxX += 0.05; }
+                    if (window.calibBounds.maxY - window.calibBounds.minY < 0.01) { window.calibBounds.minY -= 0.05; window.calibBounds.maxY += 0.05; }
+                } else {
+                    window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
+                }
+
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -1081,70 +1104,32 @@
             const pos = puntosCalibracion[pasoCalibracionActual];
             const punto = document.getElementById('punto-calibracion');
             
-            punto.style.display = 'flex';
             punto.style.top = pos.top;
             punto.style.left = pos.left;
-            
-            faceContinuouslyDetectedMs = 0; 
             punto.className = 'rojo';
             punto.innerHTML = ''; 
-            punto.style.borderColor = 'transparent';
-            punto.onclick = null; 
-        }
+            punto.onclick = null;
 
-        function verificarRostroParaPunto() {
-            if (!validandoRostro) return;
-            const video = document.getElementById('video-participante');
-            let rostroDetectado = false;
-            let now = performance.now();
-            
-            if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
-                try {
-                    const results = faceLandmarker.detectForVideo(video, now);
-                    lastMpTime = now;
-                    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-                        rostroDetectado = true;
-                    }
-                } catch(e) {}
-            }
-
-            const punto = document.getElementById('punto-calibracion');
-            if (calibracionActiva) {
-                let deltaTime = now - lastDetectionTime;
-                if (deltaTime > 100) deltaTime = 16; 
-
-                if (rostroDetectado) {
-                    faceContinuouslyDetectedMs += deltaTime;
-                    
-                    if (faceContinuouslyDetectedMs <= 1500) {
-                        punto.style.borderColor = `rgba(255,255,255, ${Math.min(faceContinuouslyDetectedMs / 1500, 1)})`;
-                        punto.innerHTML = '';
-                    } else {
-                        if (punto.className !== 'verde') {
-                            punto.className = 'verde';
-                            punto.style.borderColor = '#fff';
-                            punto.innerHTML = '<span style="font-size:0.75rem;font-weight:900;">CLIC</span>';
-                            punto.onclick = () => {
-                                punto.style.display = 'none';
-                                punto.onclick = null;
-                                pasoCalibracionActual++;
-                                setTimeout(mostrarPuntoCalibracion, 400);
-                            };
+            // Tiempo para acomodar la vista al punto nuevo
+            setTimeout(() => {
+                punto.className = 'verde';
+                punto.innerHTML = '<span style="font-size:0.75rem;font-weight:900;">CLIC</span>';
+                
+                punto.onclick = () => {
+                    try {
+                        let now = performance.now();
+                        const results = faceLandmarker.detectForVideo(document.getElementById('video-participante'), now);
+                        if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                            const nose = results.faceLandmarks[0][1]; 
+                            window.calibPuntosCapturados.push({ x: 1 - nose.x, y: nose.y });
                         }
-                    }
-                } else {
-                    faceContinuouslyDetectedMs = 0;
-                    if (punto.className !== 'rojo') {
-                        punto.className = 'rojo';
-                        punto.style.borderColor = 'transparent';
-                        punto.innerHTML = '';
-                        punto.onclick = null;
-                    }
-                }
-            }
-            
-            lastDetectionTime = now;
-            requestAnimationFrame(verificarRostroParaPunto);
+                    } catch(e) {}
+                    
+                    punto.style.display = 'none';
+                    pasoCalibracionActual++;
+                    setTimeout(mostrarPuntoCalibracion, 300);
+                };
+            }, 1000); 
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1176,12 +1161,9 @@
 
         window.mostrarPreguntaMaterial = () => {
             try {
-                // Si es admin, mostramos el botón de abortar en esta pantalla
-                if (!estudioParam) document.getElementById('btn-abortar').style.display = 'flex';
+                if (!estudioParam) document.getElementById('btn-abortar').style.display = 'flex'; // Único lugar visible
                 
-                document.getElementById('estimulo-participante').style.display = 'none';
                 const mat = estimulosOrdenadosActuales[materialActualIndex];
-                
                 if (!mat) {
                     finalizarParticipacion();
                     return;
@@ -1189,7 +1171,7 @@
 
                 document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
                 document.getElementById('texto-pregunta-material').textContent = mat.pregunta || 'Observa la imagen';
-                document.getElementById('p-pregunta').style.display = 'flex';
+                mostrarPantallaParticipante('p-pregunta');
             } catch (error) {
                 alert("Fallo al mostrar instrucción: " + error.message);
                 finalizarParticipacion();
@@ -1198,42 +1180,43 @@
 
         window.lanzarSiguienteEstimulo = () => {
             try {
-                // ESCONDEMOS EL BOTON ABORTAR DURANTE EL ESTIMULO
-                document.getElementById('btn-abortar').style.display = 'none';
-                document.getElementById('p-pregunta').style.display = 'none';
+                document.getElementById('btn-abortar').style.display = 'none'; // UX: Ocultar salir
+                mostrarPantallaParticipante('estimulo-participante');
                 
                 const mat = estimulosOrdenadosActuales[materialActualIndex];
                 const imgEl = document.getElementById('estimulo-participante');
-                
                 imgEl.src = mat.imagen;
-                imgEl.style.display = 'block';
 
                 datosGazeActuales = [];
                 tiempoInicioEstimulo = Date.now();
-                const duracionMs = (mat.duracion || 10) * 1000;
+                const duracionMs = (Number(mat.duracion) || 10) * 1000;
                 const video = document.getElementById('video-participante');
 
                 function loopTracking() {
                     let now = performance.now();
-                    if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
+                    if (faceLandmarker && video.readyState >= 2) {
                         try {
                             const results = faceLandmarker.detectForVideo(video, now);
-                            lastMpTime = now;
                             if (results.faceLandmarks?.[0]) {
                                 const nose = results.faceLandmarks[0][1];
-                                
                                 const rawX = 1 - nose.x;
                                 const rawY = nose.y;
                                 
-                                let amplifiedX = (rawX - 0.5) * 2.5 + 0.5;
-                                let amplifiedY = (rawY - 0.5) * 2.5 + 0.5;
-                                
-                                amplifiedX += (Math.random() - 0.5) * 0.05;
-                                amplifiedY += (Math.random() - 0.5) * 0.05;
+                                // TRADUCTOR DE MIRADA (Interpola contra los límites de calibración matemáticos)
+                                let normX = (rawX - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
+                                let normY = (rawY - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
+
+                                // Expandimos para alcanzar bien los bordes de la pantalla
+                                normX = (normX - 0.5) * 1.2 + 0.5;
+                                normY = (normY - 0.5) * 1.2 + 0.5;
+
+                                // Ruido orgánico para suavizar el heatmap
+                                normX += (Math.random() - 0.5) * 0.03;
+                                normY += (Math.random() - 0.5) * 0.03;
 
                                 datosGazeActuales.push({
-                                    x: Math.max(0, Math.min(1, amplifiedX)), 
-                                    y: Math.max(0, Math.min(1, amplifiedY)),
+                                    x: Math.max(0, Math.min(1, normX)), 
+                                    y: Math.max(0, Math.min(1, normY)),
                                     time: Date.now() - tiempoInicioEstimulo,
                                     intensity: 1
                                 });
@@ -1244,21 +1227,24 @@
                 }
                 loopTracking();
 
-                setTimeout(() => {
+                timeoutEstimulo = setTimeout(() => {
                     cancelAnimationFrame(rafId);
-                    imgEl.style.display = 'none';
                     
                     if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
                     resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
 
                     materialActualIndex++;
                     if (materialActualIndex < estimulosOrdenadosActuales.length) {
-                        // LA TRANSICIÓN ENTRE ESTÍMULOS: Cruz de Fijación
-                        document.getElementById('p-intervalo').style.display = 'flex';
-                        setTimeout(() => {
-                            document.getElementById('p-intervalo').style.display = 'none';
-                            mostrarPreguntaMaterial();
-                        }, (estudioParticipanteObj.intervalo || 2) * 1000);
+                        
+                        mostrarPantallaParticipante('p-intervalo');
+                        let waitTime = Number(estudioParticipanteObj.intervalo);
+                        if(isNaN(waitTime) || waitTime < 0) waitTime = 2; // Forzamos a un número seguro
+                        
+                        timeoutIntervalo = setTimeout(() => {
+                            try {
+                                mostrarPreguntaMaterial();
+                            } catch(e) { finalizarParticipacion(); }
+                        }, waitTime * 1000);
                         
                     } else {
                         finalizarParticipacion();
@@ -1266,7 +1252,7 @@
                 }, duracionMs);
 
             } catch (error) {
-                alert("Ocurrió un fallo en el sistema al intentar procesar la vista. " + error.message);
+                alert("Ocurrió un fallo en el sistema al intentar procesar la vista.");
                 finalizarParticipacion();
             }
         };
@@ -1276,9 +1262,7 @@
                 if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
             } catch (error) {}
 
-            document.getElementById('p-pregunta').style.display = 'none';
-            document.getElementById('estimulo-participante').style.display = 'none';
-            document.getElementById('btn-abortar').style.display = 'none';
+            mostrarPantallaParticipante('p-fin');
 
             if (estudioParticipanteObj) {
                 if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
@@ -1296,8 +1280,6 @@
                     localStorage.setItem('et_estudios', JSON.stringify(estudios));
                 }
             }
-
-            document.getElementById('p-fin').style.display = 'flex';
         }
     </script>
 </body>
