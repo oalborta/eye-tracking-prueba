@@ -91,7 +91,7 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--muted); }
         .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); }
         .btn-danger:hover { background: rgba(239,68,68,0.2); }
-        .btn-success { background: #059669; color: #fff; } /* Nuevo color para guardado exitoso */
+        .btn-success { background: #059669; color: #fff; }
         .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 8px; }
 
         .form-group { margin-bottom: 1.25rem; }
@@ -133,12 +133,13 @@
             width: 55px; height: 55px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            transition: background-color 0.3s, box-shadow 0.3s, top 0.5s ease-in-out, left 0.5s ease-in-out;
+            transition: top 0.4s ease-in-out, left 0.4s ease-in-out, background-color 0.3s;
             font-size: 0.8rem; font-weight: 800; color: white; user-select: none;
+            box-sizing: border-box;
         }
-        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 30px 12px rgba(239,68,68,0.7); cursor: not-allowed; }
-        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); cursor: pointer; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16,185,129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129, 0); } }
+        #punto-calibracion:active { transform: translate(-50%, -50%) scale(0.9); }
+        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 20px 8px rgba(239,68,68,0.4); cursor: not-allowed; border: 4px solid transparent; }
+        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); cursor: pointer; border: 4px solid #fff; }
 
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
@@ -161,7 +162,7 @@
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
         #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
-        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #08080d; }
+        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
@@ -176,6 +177,11 @@
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
+        
+        /* Diseño visible para la pantalla de instrucción */
+        #p-pregunta {
+            background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%);
+        }
     </style>
 </head>
 <body>
@@ -275,7 +281,6 @@
                         <div id="lista-estimulos-creacion"></div>
 
                         <div style="display:flex; gap:0.75rem; margin-top:2rem;">
-                            <!-- Botón con ID para poder modificarlo dinámicamente -->
                             <button id="btn-guardar-estudio" class="btn btn-primary" onclick="guardarEstudio()"><i class="fas fa-save"></i> Guardar Estudio</button>
                             <button class="btn btn-secondary" onclick="navegarA('dashboard')">Cancelar</button>
                         </div>
@@ -393,10 +398,10 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
-                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Míralos fijamente y haz clic sobre ellos cuando se pongan verdes</strong>.
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Míralos fijamente y mantén tu rostro visible hasta que se pongan verdes para hacer clic.</strong>
                     </p>
                     <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
-                        <i class="fas fa-check"></i> Acepto y calibrar cámara
+                        <i class="fas fa-camera"></i> Acepto y calibrar cámara
                     </button>
                 </div>
             </div>
@@ -405,25 +410,26 @@
         <div id="p-carga" class="pantalla-participante" style="display:none;">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p style="font-weight:600; font-size:1.1rem;">Cargando motor de IA visual...</p>
+                <p style="font-weight:600; font-size:1.1rem;">Conectando IA Visual...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-        <!-- Fondo explícito oscuro para evitar transparencias -->
-        <div id="p-pregunta" class="pantalla-participante" style="display:none; background:#12121c;">
-            <div class="card" style="max-width:500px; text-align:center;">
-                <span id="label-num-material" style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
-                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.3rem; margin:1rem 0;">Instrucción</h3>
-                <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="lanzarSiguienteEstimulo()">Ver estímulo ahora</button>
+        <div id="p-pregunta" class="pantalla-participante" style="display:none;">
+            <div class="card" style="max-width:500px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+                <span id="label-num-material" style="font-size:0.85rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
+                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.5rem; margin:1rem 0;">Instrucción</h3>
+                <button class="btn btn-primary" style="width:100%; justify-content:center; padding: 0.85rem;" onclick="lanzarSiguienteEstimulo()">
+                    Ver estímulo ahora <i class="fas fa-arrow-right"></i>
+                </button>
             </div>
         </div>
 
         <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:#08080d;">
-            <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
-            <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado!</h2>
-            <p style="color:var(--muted); max-width:400px; text-align:center;">Tus datos de atención ocular han sido guardados correctamente.</p>
-            <button class="btn btn-secondary" onclick="volverAlDashboardDesdePrueba()">Volver al Panel de Administrador</button>
+            <div style="font-size:4rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
+            <h2 style="font-weight:900; font-size:2rem;">¡Estudio completado!</h2>
+            <p style="color:var(--muted); max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
+            <button class="btn btn-secondary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Volver al Panel</button>
         </div>
     </div>
 
@@ -443,6 +449,9 @@
         let estimulosOrdenadosActuales = [];
         let datosDemograficosTemp = {};
         let resultadosParticipanteGaze = {};
+        
+        // Control vital para evitar crasheos de MediaPipe
+        let lastMpTime = -1; 
 
         window.mostrarToast = (mensaje, tipo = 'success') => {
             const container = document.getElementById('toast-container');
@@ -456,7 +465,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const estudioParam = urlParams.get('estudio');
 
-        // Lógica Inicial (Sin Login)
         window.onload = () => {
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
@@ -491,7 +499,6 @@
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
             
-            // Asegurarnos de limpiar vistas previas de otras pruebas
             document.getElementById('p-fin').style.display = 'none';
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
@@ -622,9 +629,10 @@
             container.appendChild(div);
         };
 
+        // MEJORA 1: COMPRESOR DE IMÁGENES AUTOMÁTICO
         window.cargarImagenLocal = (input) => {
             const file = input.files[0];
-            if (file) procesarArchivoImagen(file, input.closest('.estimulo-item-card'));
+            if (file) comprimirYProcesarImagen(file, input.closest('.estimulo-item-card'));
         };
 
         window.manejarDrop = (e, box) => {
@@ -632,16 +640,43 @@
             box.classList.remove('dragover');
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
-                procesarArchivoImagen(file, box.closest('.estimulo-item-card'));
+                comprimirYProcesarImagen(file, box.closest('.estimulo-item-card'));
             } else {
                 alert('Por favor suelta un archivo de imagen válido');
             }
         };
 
-        function procesarArchivoImagen(file, card) {
+        function comprimirYProcesarImagen(file, card) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                actualizarPreviewImagen(card, e.target.result);
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    // Limitar tamaño máximo para evitar llenar el localStorage
+                    const maxDim = 1200;
+                    if (width > maxDim || height > maxDim) {
+                        if (width > height) {
+                            height *= maxDim / width;
+                            width = maxDim;
+                        } else {
+                            width *= maxDim / height;
+                            height = maxDim;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Comprimir a JPEG con 60% de calidad
+                    const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.6);
+                    actualizarPreviewImagen(card, dataUrlComprimida);
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -663,7 +698,6 @@
             card.querySelector('.preview-txt').style.display = 'none';
         }
 
-        // FEEDBACK DE GUARDADO TOTALMENTE CLARO E INLINE
         window.guardarEstudio = () => {
             try {
                 const idEdit = document.getElementById('edit-estudio-id').value;
@@ -686,7 +720,7 @@
                 });
 
                 if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
-                    alert('⚠️ No se puede guardar: Asigna un nombre al estudio y asegúrate de cargar al menos una imagen.');
+                    alert('⚠️ Asigna un nombre al estudio y asegúrate de cargar al menos una imagen.');
                     return;
                 }
 
@@ -713,7 +747,7 @@
 
                 localStorage.setItem('et_estudios', JSON.stringify(estudios));
                 
-                // Confirmación Visual Directa en el Botón
+                // Confirmación Visual Dinámica
                 const btn = document.getElementById('btn-guardar-estudio');
                 const textoOriginal = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> ¡Guardado Exitosamente!';
@@ -726,8 +760,11 @@
                 }, 1200);
 
             } catch(e) {
-                console.error("Error guardando estudio:", e);
-                alert("Ocurrió un error al intentar guardar.");
+                if(e.name === 'QuotaExceededError') {
+                    alert("⚠️ Error: Imágenes muy pesadas. Sube imágenes de menor tamaño o usa URLs.");
+                } else {
+                    alert("Ocurrió un error al intentar guardar: " + e.message);
+                }
             }
         };
 
@@ -908,29 +945,33 @@
                 iniciarCalibracionPasoAPaso();
             } catch (e) {
                 console.error(e);
-                alert('No se pudo acceder a la cámara o cargar la IA. Asegúrate de dar permisos en tu navegador.');
+                alert('No se pudo acceder a la cámara o cargar la IA.');
                 location.reload();
             }
         };
 
-        // CALIBRACIÓN REAL CON INTELIGENCIA ARTIFICIAL EN VIVO
+        // MEJORA 2 Y 3: CALIBRACIÓN ESTRICTA CON GAZE-LOCK Y ANTI-CRASH
         const puntosCalibracion = [
-            { top: '50%', left: '50%' },  // Centro
-            { top: '10%', left: '10%' },  // Arriba - Izquierda
-            { top: '10%', left: '90%' },  // Arriba - Derecha
-            { top: '90%', left: '90%' },  // Abajo - Derecha
-            { top: '90%', left: '10%' }   // Abajo - Izquierda
+            { top: '50%', left: '50%' },  
+            { top: '10%', left: '10%' },  
+            { top: '10%', left: '90%' },  
+            { top: '90%', left: '90%' },  
+            { top: '90%', left: '10%' }   
         ];
         
         let pasoCalibracionActual = 0;
         let calibracionActiva = false;
         let validandoRostro = false;
+        
+        let faceContinuouslyDetectedMs = 0;
+        let lastDetectionTime = 0;
 
         function iniciarCalibracionPasoAPaso() {
             pasoCalibracionActual = 0;
             calibracionActiva = true;
             validandoRostro = true;
-            verificarRostroParaPunto(); // Inicia el Loop de Face Tracking
+            lastDetectionTime = performance.now();
+            verificarRostroParaPunto(); 
             mostrarPuntoCalibracion();
         }
 
@@ -950,46 +991,60 @@
             punto.style.top = pos.top;
             punto.style.left = pos.left;
             
+            // Reiniciar estado
+            faceContinuouslyDetectedMs = 0;
             punto.className = 'rojo';
-            punto.innerHTML = '<i class="fas fa-eye"></i>'; 
+            punto.innerHTML = '<i class="fas fa-eye-slash"></i>'; 
+            punto.style.borderColor = 'transparent';
             punto.onclick = null; 
         }
 
-        // Esta función escanea la cámara cada milisegundo durante la calibración
         function verificarRostroParaPunto() {
             if (!validandoRostro) return;
             const video = document.getElementById('video-participante');
             let rostroDetectado = false;
+            let now = performance.now();
             
-            if (faceLandmarker && video.readyState >= 2) {
-                const results = faceLandmarker.detectForVideo(video, performance.now());
+            // CONTROL DE TIMESTAMP (Evita Pantalla Negra y Congelamiento)
+            if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
+                const results = faceLandmarker.detectForVideo(video, now);
+                lastMpTime = now;
                 if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-                    rostroDetectado = true; // La IA físicamente encontró una cara
+                    rostroDetectado = true;
                 }
             }
 
             const punto = document.getElementById('punto-calibracion');
             if (calibracionActiva) {
                 if (rostroDetectado) {
-                    // Si te está viendo, cambia a verde y permite el clic
-                    if (punto.className !== 'verde') {
-                        punto.className = 'verde';
-                        punto.innerHTML = 'CLIC';
-                        punto.onclick = () => {
-                            punto.style.display = 'none';
-                            punto.onclick = null;
-                            pasoCalibracionActual++;
-                            setTimeout(mostrarPuntoCalibracion, 300);
-                        };
+                    faceContinuouslyDetectedMs += (now - lastDetectionTime);
+                    punto.style.borderColor = `rgba(255,255,255, ${Math.min(faceContinuouslyDetectedMs / 1500, 1)})`;
+                    punto.innerHTML = '<i class="fas fa-eye"></i>';
+
+                    // Requiere 1.5 segundos continuos miranda la pantalla para habilitarse
+                    if (faceContinuouslyDetectedMs > 1500) {
+                        if (punto.className !== 'verde') {
+                            punto.className = 'verde';
+                            punto.style.borderColor = '#fff';
+                            punto.innerHTML = 'CLIC';
+                            punto.onclick = () => {
+                                punto.style.display = 'none';
+                                punto.onclick = null;
+                                pasoCalibracionActual++;
+                                setTimeout(mostrarPuntoCalibracion, 400);
+                            };
+                        }
                     }
                 } else {
-                    // Si no te ve, se pone rojo y no te deja avanzar
+                    faceContinuouslyDetectedMs = 0; // Si se mueve, pierde el progreso
                     punto.className = 'rojo';
+                    punto.style.borderColor = 'transparent';
                     punto.innerHTML = '<i class="fas fa-eye-slash"></i>';
                     punto.onclick = null;
                 }
             }
             
+            lastDetectionTime = now;
             requestAnimationFrame(verificarRostroParaPunto);
         }
 
@@ -1014,7 +1069,7 @@
         }
 
         window.mostrarPreguntaMaterial = () => {
-            // Apagar explícitamente cualquier estímulo anterior
+            // Limpieza estricta de capas
             document.getElementById('estimulo-participante').style.display = 'none';
             
             const mat = estimulosOrdenadosActuales[materialActualIndex];
@@ -1028,6 +1083,7 @@
             const mat = estimulosOrdenadosActuales[materialActualIndex];
             const imgEl = document.getElementById('estimulo-participante');
             
+            imgEl.onerror = () => { console.warn("Aviso: Fallo visual en la carga del estímulo."); };
             imgEl.src = mat.imagen;
             imgEl.style.display = 'block';
 
@@ -1037,8 +1093,10 @@
             const video = document.getElementById('video-participante');
 
             function loopTracking() {
-                if (faceLandmarker && video.readyState >= 2) {
-                    const results = faceLandmarker.detectForVideo(video, performance.now());
+                let now = performance.now();
+                if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
+                    const results = faceLandmarker.detectForVideo(video, now);
+                    lastMpTime = now;
                     if (results.faceLandmarks?.[0]) {
                         const nose = results.faceLandmarks[0][1];
                         datosGazeActuales.push({
@@ -1070,16 +1128,13 @@
         };
 
         function finalizarParticipacion() {
-            // Apagado de cámara blindado contra errores (Try-Catch) para evitar bloqueos
             try {
-                if (streamCamara) {
-                    streamCamara.getTracks().forEach(t => t.stop());
-                }
+                if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
             } catch (error) {
-                console.warn("La cámara ya estaba cerrada o ignoró el comando.", error);
+                console.warn("La cámara ya fue liberada.", error);
             }
 
-            // Ocultar cualquier elemento restante que cause pantalla negra
+            // Ocultar preventivamente todo lo que pueda causar pantalla negra
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
 
@@ -1092,7 +1147,6 @@
                 gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial || {}
             });
 
-            // Guardado final en Storage garantizado
             const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
             if (idx !== -1) {
                 estudios[idx] = estudioParticipanteObj;
