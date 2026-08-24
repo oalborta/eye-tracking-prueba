@@ -120,18 +120,17 @@
             z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
 
-        /* CALIBRACIÓN 9 PUNTOS */
         #punto-calibracion {
-            width: 40px; height: 40px; border-radius: 50%; position: fixed;
+            width: 48px; height: 48px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            transition: background-color 0.2s, transform 0.1s;
-            font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
-            box-sizing: border-box; border: 3px solid transparent; cursor: pointer;
-            background: #10b981; box-shadow: 0 0 20px 8px rgba(16,185,129,0.5);
+            transition: top 0.35s ease-out, left 0.35s ease-out, background-color 0.2s;
+            font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 900; color: white; user-select: none;
+            box-sizing: border-box; border: 3px solid transparent; letter-spacing: 0.5px; cursor: pointer;
         }
         #punto-calibracion:active { transform: translate(-50%, -50%) scale(0.85); }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 20px 5px rgba(239,68,68,0.4); cursor: default; }
+        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 10px rgba(16,185,129,0.7); cursor: pointer; border-color: #fff; }
 
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
@@ -144,7 +143,8 @@
         .file-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01); }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
-        #video-participante { position: fixed; top: 20px; left: 20px; width: 160px; height: 120px; border-radius: 8px; object-fit: cover; z-index: 999998; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5); transform: scaleX(-1); border: 2px solid var(--accent); }
+        /* VÍDEO OCULTO PARA NO DISTRAER */
+        #video-participante { position: fixed; top: 0; left: 0; width: 10px; height: 10px; opacity: 0; pointer-events: none; z-index: -1; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
@@ -384,10 +384,7 @@
 
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
-        
-        <!-- VIDEO FLOTANTE PARA CALIBRACIÓN -->
         <video id="video-participante" playsinline muted autoplay></video>
-        
         <img id="estimulo-participante" alt="Estímulo">
         <div id="punto-calibracion" class="verde">CLIC</div>
 
@@ -438,8 +435,8 @@
                 <div class="card" style="text-align:left;">
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
-                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante Inteligencia Artificial en tu propio navegador. No se transmite ni almacena video.
-                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto verde con tus ojos y haz CLIC en él.</strong>
+                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante IA. No se almacena video.
+                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto con tus ojos y haz CLIC en él cuando se ponga verde.</strong> Trata de no mover la cabeza bruscamente.
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -506,7 +503,6 @@
         let visualizacionModo = 'calor'; 
 
         window.calibPuntosCapturados = [];
-        // Matriz de límites geométricos
         window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
@@ -553,6 +549,10 @@
         const estudioParam = urlParams.get('estudio');
 
         window.onload = () => {
+            if (window.location.protocol === 'file:') {
+                alert('⚠️ AVISO DE SEGURIDAD: Estás abriendo el archivo localmente.\n\nPara que la cámara funcione, los navegadores requieren un enlace seguro. Sube este archivo a Netlify Drop o usa un Local Server.');
+            }
+
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
@@ -589,8 +589,10 @@
             window.lastSmoothedY = undefined;
             
             if (rafId) cancelAnimationFrame(rafId);
+            
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
+            
             mostrarPantalla('p-demografia');
         };
 
@@ -624,7 +626,7 @@
                     localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
                     window.estudios = dbEstudios;
                     verResultados(estudioActualId);
-                    mostrarToast('Todos los datos han sido borrados', 'info');
+                    mostrarToast('Datos borrados exitosamente', 'info');
                 }
             }
         };
@@ -1181,7 +1183,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // BUCLE CIENTÍFICO DE RASTREO DE PUPILA (MediaPipe Iris)
+        // LOOP DE VISIÓN CON "FALLBACK" ANTI-CRASH
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1194,15 +1196,19 @@
                         
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
-                            // Extrae el centro de las pupilas (Puntos 468 y 473)
-                            const irisLeft = l[468];
-                            const irisRight = l[473];
+                            let refX, refY;
                             
-                            // Invertido (1 - x) por el efecto espejo de la cámara
-                            currentGazeSample = { 
-                                x: 1 - ((irisLeft.x + irisRight.x) / 2), 
-                                y: (irisLeft.y + irisRight.y) / 2 
-                            };
+                            // Intenta leer los Iris (468 y 473). Si el navegador no lo soporta,
+                            // automáticamente lee el puente de los ojos (159 y 386) para evitar el error "NaN"
+                            if (l.length > 470) {
+                                refX = (l[468].x + l[473].x) / 2;
+                                refY = (l[468].y + l[473].y) / 2;
+                            } else {
+                                refX = (l[159].x + l[386].x) / 2;
+                                refY = (l[159].y + l[386].y) / 2;
+                            }
+
+                            currentGazeSample = { x: 1 - refX, y: refY };
                         }
                     } catch(e) {}
                 }
@@ -1237,8 +1243,6 @@
                 video.srcObject = streamCamara;
                 await video.play();
                 
-                // Mostrar el video flotante pequeñito para dar feedback
-                video.style.display = 'block';
             } catch (e) {
                 alert('Cámara bloqueada o en uso por otra app (Zoom, Teams, Meet). Ciérralas e intenta de nuevo.');
                 location.reload();
@@ -1252,7 +1256,7 @@
             iniciarCalibracionPasoAPaso();
         };
 
-        // CALIBRACIÓN CIENTÍFICA DE 9 PUNTOS
+        // CALIBRACIÓN DE 9 PUNTOS
         const puntosCalibracion = [
             { top: '10%', left: '10%' }, { top: '10%', left: '50%' }, { top: '10%', left: '90%' },
             { top: '50%', left: '10%' }, { top: '50%', left: '50%' }, { top: '50%', left: '90%' },
@@ -1274,9 +1278,8 @@
 
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
-                document.getElementById('video-participante').style.display = 'none'; // Ocultar cámara para la prueba
                 
-                // CREAR LA MATRIZ MATEMÁTICA EXACTA CON LOS OJOS DEL USUARIO
+                // CREAR LA MATRIZ MATEMÁTICA
                 if (window.calibPuntosCapturados.length === 9) {
                     let xs = window.calibPuntosCapturados.map(p => p.x);
                     let ys = window.calibPuntosCapturados.map(p => p.y);
@@ -1322,6 +1325,8 @@
                     punto.style.display = 'none';
                     
                     pasoCalibracionActual++;
+                    
+                    // Intervalo sin pantalla negra.
                     setTimeout(mostrarPuntoCalibracion, 250);
                 };
             }, 800); 
@@ -1390,28 +1395,31 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // MAPEO EXACTO: Grabación milisegundo a milisegundo
+                // MAPEO EXACTO Y SEGURO (Milisegundo a milisegundo)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
-                    // Interpola la pupila actual dentro de los límites calibrados
                     let normX = (currentGazeSample.x - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
                     let normY = (currentGazeSample.y - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
 
-                    // Ajuste de centro geométrico para pantallas
                     normX = 0.10 + 0.80 * normX;
                     normY = 0.10 + 0.80 * normY;
 
-                    // Promedio exponencial para estabilizar temblores de la pupila
                     window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
                     window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
 
-                    datosGazeActuales.push({
-                        x: Math.max(0, Math.min(1, window.lastSmoothedX)), 
-                        y: Math.max(0, Math.min(1, window.lastSmoothedY)),
-                        time: Date.now() - tiempoInicioEstimulo,
-                        intensity: 1
-                    });
+                    // Protección contra el "NaN Poisoning"
+                    let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
+                    let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
+                    
+                    if (!isNaN(finalX) && !isNaN(finalY)) {
+                        datosGazeActuales.push({
+                            x: finalX, 
+                            y: finalY,
+                            time: Date.now() - tiempoInicioEstimulo,
+                            intensity: 1
+                        });
+                    }
                 }, 30); 
 
                 timeoutEstimulo = setTimeout(() => {
