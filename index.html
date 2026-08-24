@@ -161,25 +161,8 @@
         }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
-        /* MEJORA UX: El video ahora se usará como espejo (PIP) durante la calibración */
-        #video-participante { 
-            position: fixed; 
-            z-index: -1; 
-            opacity: 0; 
-            pointer-events: none; 
-            object-fit: cover;
-            transition: opacity 0.3s;
-        }
-        /* Clase especial para mostrar la cámara como espejo en la calibración */
-        .video-pip {
-            bottom: 30px !important; right: 30px !important; top: auto !important; left: auto !important;
-            width: 160px !important; height: 160px !important; border-radius: 50%;
-            border: 4px solid var(--danger); box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            z-index: 999999 !important; opacity: 1 !important; transform: scaleX(-1);
-            transition: border-color 0.3s !important;
-        }
-        .video-pip.detectado { border-color: var(--accent) !important; }
-
+        /* Video 100% oculto para evitar distracciones según feedback */
+        #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
@@ -415,7 +398,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
-                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla y verás un espejo de tu cámara. <strong>Mantén tu rostro en cuadro y mira los puntos fijamente hasta que se pongan verdes para hacer clic.</strong>
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Mantén tu rostro frente a la pantalla y mira los puntos fijamente.</strong> Cuando el punto se ilumine en verde, haz clic en él.
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y calibrar cámara
@@ -430,9 +413,9 @@
                 <p style="font-weight:600; font-size:1.1rem;">Conectando IA Visual...</p>
             </div>
         </div>
+        <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-        <!-- Aseguramos z-index máximo para que no quede detrás del video -->
-        <div id="p-pregunta" class="pantalla-participante" style="display:none;">
+        <div id="p-pregunta" class="pantalla-participante" style="display:none; background: #08080d;">
             <div class="card" style="max-width:500px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); background: #12121c; padding: 2rem;">
                 <span id="label-num-material" style="font-size:0.85rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
                 <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.5rem; margin:1rem 0;">Instrucción</h3>
@@ -454,6 +437,9 @@
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
+        // SOLUCIÓN AL ERROR DE UNDEFINED: Declaración explícita global
+        let estudioParticipanteObj = null; 
+        
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
         let estudioActualId = null;
         let materialActualIndex = 0;
@@ -508,13 +494,11 @@
             }
         };
 
-        // KILL SWITCH: Reseteo total de variables al entrar a modo prueba
         window.simularPrueba = (id) => {
             estudioActualId = id;
             resultadosParticipanteGaze = {}; 
             datosDemograficosTemp = {};
             
-            // Destruir loops anteriores si existían
             validandoRostro = false;
             calibracionActiva = false;
             if (rafId) cancelAnimationFrame(rafId);
@@ -526,11 +510,9 @@
             document.getElementById('p-fin').style.display = 'none';
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
-            document.getElementById('video-participante').className = ''; // Quita clase PIP
             document.getElementById('p-demografia').style.display = 'flex';
         };
 
-        // KILL SWITCH: Reseteo total al volver
         window.volverAlDashboardDesdePrueba = () => {
             validandoRostro = false;
             calibracionActiva = false;
@@ -699,10 +681,8 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     
-                    // Fondo blanco obligatorio para evitar pantallas negras al comprimir PNGs transparentes
                     ctx.fillStyle = "#ffffff";
                     ctx.fillRect(0, 0, width, height);
-                    
                     ctx.drawImage(img, 0, 0, width, height);
                     
                     const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.8);
@@ -974,6 +954,7 @@
 
                 document.getElementById('p-consentimiento').style.display = 'none';
                 document.getElementById('btn-iniciar-camara').disabled = false;
+                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
                 
                 iniciarCalibracionPasoAPaso();
             } catch (e) {
@@ -998,10 +979,6 @@
         let lastDetectionTime = 0;
 
         function iniciarCalibracionPasoAPaso() {
-            // Activamos el Modo Espejo (PIP)
-            const video = document.getElementById('video-participante');
-            video.className = 'video-pip';
-            
             pasoCalibracionActual = 0;
             calibracionActiva = true;
             validandoRostro = true;
@@ -1015,10 +992,6 @@
                 calibracionActiva = false;
                 validandoRostro = false;
                 document.getElementById('punto-calibracion').style.display = 'none';
-                
-                // Ocultar la cámara (espejo) antes del estímulo
-                document.getElementById('video-participante').className = '';
-                
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -1032,7 +1005,7 @@
             
             faceContinuouslyDetectedMs = 0; 
             punto.className = 'rojo';
-            punto.innerHTML = '<i class="fas fa-eye-slash"></i>'; 
+            punto.innerHTML = ''; 
             punto.style.borderColor = 'transparent';
             punto.onclick = null; 
         }
@@ -1060,13 +1033,10 @@
 
                 if (rostroDetectado) {
                     faceContinuouslyDetectedMs += deltaTime;
-                    video.classList.add('detectado'); // Espejo en Verde
                     
                     if (faceContinuouslyDetectedMs <= 1500) {
                         punto.style.borderColor = `rgba(255,255,255, ${Math.min(faceContinuouslyDetectedMs / 1500, 1)})`;
-                        if (!punto.innerHTML.includes('fa-eye') || punto.innerHTML.includes('fa-eye-slash')) {
-                            punto.innerHTML = '<i class="fas fa-eye"></i>';
-                        }
+                        punto.innerHTML = ''; // Limpio para que te concentres
                     } else {
                         if (punto.className !== 'verde') {
                             punto.className = 'verde';
@@ -1082,12 +1052,10 @@
                     }
                 } else {
                     faceContinuouslyDetectedMs = 0;
-                    video.classList.remove('detectado'); // Espejo en Rojo
-                    
                     if (punto.className !== 'rojo') {
                         punto.className = 'rojo';
                         punto.style.borderColor = 'transparent';
-                        punto.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                        punto.innerHTML = '';
                         punto.onclick = null;
                     }
                 }
@@ -1099,7 +1067,9 @@
 
         function iniciarSecuenciaEstimulos() {
             try {
+                // AQUÍ USAMOS LA VARIABLE GLOBAL QUE ARREGLA EL BUG
                 estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
+                
                 if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos || estudioParticipanteObj.estimulos.length === 0) {
                     alert('Error crítico: Datos del estudio no localizados.');
                     finalizarParticipacion();
