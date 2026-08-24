@@ -177,11 +177,6 @@
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
-        
-        /* Diseño visible para la pantalla de instrucción */
-        #p-pregunta {
-            background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%);
-        }
     </style>
 </head>
 <body>
@@ -198,7 +193,7 @@
                 <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
                 <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
             </div>
-            <div></div> <!-- Espacio para alinear -->
+            <div></div> 
         </nav>
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
@@ -398,7 +393,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> en tiempo real. No se almacena video ni fotos.
-                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Míralos fijamente y mantén tu rostro visible hasta que se pongan verdes para hacer clic.</strong>
+                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán puntos en la pantalla. <strong>Míralos fijamente y mantén tu rostro visible.</strong> Cuando se ponga verde, haz clic.
                     </p>
                     <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y calibrar cámara
@@ -415,8 +410,8 @@
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-        <div id="p-pregunta" class="pantalla-participante" style="display:none;">
-            <div class="card" style="max-width:500px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+        <div id="p-pregunta" class="pantalla-participante" style="display:none; background: #08080d;">
+            <div class="card" style="max-width:500px; text-align:center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); background: #12121c; padding: 2rem;">
                 <span id="label-num-material" style="font-size:0.85rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
                 <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.5rem; margin:1rem 0;">Instrucción</h3>
                 <button class="btn btn-primary" style="width:100%; justify-content:center; padding: 0.85rem;" onclick="lanzarSiguienteEstimulo()">
@@ -450,7 +445,6 @@
         let datosDemograficosTemp = {};
         let resultadosParticipanteGaze = {};
         
-        // Control vital para evitar crasheos de MediaPipe
         let lastMpTime = -1; 
 
         window.mostrarToast = (mensaje, tipo = 'success') => {
@@ -543,7 +537,7 @@
                     <td>
                         <div class="study-link">
                             <code>${linkParticipante}</code>
-                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); alert('¡Link copiado!');" title="Copiar link">
+                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); mostrarToast('Link copiado', 'success');" title="Copiar link">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
@@ -629,7 +623,6 @@
             container.appendChild(div);
         };
 
-        // MEJORA 1: COMPRESOR DE IMÁGENES AUTOMÁTICO
         window.cargarImagenLocal = (input) => {
             const file = input.files[0];
             if (file) comprimirYProcesarImagen(file, input.closest('.estimulo-item-card'));
@@ -646,6 +639,7 @@
             }
         };
 
+        // CORRECCIÓN PANTALLA NEGRA: Pintar fondo blanco antes del PNG
         function comprimirYProcesarImagen(file, card) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -655,7 +649,6 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    // Limitar tamaño máximo para evitar llenar el localStorage
                     const maxDim = 1200;
                     if (width > maxDim || height > maxDim) {
                         if (width > height) {
@@ -670,10 +663,15 @@
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
+                    
+                    // Rellenamos el lienzo de blanco para evitar que fondos transparentes se vuelvan negros.
+                    ctx.fillStyle = "#ffffff";
+                    ctx.fillRect(0, 0, width, height);
+                    
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Comprimir a JPEG con 60% de calidad
-                    const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.6);
+                    // Compresión ligera a JPEG para evitar QuotaExceededError
+                    const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.8);
                     actualizarPreviewImagen(card, dataUrlComprimida);
                 };
                 img.src = e.target.result;
@@ -720,7 +718,7 @@
                 });
 
                 if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
-                    alert('⚠️ Asigna un nombre al estudio y asegúrate de cargar al menos una imagen.');
+                    alert('⚠️ Asigna un nombre al estudio y asegúrate de cargar al menos una imagen en el material.');
                     return;
                 }
 
@@ -747,7 +745,7 @@
 
                 localStorage.setItem('et_estudios', JSON.stringify(estudios));
                 
-                // Confirmación Visual Dinámica
+                // Efecto visual directo en el botón
                 const btn = document.getElementById('btn-guardar-estudio');
                 const textoOriginal = btn.innerHTML;
                 btn.innerHTML = '<i class="fas fa-check"></i> ¡Guardado Exitosamente!';
@@ -760,8 +758,9 @@
                 }, 1200);
 
             } catch(e) {
+                // Controlamos si la memoria del navegador explotó
                 if(e.name === 'QuotaExceededError') {
-                    alert("⚠️ Error: Imágenes muy pesadas. Sube imágenes de menor tamaño o usa URLs.");
+                    alert("⚠️ Error: Archivos muy pesados. Por favor sube imágenes más pequeñas o usa URLs.");
                 } else {
                     alert("Ocurrió un error al intentar guardar: " + e.message);
                 }
@@ -950,7 +949,7 @@
             }
         };
 
-        // MEJORA 2 Y 3: CALIBRACIÓN ESTRICTA CON GAZE-LOCK Y ANTI-CRASH
+        // CORRECCIÓN: Calibración más estable y solución al bug del CLIC
         const puntosCalibracion = [
             { top: '50%', left: '50%' },  
             { top: '10%', left: '10%' },  
@@ -962,7 +961,6 @@
         let pasoCalibracionActual = 0;
         let calibracionActiva = false;
         let validandoRostro = false;
-        
         let faceContinuouslyDetectedMs = 0;
         let lastDetectionTime = 0;
 
@@ -991,8 +989,7 @@
             punto.style.top = pos.top;
             punto.style.left = pos.left;
             
-            // Reiniciar estado
-            faceContinuouslyDetectedMs = 0;
+            faceContinuouslyDetectedMs = 0; // Reinicio de reloj por punto
             punto.className = 'rojo';
             punto.innerHTML = '<i class="fas fa-eye-slash"></i>'; 
             punto.style.borderColor = 'transparent';
@@ -1005,28 +1002,37 @@
             let rostroDetectado = false;
             let now = performance.now();
             
-            // CONTROL DE TIMESTAMP (Evita Pantalla Negra y Congelamiento)
+            // Limitador de cuellos de botella de MediaPipe
             if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
-                const results = faceLandmarker.detectForVideo(video, now);
-                lastMpTime = now;
-                if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-                    rostroDetectado = true;
-                }
+                try {
+                    const results = faceLandmarker.detectForVideo(video, now);
+                    lastMpTime = now;
+                    // Confirmamos si efectivamente hay una cara en cuadro
+                    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                        rostroDetectado = true;
+                    }
+                } catch(e) {}
             }
 
             const punto = document.getElementById('punto-calibracion');
             if (calibracionActiva) {
-                if (rostroDetectado) {
-                    faceContinuouslyDetectedMs += (now - lastDetectionTime);
-                    punto.style.borderColor = `rgba(255,255,255, ${Math.min(faceContinuouslyDetectedMs / 1500, 1)})`;
-                    punto.innerHTML = '<i class="fas fa-eye"></i>';
+                let deltaTime = now - lastDetectionTime;
+                if (deltaTime > 100) deltaTime = 16; // Evita falsos positivos si la pestaña del navegador se congela
 
-                    // Requiere 1.5 segundos continuos miranda la pantalla para habilitarse
-                    if (faceContinuouslyDetectedMs > 1500) {
+                if (rostroDetectado) {
+                    faceContinuouslyDetectedMs += deltaTime;
+                    
+                    if (faceContinuouslyDetectedMs <= 1500) {
+                        punto.style.borderColor = `rgba(255,255,255, ${Math.min(faceContinuouslyDetectedMs / 1500, 1)})`;
+                        // Pintamos el ojo solo si no está dibujado para que no parpadee (bug fix)
+                        if (!punto.innerHTML.includes('fa-eye') || punto.innerHTML.includes('fa-eye-slash')) {
+                            punto.innerHTML = '<i class="fas fa-eye"></i>';
+                        }
+                    } else {
                         if (punto.className !== 'verde') {
                             punto.className = 'verde';
                             punto.style.borderColor = '#fff';
-                            punto.innerHTML = 'CLIC';
+                            punto.innerHTML = '<span style="font-size:0.75rem;font-weight:900;">CLIC</span>';
                             punto.onclick = () => {
                                 punto.style.display = 'none';
                                 punto.onclick = null;
@@ -1036,11 +1042,13 @@
                         }
                     }
                 } else {
-                    faceContinuouslyDetectedMs = 0; // Si se mueve, pierde el progreso
-                    punto.className = 'rojo';
-                    punto.style.borderColor = 'transparent';
-                    punto.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                    punto.onclick = null;
+                    faceContinuouslyDetectedMs = 0;
+                    if (punto.className !== 'rojo') {
+                        punto.className = 'rojo';
+                        punto.style.borderColor = 'transparent';
+                        punto.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                        punto.onclick = null;
+                    }
                 }
             }
             
@@ -1048,6 +1056,7 @@
             requestAnimationFrame(verificarRostroParaPunto);
         }
 
+        // CONTROL DE PANTALLA NEGRA EXTREMO EN EL ESTÍMULO
         function iniciarSecuenciaEstimulos() {
             estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
             if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos.length) {
@@ -1069,9 +1078,7 @@
         }
 
         window.mostrarPreguntaMaterial = () => {
-            // Limpieza estricta de capas
             document.getElementById('estimulo-participante').style.display = 'none';
-            
             const mat = estimulosOrdenadosActuales[materialActualIndex];
             document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
             document.getElementById('texto-pregunta-material').textContent = mat.pregunta;
@@ -1079,62 +1086,72 @@
         };
 
         window.lanzarSiguienteEstimulo = () => {
-            document.getElementById('p-pregunta').style.display = 'none';
-            const mat = estimulosOrdenadosActuales[materialActualIndex];
-            const imgEl = document.getElementById('estimulo-participante');
-            
-            imgEl.onerror = () => { console.warn("Aviso: Fallo visual en la carga del estímulo."); };
-            imgEl.src = mat.imagen;
-            imgEl.style.display = 'block';
-
-            datosGazeActuales = [];
-            tiempoInicioEstimulo = Date.now();
-            const duracionMs = (mat.duracion || 10) * 1000;
-            const video = document.getElementById('video-participante');
-
-            function loopTracking() {
-                let now = performance.now();
-                if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
-                    const results = faceLandmarker.detectForVideo(video, now);
-                    lastMpTime = now;
-                    if (results.faceLandmarks?.[0]) {
-                        const nose = results.faceLandmarks[0][1];
-                        datosGazeActuales.push({
-                            x: Math.round((1 - nose.x) * window.innerWidth),
-                            y: Math.round(nose.y * window.innerHeight),
-                            time: Date.now() - tiempoInicioEstimulo,
-                            intensity: 1
-                        });
-                    }
-                }
-                rafId = requestAnimationFrame(loopTracking);
-            }
-            loopTracking();
-
-            setTimeout(() => {
-                cancelAnimationFrame(rafId);
-                imgEl.style.display = 'none';
+            try {
+                document.getElementById('p-pregunta').style.display = 'none';
+                const mat = estimulosOrdenadosActuales[materialActualIndex];
+                const imgEl = document.getElementById('estimulo-participante');
                 
-                if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
-                resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
-
-                materialActualIndex++;
-                if (materialActualIndex < estimulosOrdenadosActuales.length) {
-                    setTimeout(() => mostrarPreguntaMaterial(), (estudioParticipanteObj.intervalo || 2) * 1000);
-                } else {
-                    finalizarParticipacion();
+                if (!mat.imagen || mat.imagen === '') {
+                    alert('Aviso: Estímulo sin imagen cargada.');
                 }
-            }, duracionMs);
+                
+                imgEl.src = mat.imagen;
+                imgEl.style.display = 'block';
+
+                datosGazeActuales = [];
+                tiempoInicioEstimulo = Date.now();
+                const duracionMs = (mat.duracion || 10) * 1000;
+                const video = document.getElementById('video-participante');
+
+                function loopTracking() {
+                    let now = performance.now();
+                    if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
+                        try {
+                            const results = faceLandmarker.detectForVideo(video, now);
+                            lastMpTime = now;
+                            if (results.faceLandmarks?.[0]) {
+                                const nose = results.faceLandmarks[0][1];
+                                datosGazeActuales.push({
+                                    x: Math.round((1 - nose.x) * window.innerWidth),
+                                    y: Math.round(nose.y * window.innerHeight),
+                                    time: Date.now() - tiempoInicioEstimulo,
+                                    intensity: 1
+                                });
+                            }
+                        } catch(e) {}
+                    }
+                    rafId = requestAnimationFrame(loopTracking);
+                }
+                loopTracking();
+
+                setTimeout(() => {
+                    cancelAnimationFrame(rafId);
+                    imgEl.style.display = 'none';
+                    
+                    if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
+                    resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
+
+                    materialActualIndex++;
+                    if (materialActualIndex < estimulosOrdenadosActuales.length) {
+                        setTimeout(() => mostrarPreguntaMaterial(), (estudioParticipanteObj.intervalo || 2) * 1000);
+                    } else {
+                        finalizarParticipacion();
+                    }
+                }, duracionMs);
+
+            } catch (error) {
+                alert("Ocurrió un fallo en el sistema al intentar procesar la vista. " + error.message);
+                finalizarParticipacion();
+            }
         };
 
         function finalizarParticipacion() {
             try {
                 if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
             } catch (error) {
-                console.warn("La cámara ya fue liberada.", error);
+                console.warn("Ignorando error de cámara.", error);
             }
 
-            // Ocultar preventivamente todo lo que pueda causar pantalla negra
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
 
