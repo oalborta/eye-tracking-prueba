@@ -124,7 +124,7 @@
             width: 48px; height: 48px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            transition: top 0.35s ease-out, left 0.35s ease-out, background-color 0.2s;
+            transition: top 0.4s ease-out, left 0.4s ease-out, background-color 0.2s;
             font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 900; color: white; user-select: none;
             box-sizing: border-box; border: 3px solid transparent; letter-spacing: 0.5px; cursor: pointer;
         }
@@ -179,6 +179,7 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
+    <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
         <nav class="admin-nav" id="admin-nav">
             <div class="logo">Eye<span>Track</span> Pro</div>
@@ -190,6 +191,7 @@
         </nav>
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -228,6 +230,7 @@
                 </div>
             </div>
 
+            <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -288,7 +291,7 @@
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar:</div>
                     <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
                         <option value="todos">Todos los géneros</option>
                         <option value="Masculino">Masculino</option>
@@ -326,11 +329,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="120" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -376,7 +379,7 @@
     <div id="participant-section" style="display:none;">
         <video id="video-participante" playsinline muted autoplay></video>
         <img id="estimulo-participante" alt="Estímulo">
-        <div id="punto-calibracion" class="verde">CLIC</div>
+        <div id="punto-calibracion" class="rojo"></div>
 
         <div id="p-demografia" class="pantalla-participante">
             <div style="max-width:450px; text-align:center;">
@@ -424,7 +427,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong> mediante IA. No se almacena video.
-                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos en pantalla. <strong style="color:var(--accent)">Por favor, NO muevas la cabeza. Mueve SÓLO LOS OJOS hacia cada punto y haz clic.</strong>
+                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos en pantalla. <br><strong style="color:var(--accent)">1. Mantén la cabeza perfectamente quieta.<br>2. Mueve SÓLO LOS OJOS hacia cada punto.<br>3. Haz CLIC cuando el punto se vuelva verde.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -463,6 +466,7 @@
         </div>
     </div>
 
+    <!-- LÓGICA PRINCIPAL (INTERPOLACIÓN POR CUADRANTES PUROS) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -489,9 +493,9 @@
         let timeoutCalib = null;
         let visualizacionModo = 'calor'; 
 
-        // Modelo Puro (Iris aislado)
+        // NUEVO: Modelo de Interpolación Lineal por Tramos (Piece-Wise Linear)
         window.calibPuntosCapturados = [];
-        window.calibModel = { x10: 0.4, x90: 0.6, y10: 0.4, y90: 0.6 };
+        window.calibModel = { xL: 0.4, xM: 0.5, xR: 0.6, yT: 0.4, yM: 0.5, yB: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
@@ -586,7 +590,17 @@
         window.volverAlDashboardDesdePrueba = () => {
             if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
             try { if (streamCamara) streamCamara.getTracks().forEach(t => t.stop()); } catch(e){}
-            window.location.href = window.location.href.split('?')[0];
+
+            document.getElementById('participant-section').style.display = 'none';
+            mostrarPantalla(''); 
+            
+            if (estudioParam) {
+                window.location.href = window.location.href.split('?')[0];
+            } else {
+                document.getElementById('admin-section').style.display = 'block';
+                window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+                navegarA('dashboard');
+            }
         };
 
         window.cerrarSesion = () => {
@@ -873,7 +887,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error: Ocurrió un error al intentar guardar.");
+                alert("⚠️ Error: Ocurrió un error al intentar guardar. La imagen podría ser muy pesada.");
             }
         };
 
@@ -1110,6 +1124,7 @@
                     }
                 }
             };
+            
             img.src = material.imagen;
         };
 
@@ -1184,7 +1199,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // AISLAMIENTO BIOMÉTRICO (NÚCLEO MEJORADO)
+        // AISLAMIENTO FACIAL PURO: Independiente del movimiento del cuello
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1197,25 +1212,32 @@
                         
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
-                            let irisX = undefined, irisY = undefined;
-                            let noseX = l[1].x, noseY = l[1].y;
                             
-                            // Extrae pupilas o huesos orbitales
+                            // 1. Calcula la "Caja" estricta de la cara en este milisegundo
+                            let fLeft = Math.min(l[234].x, l[454].x);
+                            let fRight = Math.max(l[234].x, l[454].x);
+                            let fTop = Math.min(l[10].y, l[152].y);
+                            let fBot = Math.max(l[10].y, l[152].y);
+                            let fW = fRight - fLeft;
+                            let fH = fBot - fTop;
+
+                            // 2. Localiza las pupilas
+                            let irisX = undefined, irisY = undefined;
                             if (l.length > 470) {
-                                irisX = (l[468].x + l[473].x) / 2;
-                                irisY = (l[468].y + l[473].y) / 2;
+                                if(l[468] && l[473]) {
+                                    irisX = (l[468].x + l[473].x) / 2;
+                                    irisY = (l[468].y + l[473].y) / 2;
+                                }
                             } else if (l[159] && l[386]) {
                                 irisX = (l[159].x + l[386].x) / 2;
                                 irisY = (l[159].y + l[386].y) / 2;
                             }
 
-                            // LA MAGIA: Resta la nariz al ojo. 
-                            // Esto aísla la rotación pura de la pupila ignorando si mueves la cabeza.
-                            if (irisX !== undefined) {
-                                currentGazeSample = { 
-                                    x: (irisX - noseX), 
-                                    y: (irisY - noseY) 
-                                };
+                            // 3. AISLAMIENTO: Dónde está la pupila DENTRO del % de la cara
+                            if (irisX !== undefined && fW > 0 && fH > 0) {
+                                let relX = 1 - ((irisX - fLeft) / fW); // 1- para efecto espejo
+                                let relY = (irisY - fTop) / fH;
+                                currentGazeSample = { x: relX, y: relY };
                             }
                         }
                     } catch(e) {}
@@ -1285,23 +1307,27 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // MAPEO DE LÍMITES VECTORIALES PUROS
+                // MAPEO POR CUADRANTES PUROS (Sin "Cajas encogidas")
                 if (window.calibPuntosCapturados.length === 9) {
                     let pts = window.calibPuntosCapturados;
                     
                     window.calibModel = {
-                        x10: (pts[0].x + pts[3].x + pts[6].x) / 3, // Ojo mirando a la izq
-                        x90: (pts[2].x + pts[5].x + pts[8].x) / 3, // Ojo mirando a la der
-                        y10: (pts[0].y + pts[1].y + pts[2].y) / 3, // Ojo mirando arriba
-                        y90: (pts[6].y + pts[7].y + pts[8].y) / 3  // Ojo mirando abajo
+                        xLeft:  (pts[0].x + pts[3].x + pts[6].x) / 3,
+                        xMid:   (pts[1].x + pts[4].x + pts[7].x) / 3,
+                        xRight: (pts[2].x + pts[5].x + pts[8].x) / 3,
+                        yTop:   (pts[0].y + pts[1].y + pts[2].y) / 3,
+                        yMid:   (pts[3].y + pts[4].y + pts[5].y) / 3,
+                        yBot:   (pts[6].y + pts[7].y + pts[8].y) / 3
                     };
 
-                    // Seguro contra división por cero si la persona no movió nada el ojo
-                    if (Math.abs(window.calibModel.x90 - window.calibModel.x10) < 0.0001) window.calibModel.x90 += 0.005;
-                    if (Math.abs(window.calibModel.y90 - window.calibModel.y10) < 0.0001) window.calibModel.y90 += 0.005;
+                    // Seguro anti división por cero si el usuario fue una estatua
+                    if (Math.abs(window.calibModel.xMid - window.calibModel.xLeft) < 0.0001) window.calibModel.xLeft -= 0.001;
+                    if (Math.abs(window.calibModel.xRight - window.calibModel.xMid) < 0.0001) window.calibModel.xRight += 0.001;
+                    if (Math.abs(window.calibModel.yMid - window.calibModel.yTop) < 0.0001) window.calibModel.yTop -= 0.001;
+                    if (Math.abs(window.calibModel.yBot - window.calibModel.yMid) < 0.0001) window.calibModel.yBot += 0.001;
 
                 } else {
-                    window.calibModel = { x10: -0.01, x90: 0.01, y10: -0.01, y90: 0.01 }; 
+                    window.calibModel = { xLeft: 0.4, xMid: 0.5, xRight: 0.6, yTop: 0.4, yMid: 0.5, yBot: 0.6 }; 
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1324,7 +1350,6 @@
                     e.preventDefault();
                     if(punto.className !== 'verde') return;
                     
-                    // Guarda el vector puro del ojo
                     window.calibPuntosCapturados.push({ x: currentGazeSample.x, y: currentGazeSample.y });
 
                     punto.className = 'rojo';
@@ -1335,7 +1360,8 @@
                     pasoCalibracionActual++;
                     setTimeout(mostrarPuntoCalibracion, 250);
                 };
-            }, 800); 
+            // Retardo incrementado para forzar al usuario a mirar el punto fijamente
+            }, 1200); 
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1401,29 +1427,37 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // MAPEO EXTREMO DE VISTA (Llega a las esquinas sin problemas)
+                // INTERPOLACIÓN LINEAL POR TRAMOS (Sin Multiplicadores Hacks)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
                     let rawX = currentGazeSample.x;
                     let rawY = currentGazeSample.y;
+                    let normX, normY;
 
-                    let rangeX = window.calibModel.x90 - window.calibModel.x10;
-                    let rangeY = window.calibModel.y90 - window.calibModel.y10;
+                    // Mapeo puro en el Eje X
+                    if (rawX < window.calibModel.xMid) {
+                        let p = (rawX - window.calibModel.xLeft) / (window.calibModel.xMid - window.calibModel.xLeft);
+                        normX = 0.10 + (p * 0.40);
+                    } else {
+                        let p = (rawX - window.calibModel.xMid) / (window.calibModel.xRight - window.calibModel.xMid);
+                        normX = 0.50 + (p * 0.40);
+                    }
 
-                    let normX = 0.10 + ((rawX - window.calibModel.x10) / rangeX) * 0.80;
-                    let normY = 0.10 + ((rawY - window.calibModel.y10) / rangeY) * 0.80;
+                    // Mapeo puro en el Eje Y
+                    if (rawY < window.calibModel.yMid) {
+                        let p = (rawY - window.calibModel.yTop) / (window.calibModel.yMid - window.calibModel.yTop);
+                        normY = 0.10 + (p * 0.40);
+                    } else {
+                        let p = (rawY - window.calibModel.yMid) / (window.calibModel.yBot - window.calibModel.yMid);
+                        normY = 0.50 + (p * 0.40);
+                    }
 
-                    // AMPLIFICADOR EXTREMO Y OFFSET DE CÁMARA
-                    normX = (normX - 0.5) * 1.8 + 0.5; // Amplificador 1.8x
-                    normY = (normY - 0.5) * 1.8 + 0.5; // Amplificador 1.8x
-                    normY -= 0.15; // Offset 15% arriba (Compensa ángulo de laptop)
+                    // Suavizado ultra rápido para que no haya arrastre al centro
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.60 + normX * 0.40 : normX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.60 + normY * 0.40 : normY;
 
-                    // Suavizado ágil (40% retención, 60% velocidad real)
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.40 + normX * 0.60 : normX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.40 + normY * 0.60 : normY;
-
-                    // Permite que la mancha salga un 10% de la pantalla para pintar bien los bordes absolutos
+                    // El punto rojo será 100% libre de viajar fuera de los bordes si quieres
                     let finalX = Math.max(-0.1, Math.min(1.1, window.lastSmoothedX));
                     let finalY = Math.max(-0.1, Math.min(1.1, window.lastSmoothedY));
 
