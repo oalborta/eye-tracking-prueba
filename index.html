@@ -179,7 +179,6 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
-    <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
         <nav class="admin-nav" id="admin-nav">
             <div class="logo">Eye<span>Track</span> Pro</div>
@@ -191,6 +190,7 @@
         </nav>
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -427,9 +427,9 @@
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong> mediante IA. No se almacena video.
                         <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos en pantalla. <br><br>
-                        <strong style="color:var(--accent)">🚨 IMPORTANTE:<br>
-                        1. NO muevas la cabeza ni el cuello. Fíjalos.<br>
-                        2. Mueve SÓLO LOS OJOS hacia cada punto rojo.<br>
+                        <strong style="color:var(--accent)">🚨 MUY IMPORTANTE:<br>
+                        1. Quédate completamente quieto.<br>
+                        2. NO muevas la cabeza, mueve SÓLO TUS OJOS hacia cada punto.<br>
                         3. Haz CLIC cuando el punto se vuelva verde.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
@@ -469,7 +469,7 @@
         </div>
     </div>
 
-    <!-- EL NUEVO MOTOR: EXTRAPOLACIÓN LINEAL PURA SIN LÍMITES -->
+    <!-- EL NUEVO MOTOR: "EXTRAPOLACIÓN LINEAL PURA" (MÁXIMA LIBERTAD) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -496,7 +496,7 @@
         let timeoutCalib = null;
         let visualizacionModo = 'calor'; 
 
-        // Modelo de Interpolación Pura
+        // Modelo Puro Absoluto
         window.calibPuntosCapturados = [];
         window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 };
         window.lastSmoothedX = undefined;
@@ -1192,7 +1192,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // LA CIENCIA: "RATIO IRIS-CARA"
+        // AISLAMIENTO FACIAL PURO - INMUNE A ACERCARSE A LA PANTALLA
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1206,7 +1206,7 @@
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
                             
-                            // 1. Extrae los límites fijos de tu cara
+                            // 1. Límites exactos del rostro
                             let fLeft = Math.min(l[234].x, l[454].x);
                             let fRight = Math.max(l[234].x, l[454].x);
                             let fTop = Math.min(l[10].y, l[152].y);
@@ -1214,23 +1214,20 @@
                             let fW = fRight - fLeft;
                             let fH = fBot - fTop;
 
-                            // 2. Extrae el centro de las pupilas
+                            // 2. Extracción de pupilas
                             let irisX = undefined, irisY = undefined;
-                            if (l.length > 470) {
-                                if(l[468] && l[473]) {
-                                    irisX = (l[468].x + l[473].x) / 2;
-                                    irisY = (l[468].y + l[473].y) / 2;
-                                }
+                            if (l.length > 470 && l[468] && l[473]) {
+                                irisX = (l[468].x + l[473].x) / 2;
+                                irisY = (l[468].y + l[473].y) / 2;
                             } else if (l[159] && l[386]) {
                                 irisX = (l[159].x + l[386].x) / 2;
                                 irisY = (l[159].y + l[386].y) / 2;
                             }
 
-                            // 3. El Tracking Perfecto: Calcula la pupila relativa a la cara
-                            // Esto te hace inmune a acercarte o alejarte de la pantalla
+                            // 3. Proyección Relativa con "1 -" para arreglar el Espejo de la Webcam
                             if (irisX !== undefined && fW > 0 && fH > 0) {
                                 currentGazeSample = { 
-                                    x: (irisX - fLeft) / fW,
+                                    x: 1 - ((irisX - fLeft) / fW),
                                     y: (irisY - fTop) / fH 
                                 };
                             }
@@ -1302,7 +1299,7 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // MAPEO POR PROMEDIOS PUROS
+                // MAPEO DE LÍMITES TOTALMENTE PURO
                 if (window.calibPuntosCapturados.length === 9) {
                     let pts = window.calibPuntosCapturados;
                     
@@ -1313,7 +1310,7 @@
                         yBot:   (pts[6].y + pts[7].y + pts[8].y) / 3
                     };
                 } else {
-                    window.calibModel = { xLeft: 0.6, xRight: 0.4, yTop: 0.4, yBot: 0.6 }; 
+                    window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 }; 
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1348,7 +1345,8 @@
                     pasoCalibracionActual++;
                     setTimeout(mostrarPuntoCalibracion, 250);
                 };
-            }, 1000); // 1 segundo de espera para enfocar
+            // 1.2 segundos para obligar al usuario a estar perfectamente quieto
+            }, 1200); 
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1414,32 +1412,34 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // EXTRAPOLACIÓN LINEAL PURA DESNUDA (Sin límites)
+                // EXTRAPOLACIÓN LINEAL LIBRE (Catapulta hacia los bordes y las esquinas)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
                     let cX = currentGazeSample.x;
                     let cY = currentGazeSample.y;
 
-                    let rangeX = window.calibModel.xRight - window.calibModel.xLeft;
-                    let rangeY = window.calibModel.yBot - window.calibModel.yTop;
+                    let rangeX = Math.max(window.calibModel.xRight - window.calibModel.xLeft, 0.0001);
+                    let rangeY = Math.max(window.calibModel.yBot - window.calibModel.yTop, 0.0001);
 
-                    if (rangeX === 0) rangeX = 0.001;
-                    if (rangeY === 0) rangeY = 0.001;
-
-                    // Mapeo absoluto matemático
                     let normX = (cX - window.calibModel.xLeft) / rangeX;
                     let normY = (cY - window.calibModel.yTop) / rangeY;
 
-                    // Como los puntos estaban al 10% y 90%
+                    // Ajuste a la escala real de pantalla (ya que los puntos están en 10% y 90%)
                     let screenX = 0.10 + (normX * 0.80);
                     let screenY = 0.10 + (normY * 0.80);
 
-                    // Filtro suave
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.6 + screenX * 0.4 : screenX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.6 + screenY * 0.4 : screenY;
+                    // Amplificador suave de expansión (1.4x) para garantizar los extremos de la pantalla
+                    screenX = (screenX - 0.5) * 1.4 + 0.5;
+                    screenY = (screenY - 0.5) * 1.4 + 0.5;
 
-                    // Dejamos que salga un poco de la pantalla si quieres (libertad de extrapolación)
+                    // Offset ligero hacia arriba para pantallas de laptop
+                    screenY -= 0.05;
+
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.50 + screenX * 0.50 : screenX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.50 + screenY * 0.50 : screenY;
+
+                    // Permite viajar más allá del borde de la pantalla libremente
                     let finalX = Math.max(-0.2, Math.min(1.2, window.lastSmoothedX));
                     let finalY = Math.max(-0.2, Math.min(1.2, window.lastSmoothedY));
 
