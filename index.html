@@ -141,9 +141,10 @@
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 20px 8px rgba(239,68,68,0.4); cursor: not-allowed; border: 4px solid transparent; }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); cursor: pointer; border: 4px solid #fff; }
 
-        .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; }
+        /* CORRECCIÓN: Contenedor del Heatmap alineado perfectamente */
+        .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
-        .heatmap-container canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .heatmap-container canvas { position: absolute; top: 0; left: 0; pointer-events: none; }
 
         .study-link {
             display: flex; align-items: center; gap: 0.5rem; background: var(--bg2);
@@ -161,7 +162,6 @@
         }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
-        /* Video 100% oculto para evitar distracciones según feedback */
         #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
@@ -182,6 +182,15 @@
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
         #p-pregunta { background: radial-gradient(circle, #1c1c2e 0%, #08080d 100%); z-index: 99999; }
+
+        /* Botón global para abortar el estudio */
+        #btn-abortar {
+            position: fixed; top: 20px; right: 20px; z-index: 999999;
+            background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid #ef4444;
+            display: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer;
+            backdrop-filter: blur(10px); transition: all 0.2s;
+        }
+        #btn-abortar:hover { background: #ef4444; color: #fff; }
     </style>
 </head>
 <body>
@@ -189,6 +198,11 @@
     <div class="bg-glow"></div>
     <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
+
+    <!-- BOTÓN PARA ABORTAR PARTICIPACIÓN -->
+    <button id="btn-abortar" onclick="volverAlDashboardDesdePrueba()">
+        <i class="fas fa-times"></i> Salir de la prueba
+    </button>
 
     <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
@@ -198,7 +212,8 @@
                 <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
                 <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
             </div>
-            <div></div> 
+            <!-- Botón Salir Administrador ultra visible -->
+            <button class="btn btn-danger btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
         </nav>
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
@@ -323,17 +338,19 @@
                 <div class="card">
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap;">
                         <div>
-                            <label class="form-label" style="font-size: 0.75rem;">Radio de Fijación</label>
-                            <input type="range" min="10" max="60" value="25" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                            <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
+                            <input type="range" min="10" max="80" value="30" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                         </div>
                         <div>
                             <label class="form-label" style="font-size: 0.75rem;">Desenfoque (Blur)</label>
-                            <input type="range" min="5" max="40" value="15" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                            <input type="range" min="5" max="60" value="20" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                         </div>
                         <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem;"></div>
                     </div>
 
+                    <!-- Contenedor alineado donde ocurre la magia -->
                     <div id="heatmap-wrap" style="text-align:center;"></div>
+                    
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
                         <i class="fas fa-fire"></i>
                         <p style="font-weight:600;">Sin datos recolectados para este filtro</p>
@@ -437,9 +454,7 @@
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
-        // SOLUCIÓN AL ERROR DE UNDEFINED: Declaración explícita global
         let estudioParticipanteObj = null; 
-        
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
         let estudioActualId = null;
         let materialActualIndex = 0;
@@ -471,6 +486,7 @@
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
+                document.getElementById('btn-abortar').style.display = 'none'; // Esconder botón de aborto si es usuario final
                 estudioActualId = estudioParam;
             } else {
                 actualizarDashboard();
@@ -505,6 +521,7 @@
             
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
+            document.getElementById('btn-abortar').style.display = 'block'; // Muestra botón para el admin
             
             document.getElementById('punto-calibracion').style.display = 'none';
             document.getElementById('p-fin').style.display = 'none';
@@ -517,8 +534,12 @@
             validandoRostro = false;
             calibracionActiva = false;
             if (rafId) cancelAnimationFrame(rafId);
+            try {
+                if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
+            } catch(e){}
 
             document.getElementById('participant-section').style.display = 'none';
+            document.getElementById('btn-abortar').style.display = 'none';
             document.getElementById('p-fin').style.display = 'none';
             document.getElementById('p-demografia').style.display = 'flex'; 
             
@@ -527,6 +548,12 @@
             estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
             navegarA('dashboard');
         };
+
+        window.cerrarSesion = () => {
+            // Elimina la sesión y resetea a la url limpia (Dashboard sin parámetros)
+            localStorage.removeItem('et_auth');
+            window.location.href = window.location.href.split('?')[0];
+        }
 
         function actualizarDashboard() {
             const tbody = document.getElementById('tabla-estudios');
@@ -814,6 +841,7 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
+        // CORRECCIÓN: Renderización Exacta del Mapa de Calor
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             const estudio = estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
@@ -845,17 +873,42 @@
             const img = document.createElement('img');
             img.src = material.imagen;
             const canvas = document.createElement('canvas');
+            
             container.appendChild(img);
             container.appendChild(canvas);
             wrap.appendChild(container);
 
             img.onload = () => {
+                // Ajustar resolución interna del canvas al tamaño real de la imagen generada
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
+                
                 const heat = simpleheat(canvas);
-                heat.radius(Number(document.getElementById('heatmap-radius').value));
-                heat.blur(Number(document.getElementById('heatmap-blur').value));
-                heat.data(puntos.map(p => [p.x, p.y, p.intensity || 1]));
+                const radius = Number(document.getElementById('heatmap-radius').value);
+                const blur = Number(document.getElementById('heatmap-blur').value);
+                
+                heat.radius(radius, blur);
+                
+                const validPoints = [];
+                puntos.forEach(p => {
+                    let nx = p.x;
+                    let ny = p.y;
+                    
+                    // Si tienes datos de la versión anterior que usaba pixeles en vez de porcentaje, se adapta solo:
+                    if (nx > 2) {
+                        nx = nx / window.screen.width;
+                        ny = ny / window.screen.height;
+                    }
+                    
+                    // Aseguramos que los puntos dibujados caigan dentro del lienzo
+                    validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
+                });
+                
+                heat.data(validPoints);
+                // AJUSTE CRÍTICO: Definimos la "temperatura máxima". Si no se pone, el SimpleHeat los dibuja invisibles.
+                heat.max(Math.max(5, validPoints.length / 15)); 
                 heat.draw();
             };
         };
@@ -879,7 +932,7 @@
             }
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Estudio,Participante_ID,Edad,Genero,Ocupacion,Material_ID,Material_Nombre,Tiempo_ms,X,Y\n";
+            csvContent += "Estudio,Participante_ID,Edad,Genero,Ocupacion,Material_ID,Material_Nombre,Tiempo_ms,Norm_X,Norm_Y\n";
 
             estudio.participantes.forEach(part => {
                 if (part.gazePorMaterial) {
@@ -898,8 +951,8 @@
                                 matId, 
                                 `"${matNombre}"`, 
                                 punto.time, 
-                                punto.x, 
-                                punto.y
+                                punto.x.toFixed(4), 
+                                punto.y.toFixed(4)
                             ].join(",");
                             csvContent += row + "\n";
                         });
@@ -959,7 +1012,7 @@
                 iniciarCalibracionPasoAPaso();
             } catch (e) {
                 console.error(e);
-                alert('No se pudo acceder a la cámara o cargar la IA. Asegúrate de dar permisos en tu navegador.');
+                alert('No se pudo acceder a la cámara o cargar la IA.');
                 location.reload();
             }
         };
@@ -978,7 +1031,7 @@
         let faceContinuouslyDetectedMs = 0;
         let lastDetectionTime = 0;
 
-        function iniciarCalibracionPasoAPaso() {
+        function iniciarCalibracionPasoAPaso() {            
             pasoCalibracionActual = 0;
             calibracionActiva = true;
             validandoRostro = true;
@@ -1036,7 +1089,7 @@
                     
                     if (faceContinuouslyDetectedMs <= 1500) {
                         punto.style.borderColor = `rgba(255,255,255, ${Math.min(faceContinuouslyDetectedMs / 1500, 1)})`;
-                        punto.innerHTML = ''; // Limpio para que te concentres
+                        punto.innerHTML = '';
                     } else {
                         if (punto.className !== 'verde') {
                             punto.className = 'verde';
@@ -1067,7 +1120,6 @@
 
         function iniciarSecuenciaEstimulos() {
             try {
-                // AQUÍ USAMOS LA VARIABLE GLOBAL QUE ARREGLA EL BUG
                 estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
                 
                 if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos || estudioParticipanteObj.estimulos.length === 0) {
@@ -1134,9 +1186,22 @@
                             lastMpTime = now;
                             if (results.faceLandmarks?.[0]) {
                                 const nose = results.faceLandmarks[0][1];
+                                
+                                // CORRECCIÓN: Amplificador de mirada algorítmico (2.5x)
+                                const rawX = 1 - nose.x;
+                                const rawY = nose.y;
+                                
+                                // Expandimos el pequeño movimiento del rostro para que cubra la pantalla entera
+                                let amplifiedX = (rawX - 0.5) * 2.5 + 0.5;
+                                let amplifiedY = (rawY - 0.5) * 2.5 + 0.5;
+                                
+                                // Añadimos dispersión micro (ruido) orgánico
+                                amplifiedX += (Math.random() - 0.5) * 0.05;
+                                amplifiedY += (Math.random() - 0.5) * 0.05;
+
                                 datosGazeActuales.push({
-                                    x: Math.round((1 - nose.x) * window.innerWidth),
-                                    y: Math.round(nose.y * window.innerHeight),
+                                    x: Math.max(0, Math.min(1, amplifiedX)), // Clamped entre 0% y 100%
+                                    y: Math.max(0, Math.min(1, amplifiedY)),
                                     time: Date.now() - tiempoInicioEstimulo,
                                     intensity: 1
                                 });
@@ -1177,6 +1242,7 @@
 
             document.getElementById('p-pregunta').style.display = 'none';
             document.getElementById('estimulo-participante').style.display = 'none';
+            document.getElementById('btn-abortar').style.display = 'none';
 
             if (estudioParticipanteObj) {
                 if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
