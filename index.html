@@ -179,6 +179,7 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
+    <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
         <nav class="admin-nav" id="admin-nav">
             <div class="logo">Eye<span>Track</span> Pro</div>
@@ -191,7 +192,6 @@
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
-            <!-- DASHBOARD -->
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -230,7 +230,6 @@
                 </div>
             </div>
 
-            <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -252,8 +251,7 @@
                                 <label class="form-label">Estrategia de Orden</label>
                                 <select id="create-orden-modo" class="form-select">
                                     <option value="fijo-primero">Fijar el 1° material, aleatorios los siguientes</option>
-                                    <option value="secuencial">Estricto secuencial (1, 2, 3...)</option>
-                                    <option value="aleatorio">Totalmente aleatorio</option>
+                                    <option value="secuencial">Estricto secuencial</option>
                                 </select>
                             </div>
                         </div>
@@ -261,7 +259,7 @@
                         <hr style="border-color:var(--border); margin: 1.5rem 0;">
 
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales (Estímulos)</h3>
+                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales</h3>
                             <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
                         </div>
 
@@ -292,7 +290,7 @@
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar:</div>
                     <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
                         <option value="todos">Todos los géneros</option>
                         <option value="Masculino">Masculino</option>
@@ -331,11 +329,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="50" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="35" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="40" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -350,7 +348,7 @@
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
-                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos de mirada para este filtro, pero aquí está el material:</p>
+                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
                     </div>
                 </div>
 
@@ -431,7 +429,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante IA. No se almacena video.
-                        <br><br><strong>CALIBRACIÓN:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto con la vista y haz CLIC en él cuando se ponga verde.</strong> Trata de no mover la cabeza.
+                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos. <strong>Mueve SOLO LOS OJOS (sin mover la cabeza) y haz CLIC en cada punto.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -470,7 +468,7 @@
         </div>
     </div>
 
-    <!-- LÓGICA PRINCIPAL -->
+    <!-- NÚCLEO CIENTÍFICO (AISLAMIENTO DE PUPILA Y EXPANSIÓN 1.8X) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -497,10 +495,11 @@
         let timeoutCalib = null;
         let visualizacionModo = 'calor'; 
 
+        // Modelo anclado al centro
         window.calibPuntosCapturados = [];
-        window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
-        window.lastSmoothedX = undefined;
-        window.lastSmoothedY = undefined;
+        window.calibModel = { cX: 0.5, cY: 0.5, maxDx: 0.1, maxDy: 0.1 };
+        window.lastSmoothedX = 0.5;
+        window.lastSmoothedY = 0.5;
 
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin'];
@@ -580,8 +579,8 @@
             resultadosParticipanteGaze = {}; 
             datosDemograficosTemp = {};
             window.calibPuntosCapturados = [];
-            window.lastSmoothedX = undefined;
-            window.lastSmoothedY = undefined;
+            window.lastSmoothedX = 0.5;
+            window.lastSmoothedY = 0.5;
             
             if (rafId) cancelAnimationFrame(rafId);
             
@@ -953,7 +952,6 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
-        // ALGORITMO I-DT CON TOLERANCIA AL RUIDO DE CÁMARA
         function analizarFijaciones(puntosArray) {
             let fijaciones = [];
             if (!puntosArray || puntosArray.length === 0) return fijaciones;
@@ -1077,7 +1075,6 @@
                 document.getElementById('heatmap-empty').style.display = 'none';
             }
 
-            // DIBUJAR MAPA TRAS CARGAR LA IMAGEN
             img.onload = () => {
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
@@ -1204,6 +1201,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
+        // AISLAMIENTO BIOMÉTRICO (PUPILA RELATIVA AL ROSTRO)
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1216,24 +1214,31 @@
                         
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
-                            let irisX = undefined, irisY = undefined;
-                            let noseX = l[1].x, noseY = l[1].y;
                             
-                            if (l.length > 470) {
-                                irisX = (l[468].x + l[473].x) / 2;
-                                irisY = (l[468].y + l[473].y) / 2;
-                            } else if (l[159] && l[386]) {
-                                irisX = (l[159].x + l[386].x) / 2;
-                                irisY = (l[159].y + l[386].y) / 2;
+                            // 1. Detección de los límites de la cara (Aislamiento de la cabeza)
+                            let faceLeft = l[234].x;
+                            let faceRight = l[454].x;
+                            let faceTop = l[10].y;
+                            let faceBot = l[152].y;
+
+                            let faceW = faceRight - faceLeft;
+                            let faceH = faceBot - faceTop;
+
+                            // 2. Detección de las pupilas
+                            let pupilX, pupilY;
+                            if (l.length > 470 && l[468] && l[473]) {
+                                pupilX = (l[468].x + l[473].x) / 2;
+                                pupilY = (l[468].y + l[473].y) / 2;
+                            } else {
+                                pupilX = (l[159].x + l[386].x) / 2;
+                                pupilY = (l[159].y + l[386].y) / 2;
                             }
 
-                            if (irisX !== undefined) {
-                                let refX = (irisX * 0.6) + (noseX * 0.4);
-                                let refY = (irisY * 0.6) + (noseY * 0.4);
-                                currentGazeSample = { x: 1 - refX, y: refY };
-                            } else {
-                                currentGazeSample = { x: 1 - noseX, y: noseY };
-                            }
+                            // 3. Extracción Geométrica (Donde mira el ojo SIN importar donde esté la cabeza)
+                            let relativeX = 1 - ((pupilX - faceLeft) / faceW); // 1- para efecto espejo
+                            let relativeY = (pupilY - faceTop) / faceH;
+
+                            currentGazeSample = { x: relativeX, y: relativeY };
                         }
                     } catch(e) {}
                 }
@@ -1302,27 +1307,23 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
+                // CÁLCULO DEL ANCLAJE CENTRAL
                 if (window.calibPuntosCapturados.length === 9) {
-                    let xs = window.calibPuntosCapturados.map(p => p.x);
-                    let ys = window.calibPuntosCapturados.map(p => p.y);
+                    let pts = window.calibPuntosCapturados;
+                    let cX = pts[4].x;
+                    let cY = pts[4].y;
                     
-                    let cMinX = Math.min(...xs);
-                    let cMaxX = Math.max(...xs);
-                    let cMinY = Math.min(...ys);
-                    let cMaxY = Math.max(...ys);
-
-                    let rX = cMaxX - cMinX;
-                    let rY = cMaxY - cMinY;
-
-                    // ENCOGER LA CAJA: Facilita enormemente llegar a los bordes
-                    window.calibBounds = {
-                        minX: cMinX + (rX * 0.20),
-                        maxX: cMaxX - (rX * 0.20),
-                        minY: cMinY + (rY * 0.20),
-                        maxY: cMaxY - (rY * 0.20)
-                    };
+                    let maxDx = 0.001, maxDy = 0.001;
+                    pts.forEach(p => {
+                        let dx = Math.abs(p.x - cX);
+                        let dy = Math.abs(p.y - cY);
+                        if(dx > maxDx) maxDx = dx;
+                        if(dy > maxDy) maxDy = dy;
+                    });
+                    
+                    window.calibModel = { cX, cY, maxDx, maxDy };
                 } else {
-                    window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
+                    window.calibModel = { cX: 0.5, cY: 0.5, maxDx: 0.1, maxDy: 0.1 };
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1417,30 +1418,28 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
-                window.lastSmoothedX = undefined;
-                window.lastSmoothedY = undefined;
+                window.lastSmoothedX = 0.5;
+                window.lastSmoothedY = 0.5;
                 isStimulusActive = true; 
 
-                // MAPEO EXTREMO: Llega a las esquinas con facilidad
+                // MULTIPLICADOR DE SENSIBILIDAD EXTREMA (1.8x) Y OFFSET (-15% Y)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
-                    let rangeX = Math.max(window.calibBounds.maxX - window.calibBounds.minX, 0.001);
-                    let rangeY = Math.max(window.calibBounds.maxY - window.calibBounds.minY, 0.001);
+                    let diffX = currentGazeSample.x - window.calibModel.cX;
+                    let diffY = currentGazeSample.y - window.calibModel.cY;
 
-                    let normX = (currentGazeSample.x - window.calibBounds.minX) / rangeX;
-                    let normY = (currentGazeSample.y - window.calibBounds.minY) / rangeY;
+                    // Amplificador 1.8x para garantizar que se alcancen las esquinas
+                    const SENSITIVITY = 1.8;
+                    let normX = 0.5 + ((diffX / window.calibModel.maxDx) * 0.5 * SENSITIVITY);
+                    let normY = 0.5 + ((diffY / window.calibModel.maxDy) * 0.5 * SENSITIVITY);
 
-                    // Empuje dinámico a las esquinas (1.8x)
-                    normX = (normX - 0.5) * 1.8 + 0.5;
-                    normY = (normY - 0.5) * 1.8 + 0.5;
+                    // Offset físico de la cámara web (anula el mirar hacia abajo)
+                    normY -= 0.15; 
 
-                    // Fuerte corrección hacia arriba (compensa la webcam)
-                    normY -= 0.12;
-
-                    // Suavizado rápido para que la mancha no se pegue al centro
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.50 + normX * 0.50 : normX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.50 + normY * 0.50 : normY;
+                    // Suavizado ultra rápido (sin fricción pegajosa)
+                    window.lastSmoothedX = (window.lastSmoothedX * 0.40) + (normX * 0.60);
+                    window.lastSmoothedY = (window.lastSmoothedY * 0.40) + (normY * 0.60);
 
                     let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
                     let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
