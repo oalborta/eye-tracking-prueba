@@ -179,6 +179,7 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
+    <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
         <nav class="admin-nav" id="admin-nav">
             <div class="logo">Eye<span>Track</span> Pro</div>
@@ -190,7 +191,6 @@
         </nav>
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
-
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -308,7 +308,6 @@
 
                 <div class="tabs" id="tabs-materiales"></div>
 
-                <!-- PANEL DE MÉTRICAS -->
                 <div style="display:flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <div class="stat-card blue" style="padding: 1.25rem; flex: 1; min-width: 200px;">
                         <div class="stat-label" style="margin-top:0; color:#93c5fd;"><i class="fas fa-stopwatch"></i> TTFF Promedio</div>
@@ -428,10 +427,10 @@
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong> mediante IA. No se almacena video.
                         <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos en pantalla. <br><br>
-                        <strong style="color:var(--warn)">⚠️ IMPORTANTE:<br>
-                        1. Mantén la cabeza perfectamente quieta.<br>
-                        2. Mueve SÓLO LAS PUPILAS hacia cada punto verde.<br>
-                        3. Haz CLIC en el punto.</strong>
+                        <strong style="color:var(--accent)">🚨 IMPORTANTE:<br>
+                        1. NO muevas la cabeza ni el cuello. Fíjalos.<br>
+                        2. Mueve SÓLO LOS OJOS hacia cada punto rojo.<br>
+                        3. Haz CLIC cuando el punto se vuelva verde.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -470,7 +469,7 @@
         </div>
     </div>
 
-    <!-- EL NUEVO MOTOR: "RATIO IRIS-ESCLERÓTICA" (True Tracking) -->
+    <!-- EL NUEVO MOTOR: EXTRAPOLACIÓN LINEAL PURA SIN LÍMITES -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -497,8 +496,9 @@
         let timeoutCalib = null;
         let visualizacionModo = 'calor'; 
 
+        // Modelo de Interpolación Pura
         window.calibPuntosCapturados = [];
-        window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
+        window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
@@ -544,6 +544,10 @@
         const estudioParam = urlParams.get('estudio');
 
         window.onload = () => {
+            if (window.location.protocol === 'file:') {
+                alert('🚨 BLOQUEO DE SEGURIDAD DETECTADO:\n\nEstás abriendo el archivo localmente (file:///). Por seguridad, Chrome y Safari bloquean la cámara web.\n\nSube este archivo a Netlify Drop o usa "Live Server" para que funcione correctamente.');
+            }
+
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
@@ -1188,7 +1192,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // LA CIENCIA: "RATIO IRIS-ESCLERÓTICA"
+        // LA CIENCIA: "RATIO IRIS-CARA"
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1202,48 +1206,32 @@
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
                             
-                            // True Eye Tracking (Solo mide el movimiento de la pupila dentro del ojo blanco)
-                            if (l.length > 470 && l[468] && l[473]) {
-                                // Ojo Izquierdo (Desde la cámara es el derecho): Comisura Externa 33, Interna 133
-                                let leO = l[33], leI = l[133], lp = l[468]; 
-                                // Ojo Derecho: Comisura Interna 362, Externa 263
-                                let reI = l[362], reO = l[263], rp = l[473]; 
-                                
-                                // Ancho del ojo
-                                let leW = Math.abs(leO.x - leI.x);
-                                let reW = Math.abs(reO.x - reI.x);
-                                
-                                // Proporción de la pupila (0.0 a 1.0)
-                                let lRatioX = Math.abs(lp.x - Math.min(leO.x, leI.x)) / leW;
-                                let rRatioX = Math.abs(rp.x - Math.min(reO.x, reI.x)) / reW;
-                                
-                                // Invertido para efecto espejo
-                                let irisX = 1 - ((lRatioX + rRatioX) / 2);
-                                
-                                // Eje Y (Párpado Superior vs Inferior)
-                                let leT = l[159], leB = l[145];
-                                let reT = l[386], reB = l[374];
-                                
-                                let leH = Math.abs(leB.y - leT.y);
-                                let reH = Math.abs(reB.y - reT.y);
-                                
-                                let lRatioY = Math.abs(lp.y - Math.min(leT.y, leB.y)) / leH;
-                                let rRatioY = Math.abs(rp.y - Math.min(reT.y, reB.y)) / reH;
-                                
-                                let irisY = (lRatioY + rRatioY) / 2;
+                            // 1. Extrae los límites fijos de tu cara
+                            let fLeft = Math.min(l[234].x, l[454].x);
+                            let fRight = Math.max(l[234].x, l[454].x);
+                            let fTop = Math.min(l[10].y, l[152].y);
+                            let fBot = Math.max(l[10].y, l[152].y);
+                            let fW = fRight - fLeft;
+                            let fH = fBot - fTop;
 
-                                currentGazeSample = { x: irisX, y: irisY };
-                            } 
-                            else {
-                                // Fallback si la cámara tiene muy mala resolución
-                                let fLeft = Math.min(l[234].x, l[454].x);
-                                let fRight = Math.max(l[234].x, l[454].x);
-                                let fTop = Math.min(l[10].y, l[152].y);
-                                let fBot = Math.max(l[10].y, l[152].y);
-                                
+                            // 2. Extrae el centro de las pupilas
+                            let irisX = undefined, irisY = undefined;
+                            if (l.length > 470) {
+                                if(l[468] && l[473]) {
+                                    irisX = (l[468].x + l[473].x) / 2;
+                                    irisY = (l[468].y + l[473].y) / 2;
+                                }
+                            } else if (l[159] && l[386]) {
+                                irisX = (l[159].x + l[386].x) / 2;
+                                irisY = (l[159].y + l[386].y) / 2;
+                            }
+
+                            // 3. El Tracking Perfecto: Calcula la pupila relativa a la cara
+                            // Esto te hace inmune a acercarte o alejarte de la pantalla
+                            if (irisX !== undefined && fW > 0 && fH > 0) {
                                 currentGazeSample = { 
-                                    x: 1 - ((l[1].x - fLeft) / (fRight - fLeft)), 
-                                    y: (l[1].y - fTop) / (fBot - fTop) 
+                                    x: (irisX - fLeft) / fW,
+                                    y: (irisY - fTop) / fH 
                                 };
                             }
                         }
@@ -1314,27 +1302,18 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
+                // MAPEO POR PROMEDIOS PUROS
                 if (window.calibPuntosCapturados.length === 9) {
-                    let xs = window.calibPuntosCapturados.map(p => p.x).filter(v => !isNaN(v));
-                    let ys = window.calibPuntosCapturados.map(p => p.y).filter(v => !isNaN(v));
-
-                    if (xs.length > 0 && ys.length > 0) {
-                        let cMinX = Math.min(...xs);
-                        let cMaxX = Math.max(...xs);
-                        let cMinY = Math.min(...ys);
-                        let cMaxY = Math.max(...ys);
-
-                        let rX = cMaxX - cMinX;
-                        let rY = cMaxY - cMinY;
-
-                        // Si el usuario no movió el ojo casi nada, prevenimos división por cero
-                        if (rX < 0.02) { cMinX -= 0.02; cMaxX += 0.02; }
-                        if (rY < 0.02) { cMinY -= 0.02; cMaxY += 0.02; }
-
-                        window.calibBounds = { minX: cMinX, maxX: cMaxX, minY: cMinY, maxY: cMaxY };
-                    }
+                    let pts = window.calibPuntosCapturados;
+                    
+                    window.calibModel = {
+                        xLeft:  (pts[0].x + pts[3].x + pts[6].x) / 3,
+                        xRight: (pts[2].x + pts[5].x + pts[8].x) / 3,
+                        yTop:   (pts[0].y + pts[1].y + pts[2].y) / 3,
+                        yBot:   (pts[6].y + pts[7].y + pts[8].y) / 3
+                    };
                 } else {
-                    window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
+                    window.calibModel = { xLeft: 0.6, xRight: 0.4, yTop: 0.4, yBot: 0.6 }; 
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1351,7 +1330,7 @@
 
             timeoutCalib = setTimeout(() => {
                 punto.className = 'verde';
-                punto.innerHTML = '<span style="font-size:0.75rem;font-weight:900;">CLIC</span>';
+                punto.innerHTML = 'CLIC';
                 
                 punto.onclick = (e) => {
                     e.preventDefault();
@@ -1369,7 +1348,7 @@
                     pasoCalibracionActual++;
                     setTimeout(mostrarPuntoCalibracion, 250);
                 };
-            }, 1000); // 1 segundo de fijación para máxima precisión
+            }, 1000); // 1 segundo de espera para enfocar
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1435,26 +1414,34 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // EL ÚNICO MAPEO PURO (Sin multiplicadores forzados)
+                // EXTRAPOLACIÓN LINEAL PURA DESNUDA (Sin límites)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
                     let cX = currentGazeSample.x;
                     let cY = currentGazeSample.y;
 
-                    let rangeX = Math.max(window.calibBounds.maxX - window.calibBounds.minX, 0.0001);
-                    let rangeY = Math.max(window.calibBounds.maxY - window.calibBounds.minY, 0.0001);
+                    let rangeX = window.calibModel.xRight - window.calibModel.xLeft;
+                    let rangeY = window.calibModel.yBot - window.calibModel.yTop;
 
-                    // Si calibraste bien, mirar a la esquina generará un número perfecto entre 0.0 y 1.0
-                    let normX = (cX - window.calibBounds.minX) / rangeX;
-                    let normY = (cY - window.calibBounds.minY) / rangeY;
+                    if (rangeX === 0) rangeX = 0.001;
+                    if (rangeY === 0) rangeY = 0.001;
 
-                    // Suavizado dinámico
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
+                    // Mapeo absoluto matemático
+                    let normX = (cX - window.calibModel.xLeft) / rangeX;
+                    let normY = (cY - window.calibModel.yTop) / rangeY;
 
-                    let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
-                    let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
+                    // Como los puntos estaban al 10% y 90%
+                    let screenX = 0.10 + (normX * 0.80);
+                    let screenY = 0.10 + (normY * 0.80);
+
+                    // Filtro suave
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.6 + screenX * 0.4 : screenX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.6 + screenY * 0.4 : screenY;
+
+                    // Dejamos que salga un poco de la pantalla si quieres (libertad de extrapolación)
+                    let finalX = Math.max(-0.2, Math.min(1.2, window.lastSmoothedX));
+                    let finalY = Math.max(-0.2, Math.min(1.2, window.lastSmoothedY));
 
                     if (!isNaN(finalX) && !isNaN(finalY)) {
                         datosGazeActuales.push({
