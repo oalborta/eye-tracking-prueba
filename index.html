@@ -308,6 +308,7 @@
 
                 <div class="tabs" id="tabs-materiales"></div>
 
+                <!-- PANEL DE MÉTRICAS -->
                 <div style="display:flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                     <div class="stat-card blue" style="padding: 1.25rem; flex: 1; min-width: 200px;">
                         <div class="stat-label" style="margin-top:0; color:#93c5fd;"><i class="fas fa-stopwatch"></i> TTFF Promedio</div>
@@ -427,10 +428,10 @@
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong> mediante IA. No se almacena video.
                         <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos en pantalla. <br><br>
-                        <strong style="color:var(--accent)">🚨 MUY IMPORTANTE:<br>
-                        1. Quédate quieto como estatua.<br>
-                        2. NO muevas la cabeza, mueve SÓLO TUS OJOS hacia cada punto.<br>
-                        3. Haz CLIC cuando el punto se vuelva verde.</strong>
+                        <strong style="color:var(--warn)">⚠️ IMPORTANTE:<br>
+                        1. Mantén la cabeza perfectamente quieta.<br>
+                        2. Mueve SÓLO LAS PUPILAS hacia cada punto verde.<br>
+                        3. Haz CLIC en el punto.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -469,7 +470,7 @@
         </div>
     </div>
 
-    <!-- EL NUEVO MOTOR: IDW (Inverse Distance Weighting) Espacial -->
+    <!-- EL NUEVO MOTOR: "RATIO IRIS-ESCLERÓTICA" (True Tracking) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -489,7 +490,7 @@
         let streamCamara = null;
         let lastMpTime = -1; 
         
-        let currentGazeSample = { x: 0, y: 0 };
+        let currentGazeSample = { x: 0.5, y: 0.5 };
         let isStimulusActive = false;
         let timeoutEstimulo = null;
         let timeoutIntervalo = null;
@@ -497,6 +498,7 @@
         let visualizacionModo = 'calor'; 
 
         window.calibPuntosCapturados = [];
+        window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
@@ -542,10 +544,6 @@
         const estudioParam = urlParams.get('estudio');
 
         window.onload = () => {
-            if (window.location.protocol === 'file:') {
-                alert('🚨 BLOQUEO DE SEGURIDAD DETECTADO:\n\nEstás abriendo el archivo localmente (file:///). Por seguridad, Chrome y Safari bloquean la cámara web.\n\nSube este archivo a Netlify Drop o usa "Live Server" para que funcione correctamente.');
-            }
-
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
@@ -878,7 +876,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error: Ocurrió un error al intentar guardar.");
+                alert("⚠️ Error: Ocurrió un error al intentar guardar. La imagen podría ser muy pesada.");
             }
         };
 
@@ -1190,7 +1188,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // LA CIENCIA REAL: Aislamiento por Vector de Pupila Independiente a la Cabeza
+        // LA CIENCIA: "RATIO IRIS-ESCLERÓTICA"
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1204,28 +1202,48 @@
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
                             
-                            // Ancla: Puente de la nariz
-                            let anchorX = l[168].x;
-                            let anchorY = l[168].y;
-
-                            // Normalizador de profundidad (Para que no afecte si te acercas a la pantalla)
-                            let eyeDist = Math.hypot(l[263].x - l[33].x, l[263].y - l[33].y);
-
-                            // Centro de las pupilas o párpados
-                            let px = undefined, py = undefined;
+                            // True Eye Tracking (Solo mide el movimiento de la pupila dentro del ojo blanco)
                             if (l.length > 470 && l[468] && l[473]) {
-                                px = (l[468].x + l[473].x) / 2;
-                                py = (l[468].y + l[473].y) / 2;
-                            } else if (l[159] && l[386]) {
-                                px = (l[159].x + l[386].x) / 2;
-                                py = (l[159].y + l[386].y) / 2;
-                            }
+                                // Ojo Izquierdo (Desde la cámara es el derecho): Comisura Externa 33, Interna 133
+                                let leO = l[33], leI = l[133], lp = l[468]; 
+                                // Ojo Derecho: Comisura Interna 362, Externa 263
+                                let reI = l[362], reO = l[263], rp = l[473]; 
+                                
+                                // Ancho del ojo
+                                let leW = Math.abs(leO.x - leI.x);
+                                let reW = Math.abs(reO.x - reI.x);
+                                
+                                // Proporción de la pupila (0.0 a 1.0)
+                                let lRatioX = Math.abs(lp.x - Math.min(leO.x, leI.x)) / leW;
+                                let rRatioX = Math.abs(rp.x - Math.min(reO.x, reI.x)) / reW;
+                                
+                                // Invertido para efecto espejo
+                                let irisX = 1 - ((lRatioX + rRatioX) / 2);
+                                
+                                // Eje Y (Párpado Superior vs Inferior)
+                                let leT = l[159], leB = l[145];
+                                let reT = l[386], reB = l[374];
+                                
+                                let leH = Math.abs(leB.y - leT.y);
+                                let reH = Math.abs(reB.y - reT.y);
+                                
+                                let lRatioY = Math.abs(lp.y - Math.min(leT.y, leB.y)) / leH;
+                                let rRatioY = Math.abs(rp.y - Math.min(reT.y, reB.y)) / reH;
+                                
+                                let irisY = (lRatioY + rRatioY) / 2;
 
-                            // Vector Gaze Puro: Dónde están los ojos respecto a la nariz (Inmune al giro de cabeza)
-                            if (px !== undefined && eyeDist > 0) {
+                                currentGazeSample = { x: irisX, y: irisY };
+                            } 
+                            else {
+                                // Fallback si la cámara tiene muy mala resolución
+                                let fLeft = Math.min(l[234].x, l[454].x);
+                                let fRight = Math.max(l[234].x, l[454].x);
+                                let fTop = Math.min(l[10].y, l[152].y);
+                                let fBot = Math.max(l[10].y, l[152].y);
+                                
                                 currentGazeSample = { 
-                                    x: -(px - anchorX) / eyeDist, // -X por espejo de cámara
-                                    y: (py - anchorY) / eyeDist 
+                                    x: 1 - ((l[1].x - fLeft) / (fRight - fLeft)), 
+                                    y: (l[1].y - fTop) / (fBot - fTop) 
                                 };
                             }
                         }
@@ -1268,23 +1286,16 @@
             }
 
             document.getElementById('btn-iniciar-camara').disabled = false;
-            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
+            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y encender cámara';
             
             iniciarLoopVision();
             iniciarCalibracionPasoAPaso();
         };
 
-        // LAS 9 COORDENADAS EXACTAS DE LA PANTALLA EN PORCENTAJES
         const puntosCalibracion = [
-            { top: '10%', left: '10%', scrX: 0.1, scrY: 0.1 }, 
-            { top: '10%', left: '50%', scrX: 0.5, scrY: 0.1 }, 
-            { top: '10%', left: '90%', scrX: 0.9, scrY: 0.1 },
-            { top: '50%', left: '10%', scrX: 0.1, scrY: 0.5 }, 
-            { top: '50%', left: '50%', scrX: 0.5, scrY: 0.5 }, 
-            { top: '50%', left: '90%', scrX: 0.9, scrY: 0.5 },
-            { top: '90%', left: '10%', scrX: 0.1, scrY: 0.9 }, 
-            { top: '90%', left: '50%', scrX: 0.5, scrY: 0.9 }, 
-            { top: '90%', left: '90%', scrX: 0.9, scrY: 0.9 }
+            { top: '10%', left: '10%' }, { top: '10%', left: '50%' }, { top: '10%', left: '90%' },
+            { top: '50%', left: '10%' }, { top: '50%', left: '50%' }, { top: '50%', left: '90%' },
+            { top: '90%', left: '10%' }, { top: '90%', left: '50%' }, { top: '90%', left: '90%' }
         ];
         
         let pasoCalibracionActual = 0;
@@ -1302,6 +1313,30 @@
 
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
+                
+                if (window.calibPuntosCapturados.length === 9) {
+                    let xs = window.calibPuntosCapturados.map(p => p.x).filter(v => !isNaN(v));
+                    let ys = window.calibPuntosCapturados.map(p => p.y).filter(v => !isNaN(v));
+
+                    if (xs.length > 0 && ys.length > 0) {
+                        let cMinX = Math.min(...xs);
+                        let cMaxX = Math.max(...xs);
+                        let cMinY = Math.min(...ys);
+                        let cMaxY = Math.max(...ys);
+
+                        let rX = cMaxX - cMinX;
+                        let rY = cMaxY - cMinY;
+
+                        // Si el usuario no movió el ojo casi nada, prevenimos división por cero
+                        if (rX < 0.02) { cMinX -= 0.02; cMaxX += 0.02; }
+                        if (rY < 0.02) { cMinY -= 0.02; cMaxY += 0.02; }
+
+                        window.calibBounds = { minX: cMinX, maxX: cMaxX, minY: cMinY, maxY: cMaxY };
+                    }
+                } else {
+                    window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
+                }
+
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -1314,7 +1349,6 @@
             punto.innerHTML = ''; 
             punto.onclick = null;
 
-            // Espera de 1.2 segundos para asegurar que el ojo está bien posicionado
             timeoutCalib = setTimeout(() => {
                 punto.className = 'verde';
                 punto.innerHTML = '<span style="font-size:0.75rem;font-weight:900;">CLIC</span>';
@@ -1323,14 +1357,8 @@
                     e.preventDefault();
                     if(punto.className !== 'verde') return;
                     
-                    // Al hacer clic, guarda el vector del ojo y a qué parte real de la pantalla pertenece
                     if(!isNaN(currentGazeSample.x) && !isNaN(currentGazeSample.y)){
-                        window.calibPuntosCapturados.push({ 
-                            gazeX: currentGazeSample.x, 
-                            gazeY: currentGazeSample.y,
-                            screenX: pos.scrX,
-                            screenY: pos.scrY
-                        });
+                        window.calibPuntosCapturados.push({ x: currentGazeSample.x, y: currentGazeSample.y });
                     }
 
                     punto.className = 'rojo';
@@ -1341,37 +1369,7 @@
                     pasoCalibracionActual++;
                     setTimeout(mostrarPuntoCalibracion, 250);
                 };
-            }, 1200); 
-        }
-
-        // ALGORITMO IDW (Inverse Distance Weighting) Espacial Magnético
-        function calcularGazeIDW(sampleX, sampleY) {
-            if(window.calibPuntosCapturados.length < 9) return {x: 0.5, y: 0.5};
-
-            let sumW = 0, sumX = 0, sumY = 0;
-            let p = 3; // Nivel de "atracción magnética" a las esquinas
-
-            window.calibPuntosCapturados.forEach(pt => {
-                let dx = sampleX - pt.gazeX;
-                let dy = sampleY - pt.gazeY;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                
-                // Evita división por cero y asigna peso
-                let w = 1.0 / Math.pow(dist + 0.0001, p);
-                
-                sumW += w;
-                sumX += w * pt.screenX;
-                sumY += w * pt.screenY;
-            });
-
-            let rawScreenX = sumX / sumW;
-            let rawScreenY = sumY / sumW;
-
-            // Expansión para que cubra del 0% al 100% (Ya que los puntos estaban al 10% y 90%)
-            let expX = (rawScreenX - 0.5) * 1.25 + 0.5;
-            let expY = (rawScreenY - 0.5) * 1.25 + 0.5;
-
-            return { x: expX, y: expY };
+            }, 1000); // 1 segundo de fijación para máxima precisión
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1437,18 +1435,26 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // APLICANDO LA MAGIA DEL IDW EN TIEMPO REAL
+                // EL ÚNICO MAPEO PURO (Sin multiplicadores forzados)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
-                    let estimacion = calcularGazeIDW(currentGazeSample.x, currentGazeSample.y);
+                    let cX = currentGazeSample.x;
+                    let cY = currentGazeSample.y;
 
-                    // Suavizado ultra responsivo (30% retención, 70% actualidad)
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.30 + estimacion.x * 0.70 : estimacion.x;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.30 + estimacion.y * 0.70 : estimacion.y;
+                    let rangeX = Math.max(window.calibBounds.maxX - window.calibBounds.minX, 0.0001);
+                    let rangeY = Math.max(window.calibBounds.maxY - window.calibBounds.minY, 0.0001);
 
-                    let finalX = Math.max(-0.1, Math.min(1.1, window.lastSmoothedX));
-                    let finalY = Math.max(-0.1, Math.min(1.1, window.lastSmoothedY));
+                    // Si calibraste bien, mirar a la esquina generará un número perfecto entre 0.0 y 1.0
+                    let normX = (cX - window.calibBounds.minX) / rangeX;
+                    let normY = (cY - window.calibBounds.minY) / rangeY;
+
+                    // Suavizado dinámico
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
+
+                    let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
+                    let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
 
                     if (!isNaN(finalX) && !isNaN(finalY)) {
                         datosGazeActuales.push({
