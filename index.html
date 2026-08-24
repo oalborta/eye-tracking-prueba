@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     
-    <!-- NUEVO MOTOR OFICIAL: WebGazer.js (True Eye Tracking por Regresión) -->
+    <!-- MOTOR OFICIAL: WebGazer.js -->
     <script src="https://unpkg.com/webgazer@3.3.0/dist/webgazer.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
@@ -135,7 +135,6 @@
             z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
 
-        /* DISEÑO DE CALIBRACIÓN REAL */
         #punto-calibracion {
             width: 40px; height: 40px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
@@ -207,7 +206,7 @@
         #p-intervalo .cruz::before { top: 19px; left: 0; width: 40px; height: 2px; }
         #p-intervalo .cruz::after { top: 0; left: 19px; width: 2px; height: 40px; }
         
-        /* Ocultar elementos invasivos de WebGazer por defecto */
+        /* Ocultar elementos de WebGazer por defecto */
         #webgazerVideoContainer { display: none !important; }
     </style>
 </head>
@@ -476,7 +475,7 @@
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
                         Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear la atención visual</strong> mediante IA. No se almacena video.
-                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto verde con tus ojos y haz CLIC en él.</strong>
+                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> A continuación aparecerán 9 puntos en la pantalla. <strong>Sigue cada punto verde con tus ojos y haz CLIC en él.</strong> Trata de no mover tu cabeza.
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y calibrar cámara
@@ -571,6 +570,10 @@
         const estudioParam = urlParams.get('estudio');
 
         window.onload = () => {
+            if (window.location.protocol === 'file:') {
+                alert('⚠️ AVISO DE SEGURIDAD: Estás abriendo el archivo localmente.\n\nPara que la cámara funcione, los navegadores requieren un enlace seguro. Sube este archivo a Netlify Drop o usa un Local Server.');
+            }
+
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
@@ -609,7 +612,6 @@
         };
 
         window.volverAlDashboardDesdePrueba = () => {
-            // FORZAMOS UNA RECARGA LIMPIA (Destruye el motor WebGazer de RAM)
             window.location.href = window.location.href.split('?')[0];
         };
 
@@ -1074,9 +1076,7 @@
                 
                 const validPoints = [];
                 puntosBrutos.forEach(p => {
-                    let nx = p.x;
-                    let ny = p.y;
-                    validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
+                    validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
                 });
 
                 if (visualizacionModo === 'calor') {
@@ -1193,7 +1193,6 @@
                     .setTracker('TFFacemesh')
                     .setGazeListener((data, elapsedTime) => {
                         if (data && isStimulusActive) {
-                            // Extrae la mirada directamente en píxeles reales de pantalla
                             let normX = data.x / window.innerWidth;
                             let normY = data.y / window.innerHeight;
                             
@@ -1206,7 +1205,6 @@
                         }
                     }).begin();
 
-                // Mostrar el feedback de video flotante (solo durante calibración)
                 webgazer.showVideoPreview(true).showPredictionPoint(false);
                 
                 const wgContainer = document.getElementById('webgazerVideoContainer');
@@ -1225,11 +1223,10 @@
             } catch (e) {
                 console.error(e);
                 alert('No se pudo iniciar el Eye Tracker. Comprueba permisos de cámara.');
-                location.reload();
             }
         };
 
-        // CALIBRACIÓN DE 9 PUNTOS (Estándar para Regresión WebGazer)
+        // CALIBRACIÓN DE 9 PUNTOS
         const puntosCalibracion = [
             { top: '10%', left: '10%' }, { top: '10%', left: '50%' }, { top: '10%', left: '90%' },
             { top: '50%', left: '10%' }, { top: '50%', left: '50%' }, { top: '50%', left: '90%' },
@@ -1250,7 +1247,6 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // Ocultar el video de WebGazer para que no distraiga durante el estudio
                 const wgContainer = document.getElementById('webgazerVideoContainer');
                 if(wgContainer) wgContainer.style.display = 'none';
                 
@@ -1263,7 +1259,6 @@
             punto.style.top = pos.top;
             punto.style.left = pos.left;
             
-            // WebGazer aprende automáticamente donde está el mouse al hacer click.
             punto.onclick = () => {
                 punto.style.display = 'none';
                 pasoCalibracionActual++;
@@ -1330,7 +1325,6 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
-                // ACTIVAR GUARDADO DE WEBGAZER
                 isStimulusActive = true;
 
                 timeoutEstimulo = setTimeout(() => {
@@ -1366,7 +1360,6 @@
         function finalizarParticipacion() {
             isStimulusActive = false;
             try {
-                // Detener WebGazer
                 if(window.webgazer) {
                     webgazer.pause();
                     const wgContainer = document.getElementById('webgazerVideoContainer');
@@ -1377,7 +1370,6 @@
             mostrarPantalla('p-fin');
 
             if (estudioParticipanteObj) {
-                // INSERCIÓN TRANSACTIVA PARA NO SOBREESCRIBIR DATOS
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
                 const idx = dbEstudios.findIndex(e => e.id === estudioParticipanteObj.id);
                 
