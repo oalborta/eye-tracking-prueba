@@ -124,7 +124,7 @@
             width: 48px; height: 48px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            transition: top 0.4s ease-out, left 0.4s ease-out, background-color 0.2s;
+            transition: top 0.35s ease-out, left 0.35s ease-out, background-color 0.2s;
             font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 900; color: white; user-select: none;
             box-sizing: border-box; border: 3px solid transparent; letter-spacing: 0.5px; cursor: pointer;
         }
@@ -179,7 +179,6 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
-    <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
         <nav class="admin-nav" id="admin-nav">
             <div class="logo">Eye<span>Track</span> Pro</div>
@@ -230,7 +229,6 @@
                 </div>
             </div>
 
-            <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -274,7 +272,6 @@
                 </div>
             </div>
 
-            <!-- RESULTADOS -->
             <div id="view-results" class="view">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
                     <div style="display:flex; align-items:center; gap:1rem;">
@@ -288,23 +285,6 @@
                         <button class="btn btn-secondary btn-sm" style="border-color:var(--danger); color:var(--danger);" onclick="limpiarResultados()"><i class="fas fa-trash-alt"></i> Borrar Datos</button>
                         <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> CSV</button>
                     </div>
-                </div>
-
-                <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar:</div>
-                    <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
-                        <option value="todos">Todos los géneros</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Femenino">Femenino</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                    <select id="filtro-edad" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
-                        <option value="todos">Todas las edades</option>
-                        <option value="18-25">18 - 25 años</option>
-                        <option value="26-35">26 - 35 años</option>
-                        <option value="36-50">36 - 50 años</option>
-                        <option value="51+">51+ años</option>
-                    </select>
                 </div>
 
                 <div class="tabs" id="tabs-materiales"></div>
@@ -343,7 +323,6 @@
                         </div>
                     </div>
 
-                    <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
                         <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
@@ -360,8 +339,7 @@
                                 <tr>
                                     <th>Participante ID</th>
                                     <th>Fecha</th>
-                                    <th>Demografía</th>
-                                    <th style="text-align:right;">Acción</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-participantes-resultados"></tbody>
@@ -379,43 +357,14 @@
     <div id="participant-section" style="display:none;">
         <video id="video-participante" playsinline muted autoplay></video>
         <img id="estimulo-participante" alt="Estímulo">
-        <div id="punto-calibracion" class="rojo"></div>
+        <div id="punto-calibracion" class="verde">CLIC</div>
 
         <div id="p-demografia" class="pantalla-participante">
             <div style="max-width:450px; text-align:center;">
                 <div style="font-size:2.5rem; font-weight:900; margin-bottom:1rem;">Eye<span style="color:var(--accent)">Track</span></div>
                 <div class="card" style="text-align:left;">
-                    <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-user-circle" style="color:var(--accent);margin-right:6px;"></i>Datos del Participante</h3>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Rango de Edad</label>
-                        <select id="part-edad" class="form-select">
-                            <option value="">Selecciona tu edad...</option>
-                            <option value="18-25">18 - 25 años</option>
-                            <option value="26-35">26 - 35 años</option>
-                            <option value="36-50">36 - 50 años</option>
-                            <option value="51+">51+ años</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Género</label>
-                        <select id="part-genero" class="form-select">
-                            <option value="">Selecciona tu género...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ocupación / Perfil</label>
-                        <select id="part-ocupacion" class="form-select">
-                            <option value="Consumidor Final">Consumidor Final / Comprador</option>
-                            <option value="Especialista Marketing">Especialista / Marketer</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
                     <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:0.5rem;" onclick="validarDemografiaYConsentimiento()">
-                        Continuar <i class="fas fa-arrow-right"></i>
+                        Iniciar Prueba <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
             </div>
@@ -466,7 +415,7 @@
         </div>
     </div>
 
-    <!-- LÓGICA PRINCIPAL (INTERPOLACIÓN POR CUADRANTES PUROS) -->
+    <!-- LÓGICA PRINCIPAL (RATIO OCULAR INTRASACÁDICO) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -479,7 +428,6 @@
         let datosGazeActuales = [];
         let tiempoInicioEstimulo = 0;
         let estimulosOrdenadosActuales = [];
-        let datosDemograficosTemp = {};
         let resultadosParticipanteGaze = {};
         
         let rafId = null;
@@ -493,9 +441,8 @@
         let timeoutCalib = null;
         let visualizacionModo = 'calor'; 
 
-        // NUEVO: Modelo de Interpolación Lineal por Tramos (Piece-Wise Linear)
         window.calibPuntosCapturados = [];
-        window.calibModel = { xL: 0.4, xM: 0.5, xR: 0.6, yT: 0.4, yM: 0.5, yB: 0.6 };
+        window.calibModel = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
@@ -575,7 +522,6 @@
         window.simularPrueba = (id) => {
             estudioActualId = id;
             resultadosParticipanteGaze = {}; 
-            datosDemograficosTemp = {};
             window.calibPuntosCapturados = [];
             window.lastSmoothedX = undefined;
             window.lastSmoothedY = undefined;
@@ -590,17 +536,7 @@
         window.volverAlDashboardDesdePrueba = () => {
             if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
             try { if (streamCamara) streamCamara.getTracks().forEach(t => t.stop()); } catch(e){}
-
-            document.getElementById('participant-section').style.display = 'none';
-            mostrarPantalla(''); 
-            
-            if (estudioParam) {
-                window.location.href = window.location.href.split('?')[0];
-            } else {
-                document.getElementById('admin-section').style.display = 'block';
-                window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                navegarA('dashboard');
-            }
+            window.location.href = window.location.href.split('?')[0];
         };
 
         window.cerrarSesion = () => {
@@ -887,7 +823,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error: Ocurrió un error al intentar guardar. La imagen podría ser muy pesada.");
+                alert("⚠️ Error: Ocurrió un error al intentar guardar.");
             }
         };
 
@@ -936,8 +872,6 @@
                     tr.innerHTML = `
                         <td><span style="font-size:0.75rem; color:var(--accent); font-family:monospace;">${p.id}</span></td>
                         <td style="color:var(--muted); font-size:0.85rem;">${d}</td>
-                        <td>${p.edadRango}</td>
-                        <td>${p.genero} / ${p.ocupacion}</td>
                         <td style="text-align:right;">
                             <button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:transparent;" onclick="borrarUnParticipante('${p.id}')"><i class="fas fa-trash"></i></button>
                         </td>
@@ -1015,9 +949,6 @@
 
             if (estudio.participantes) {
                 estudio.participantes.forEach(p => {
-                    if (filtroGenero !== 'todos' && p.genero !== filtroGenero) return;
-                    if (filtroEdad !== 'todos' && p.edadRango !== filtroEdad) return;
-                    
                     if (p.gazePorMaterial && p.gazePorMaterial[material.id] && p.gazePorMaterial[material.id].length > 0) {
                         totalParticipantesFiltro++;
                         const dataUsuario = p.gazePorMaterial[material.id];
@@ -1086,10 +1017,7 @@
                     
                     const validPoints = [];
                     puntosBrutos.forEach(p => {
-                        let nx = p.x;
-                        let ny = p.y;
-                        if (nx > 2) { nx = nx / window.screen.width; ny = ny / window.screen.height; }
-                        validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
+                        validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
                     });
 
                     if (visualizacionModo === 'calor') {
@@ -1136,70 +1064,11 @@
             }
         };
 
-        window.filtrarResultadosDemografia = () => actualizarSensibilidadHeatmap();
-
-        window.exportarCSV = () => {
-            if (!estudioActualId) return;
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-            const estudio = estudios.find(e => e.id === estudioActualId);
-            if (!estudio || !estudio.participantes || estudio.participantes.length === 0) {
-                alert('No hay datos de participantes para exportar.');
-                return;
-            }
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Estudio,Participante_ID,Edad,Genero,Ocupacion,Material_ID,Material_Nombre,Tiempo_ms,Norm_X,Norm_Y\n";
-
-            estudio.participantes.forEach(part => {
-                if (part.gazePorMaterial) {
-                    Object.keys(part.gazePorMaterial).forEach(matId => {
-                        const material = estudio.estimulos.find(m => m.id === matId);
-                        const matNombre = material ? material.nombre : matId;
-                        const gazeData = part.gazePorMaterial[matId];
-
-                        gazeData.forEach(punto => {
-                            const row = [
-                                `"${estudio.nombre}"`, 
-                                part.id, 
-                                `"${part.edadRango}"`, 
-                                `"${part.genero}"`, 
-                                `"${part.ocupacion}"`,
-                                matId, 
-                                `"${matNombre}"`, 
-                                punto.time, 
-                                punto.x.toFixed(4), 
-                                punto.y.toFixed(4)
-                            ].join(",");
-                            csvContent += row + "\n";
-                        });
-                    });
-                }
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `DataEyeTracking_${estudio.nombre.replace(/\s+/g, '_')}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        };
-
         window.validarDemografiaYConsentimiento = () => {
-            const edadRango = document.getElementById('part-edad').value;
-            const genero = document.getElementById('part-genero').value;
-            const ocupacion = document.getElementById('part-ocupacion').value;
-
-            if (!edadRango || !genero) {
-                mostrarToast('Por favor selecciona tu rango de edad y género', 'error');
-                return;
-            }
-
-            datosDemograficosTemp = { edadRango, genero, ocupacion };
             mostrarPantalla('p-consentimiento');
         };
 
-        // AISLAMIENTO FACIAL PURO: Independiente del movimiento del cuello
+        // LA REVOLUCIÓN: RATIO OCULAR ANATÓMICO
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1212,33 +1081,48 @@
                         
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
-                            
-                            // 1. Calcula la "Caja" estricta de la cara en este milisegundo
-                            let fLeft = Math.min(l[234].x, l[454].x);
-                            let fRight = Math.max(l[234].x, l[454].x);
-                            let fTop = Math.min(l[10].y, l[152].y);
-                            let fBot = Math.max(l[10].y, l[152].y);
-                            let fW = fRight - fLeft;
-                            let fH = fBot - fTop;
-
-                            // 2. Localiza las pupilas
                             let irisX = undefined, irisY = undefined;
-                            if (l.length > 470) {
-                                if(l[468] && l[473]) {
-                                    irisX = (l[468].x + l[473].x) / 2;
-                                    irisY = (l[468].y + l[473].y) / 2;
-                                }
-                            } else if (l[159] && l[386]) {
-                                irisX = (l[159].x + l[386].x) / 2;
-                                irisY = (l[159].y + l[386].y) / 2;
+                            
+                            // True Eye Tracking: Pupila vs Comisuras del ojo
+                            if (l.length > 470 && l[468] && l[473]) {
+                                // Ojo Izquierdo: 33 (exterior), 133 (interior)
+                                let leO = l[33], leI = l[133], lp = l[468]; 
+                                // Ojo Derecho: 362 (interior), 263 (exterior)
+                                let reI = l[362], reO = l[263], rp = l[473]; 
+                                
+                                let leW = Math.hypot(leO.x - leI.x, leO.y - leI.y);
+                                let reW = Math.hypot(reO.x - reI.x, reO.y - reI.y);
+                                
+                                // Porcentaje de movimiento de pupila en X
+                                let lRatioX = Math.hypot(lp.x - leO.x, lp.y - leO.y) / leW;
+                                let rRatioX = Math.hypot(rp.x - reI.x, rp.y - reI.y) / reW;
+                                
+                                irisX = 1 - ((lRatioX + rRatioX) / 2); // Espejo
+                                
+                                // Eje Y (Párpado superior vs inferior)
+                                let leT = l[159], leB = l[145];
+                                let reT = l[386], reB = l[374];
+                                
+                                let leH = Math.hypot(leT.x - leB.x, leT.y - leB.y);
+                                let reH = Math.hypot(reT.x - reB.x, reT.y - reB.y);
+                                
+                                let lRatioY = Math.hypot(lp.x - leT.x, lp.y - leT.y) / leH;
+                                let rRatioY = Math.hypot(rp.x - reT.x, rp.y - reT.y) / reH;
+                                
+                                irisY = (lRatioY + rRatioY) / 2;
+                            } 
+                            // Fallback si la PC es muy lenta y no carga las pupilas (Usa la nariz)
+                            else {
+                                let fLeft = Math.min(l[234].x, l[454].x);
+                                let fRight = Math.max(l[234].x, l[454].x);
+                                let fTop = Math.min(l[10].y, l[152].y);
+                                let fBot = Math.max(l[10].y, l[152].y);
+                                
+                                irisX = 1 - ((l[1].x - fLeft) / (fRight - fLeft));
+                                irisY = (l[1].y - fTop) / (fBot - fTop);
                             }
 
-                            // 3. AISLAMIENTO: Dónde está la pupila DENTRO del % de la cara
-                            if (irisX !== undefined && fW > 0 && fH > 0) {
-                                let relX = 1 - ((irisX - fLeft) / fW); // 1- para efecto espejo
-                                let relY = (irisY - fTop) / fH;
-                                currentGazeSample = { x: relX, y: relY };
-                            }
+                            currentGazeSample = { x: irisX, y: irisY };
                         }
                     } catch(e) {}
                 }
@@ -1307,27 +1191,19 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // MAPEO POR CUADRANTES PUROS (Sin "Cajas encogidas")
+                // MAPEO ABSOLUTO (El límite de tu ojo real)
                 if (window.calibPuntosCapturados.length === 9) {
-                    let pts = window.calibPuntosCapturados;
+                    let xs = window.calibPuntosCapturados.map(p => p.x).sort((a,b) => a-b);
+                    let ys = window.calibPuntosCapturados.map(p => p.y).sort((a,b) => a-b);
                     
                     window.calibModel = {
-                        xLeft:  (pts[0].x + pts[3].x + pts[6].x) / 3,
-                        xMid:   (pts[1].x + pts[4].x + pts[7].x) / 3,
-                        xRight: (pts[2].x + pts[5].x + pts[8].x) / 3,
-                        yTop:   (pts[0].y + pts[1].y + pts[2].y) / 3,
-                        yMid:   (pts[3].y + pts[4].y + pts[5].y) / 3,
-                        yBot:   (pts[6].y + pts[7].y + pts[8].y) / 3
+                        minX: xs[0], 
+                        maxX: xs[8], 
+                        minY: ys[0], 
+                        maxY: ys[8]  
                     };
-
-                    // Seguro anti división por cero si el usuario fue una estatua
-                    if (Math.abs(window.calibModel.xMid - window.calibModel.xLeft) < 0.0001) window.calibModel.xLeft -= 0.001;
-                    if (Math.abs(window.calibModel.xRight - window.calibModel.xMid) < 0.0001) window.calibModel.xRight += 0.001;
-                    if (Math.abs(window.calibModel.yMid - window.calibModel.yTop) < 0.0001) window.calibModel.yTop -= 0.001;
-                    if (Math.abs(window.calibModel.yBot - window.calibModel.yMid) < 0.0001) window.calibModel.yBot += 0.001;
-
                 } else {
-                    window.calibModel = { xLeft: 0.4, xMid: 0.5, xRight: 0.6, yTop: 0.4, yMid: 0.5, yBot: 0.6 }; 
+                    window.calibModel = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1360,8 +1236,7 @@
                     pasoCalibracionActual++;
                     setTimeout(mostrarPuntoCalibracion, 250);
                 };
-            // Retardo incrementado para forzar al usuario a mirar el punto fijamente
-            }, 1200); 
+            }, 1000); // 1 segundo de fijación para máxima precisión
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1427,37 +1302,30 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // INTERPOLACIÓN LINEAL POR TRAMOS (Sin Multiplicadores Hacks)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
-                    let rawX = currentGazeSample.x;
-                    let rawY = currentGazeSample.y;
-                    let normX, normY;
+                    let cX = currentGazeSample.x;
+                    let cY = currentGazeSample.y;
 
-                    // Mapeo puro en el Eje X
-                    if (rawX < window.calibModel.xMid) {
-                        let p = (rawX - window.calibModel.xLeft) / (window.calibModel.xMid - window.calibModel.xLeft);
-                        normX = 0.10 + (p * 0.40);
-                    } else {
-                        let p = (rawX - window.calibModel.xMid) / (window.calibModel.xRight - window.calibModel.xMid);
-                        normX = 0.50 + (p * 0.40);
-                    }
+                    let rangeX = window.calibModel.maxX - window.calibModel.minX || 0.001;
+                    let rangeY = window.calibModel.maxY - window.calibModel.minY || 0.001;
 
-                    // Mapeo puro en el Eje Y
-                    if (rawY < window.calibModel.yMid) {
-                        let p = (rawY - window.calibModel.yTop) / (window.calibModel.yMid - window.calibModel.yTop);
-                        normY = 0.10 + (p * 0.40);
-                    } else {
-                        let p = (rawY - window.calibModel.yMid) / (window.calibModel.yBot - window.calibModel.yMid);
-                        normY = 0.50 + (p * 0.40);
-                    }
+                    // Mapeo absoluto del ratio del ojo
+                    let normX = (cX - window.calibModel.minX) / rangeX;
+                    let normY = (cY - window.calibModel.minY) / rangeY;
 
-                    // Suavizado ultra rápido para que no haya arrastre al centro
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.60 + normX * 0.40 : normX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.60 + normY * 0.40 : normY;
+                    // EXPANSIÓN MASIVA HACIA LOS BORDES
+                    normX = (normX - 0.5) * 1.5 + 0.5; // Eje X fácil de llegar
+                    normY = (normY - 0.5) * 2.0 + 0.5; // Eje Y amplificado (por el problema del párpado)
 
-                    // El punto rojo será 100% libre de viajar fuera de los bordes si quieres
+                    // Compensación anti-laptop
+                    normY -= 0.15; 
+
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.70 + normX * 0.30 : normX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.70 + normY * 0.30 : normY;
+
+                    // Sin restricciones artificiales
                     let finalX = Math.max(-0.1, Math.min(1.1, window.lastSmoothedX));
                     let finalY = Math.max(-0.1, Math.min(1.1, window.lastSmoothedY));
 
