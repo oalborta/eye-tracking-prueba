@@ -91,6 +91,7 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--muted); }
         .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); }
         .btn-danger:hover { background: rgba(239,68,68,0.2); }
+        .btn-success { background: #059669; color: #fff; } /* Nuevo color para guardado exitoso */
         .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; border-radius: 8px; }
 
         .form-group { margin-bottom: 1.25rem; }
@@ -129,13 +130,12 @@
         }
 
         #punto-calibracion {
-            width: 50px; height: 50px; border-radius: 50%; position: fixed;
+            width: 55px; height: 55px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
-            transition: background-color 0.4s, box-shadow 0.4s, transform 0.2s, top 0.6s ease-in-out, left 0.6s ease-in-out;
-            font-size: 0.75rem; font-weight: 800; color: white; user-select: none;
+            transition: background-color 0.3s, box-shadow 0.3s, top 0.5s ease-in-out, left 0.5s ease-in-out;
+            font-size: 0.8rem; font-weight: 800; color: white; user-select: none;
         }
-        #punto-calibracion:active { transform: translate(-50%, -50%) scale(0.9); }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 30px 12px rgba(239,68,68,0.7); cursor: not-allowed; }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 30px 12px rgba(16,185,129,0.7); cursor: pointer; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(16,185,129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129, 0); } }
@@ -161,10 +161,8 @@
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
         #video-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; opacity: 0; pointer-events: none; }
-        /* CORRECCIÓN: Se eliminó crossorigin="anonymous" de esta etiqueta para evitar que el navegador bloquee las URLs externas */
-        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
+        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #08080d; }
         
-        .login-container { max-width: 400px; margin: 0 auto; padding: 4rem 1.5rem; }
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
         
@@ -175,9 +173,7 @@
             display: flex; align-items: center; gap: 0.5rem; min-width: 280px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.4);
         }
-        .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
-        .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
     </style>
@@ -190,41 +186,19 @@
 
     <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
-        <nav class="admin-nav" id="admin-nav" style="display:none;">
+        <nav class="admin-nav" id="admin-nav">
             <div class="logo">Eye<span>Track</span> Pro</div>
             <div class="nav-links">
                 <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
                 <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+            <div></div> <!-- Espacio para alinear -->
         </nav>
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
-            <!-- LOGIN -->
-            <div id="view-login" class="view active">
-                <div class="login-container">
-                    <div style="text-align:center; margin-bottom: 2.5rem;">
-                        <div style="font-size: 3rem; font-weight: 900; letter-spacing: -1px;">Eye<span style="color:var(--accent)">Track</span></div>
-                        <p style="color:var(--muted); margin-top: 0.5rem;">Panel de Administrador (No requiere registro)</p>
-                    </div>
-                    <div class="card">
-                        <div class="form-group">
-                            <label class="form-label">Contraseña de administrador</label>
-                            <input type="password" id="login-pass" class="form-input" placeholder="Ingrese la contraseña" autofocus onkeydown="if(event.key==='Enter') intentarLogin()">
-                        </div>
-                        <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="intentarLogin()">
-                            <i class="fas fa-lock"></i> Ingresar al Sistema
-                        </button>
-                        <p style="text-align:center; margin-top:1rem; font-size:0.8rem; color:var(--warn); font-weight:600;">
-                            Contraseña de acceso: <code style="background:var(--bg2);padding:2px 6px;border-radius:4px;color:var(--fg);">admin2024</code>
-                        </p>
-                    </div>
-                </div>
-            </div>
-
             <!-- DASHBOARD -->
-            <div id="view-dashboard" class="view">
+            <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
                         <div class="stat-number" id="stat-estudios">0</div>
@@ -301,7 +275,8 @@
                         <div id="lista-estimulos-creacion"></div>
 
                         <div style="display:flex; gap:0.75rem; margin-top:2rem;">
-                            <button class="btn btn-primary" onclick="guardarEstudio()"><i class="fas fa-save"></i> Guardar Estudio</button>
+                            <!-- Botón con ID para poder modificarlo dinámicamente -->
+                            <button id="btn-guardar-estudio" class="btn btn-primary" onclick="guardarEstudio()"><i class="fas fa-save"></i> Guardar Estudio</button>
                             <button class="btn btn-secondary" onclick="navegarA('dashboard')">Cancelar</button>
                         </div>
                     </div>
@@ -318,7 +293,6 @@
                             <p style="color:var(--muted); font-size:0.85rem;" id="results-subtitulo"></p>
                         </div>
                     </div>
-                    <!-- Botón Exportar CSV -->
                     <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> Exportar a CSV</button>
                 </div>
 
@@ -368,7 +342,6 @@
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
         <video id="video-participante" playsinline></video>
-        <!-- Eliminado el atributo crossorigin para evitar que el navegador bloquee las URLs externas y deje la pantalla negra -->
         <img id="estimulo-participante" alt="Estímulo">
         <div id="punto-calibracion" class="rojo"></div>
 
@@ -437,7 +410,8 @@
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 
-        <div id="p-pregunta" class="pantalla-participante" style="display:none; background:rgba(8,8,13,0.95);">
+        <!-- Fondo explícito oscuro para evitar transparencias -->
+        <div id="p-pregunta" class="pantalla-participante" style="display:none; background:#12121c;">
             <div class="card" style="max-width:500px; text-align:center;">
                 <span id="label-num-material" style="font-size:0.75rem; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
                 <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.3rem; margin:1rem 0;">Instrucción</h3>
@@ -445,7 +419,7 @@
             </div>
         </div>
 
-        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:rgba(8,8,13,0.95);">
+        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:#08080d;">
             <div style="font-size:3rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:1.8rem;">¡Estudio completado!</h2>
             <p style="color:var(--muted); max-width:400px; text-align:center;">Tus datos de atención ocular han sido guardados correctamente.</p>
@@ -457,9 +431,7 @@
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
-        const PASS_DEFAULT = 'admin2024';
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-        window.autenticado = localStorage.getItem('et_auth') === 'true';
         let estudioActualId = null;
         let materialActualIndex = 0;
         let faceLandmarker = null;
@@ -484,34 +456,15 @@
         const urlParams = new URLSearchParams(window.location.search);
         const estudioParam = urlParams.get('estudio');
 
-        if (estudioParam) {
-            document.getElementById('admin-section').style.display = 'none';
-            document.getElementById('participant-section').style.display = 'block';
-            estudioActualId = estudioParam;
-        } else if (window.autenticado) {
-            document.getElementById('view-login').classList.remove('active');
-            document.getElementById('view-dashboard').classList.add('active');
-            document.getElementById('admin-nav').style.display = 'flex';
-            actualizarDashboard();
-        }
-
-        window.intentarLogin = () => {
-            const pass = document.getElementById('login-pass').value;
-            if (pass === PASS_DEFAULT) {
-                localStorage.setItem('et_auth', 'true');
-                window.autenticado = true;
-                document.getElementById('view-login').classList.remove('active');
-                document.getElementById('view-dashboard').classList.add('active');
-                document.getElementById('admin-nav').style.display = 'flex';
-                actualizarDashboard();
+        // Lógica Inicial (Sin Login)
+        window.onload = () => {
+            if (estudioParam) {
+                document.getElementById('admin-section').style.display = 'none';
+                document.getElementById('participant-section').style.display = 'block';
+                estudioActualId = estudioParam;
             } else {
-                mostrarToast('Contraseña incorrecta. (Usa: admin2024)', 'error');
+                actualizarDashboard();
             }
-        };
-
-        window.cerrarSesion = () => {
-            localStorage.removeItem('et_auth');
-            window.location.href = window.location.href.split('?')[0];
         };
 
         window.navegarA = (vista, idEdicion = null) => {
@@ -537,6 +490,12 @@
             datosDemograficosTemp = {};
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
+            
+            // Asegurarnos de limpiar vistas previas de otras pruebas
+            document.getElementById('p-fin').style.display = 'none';
+            document.getElementById('p-pregunta').style.display = 'none';
+            document.getElementById('estimulo-participante').style.display = 'none';
+            document.getElementById('p-demografia').style.display = 'flex';
         };
 
         window.volverAlDashboardDesdePrueba = () => {
@@ -577,7 +536,7 @@
                     <td>
                         <div class="study-link">
                             <code>${linkParticipante}</code>
-                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); mostrarToast('Link copiado', 'success');" title="Copiar link">
+                            <button class="btn btn-secondary btn-sm" onclick="navigator.clipboard.writeText('${linkParticipante}'); alert('¡Link copiado!');" title="Copiar link">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
@@ -675,7 +634,7 @@
             if (file && file.type.startsWith('image/')) {
                 procesarArchivoImagen(file, box.closest('.estimulo-item-card'));
             } else {
-                mostrarToast('Por favor suelta un archivo de imagen válido', 'error');
+                alert('Por favor suelta un archivo de imagen válido');
             }
         };
 
@@ -704,57 +663,72 @@
             card.querySelector('.preview-txt').style.display = 'none';
         }
 
-        // CORRECCIÓN: Alerta infalible para asegurar la visualización del guardado
+        // FEEDBACK DE GUARDADO TOTALMENTE CLARO E INLINE
         window.guardarEstudio = () => {
-            const idEdit = document.getElementById('edit-estudio-id').value;
-            const nombre = document.getElementById('create-nombre').value.trim();
-            const intervalo = Number(document.getElementById('create-intervalo').value) || 2;
-            const ordenModo = document.getElementById('create-orden-modo').value;
-            
-            const tarjetas = document.querySelectorAll('.estimulo-item-card');
-            let estimulos = [];
+            try {
+                const idEdit = document.getElementById('edit-estudio-id').value;
+                const nombre = document.getElementById('create-nombre').value.trim();
+                const intervalo = Number(document.getElementById('create-intervalo').value) || 2;
+                const ordenModo = document.getElementById('create-orden-modo').value;
+                
+                const tarjetas = document.querySelectorAll('.estimulo-item-card');
+                let estimulos = [];
 
-            tarjetas.forEach(t => {
-                estimulos.push({
-                    id: 'mat_' + Math.random().toString(36).substr(2, 9),
-                    nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
-                    imagen: t.querySelector('.est-img-base64').value.trim(),
-                    pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen',
-                    duracion: Number(t.querySelector('.est-duracion').value) || 10
+                tarjetas.forEach(t => {
+                    const imgVal = t.querySelector('.est-img-base64') ? t.querySelector('.est-img-base64').value.trim() : "";
+                    estimulos.push({
+                        id: 'mat_' + Math.random().toString(36).substr(2, 9),
+                        nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
+                        imagen: imgVal,
+                        pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen',
+                        duracion: Number(t.querySelector('.est-duracion').value) || 10
+                    });
                 });
-            });
 
-            if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
-                alert('⚠️ No se puede guardar: Asigna un nombre y asegúrate de cargar al menos una imagen.');
-                return;
-            }
-
-            if (idEdit) {
-                const idx = estudios.findIndex(e => e.id === idEdit);
-                if (idx !== -1) {
-                    estudios[idx].nombre = nombre;
-                    estudios[idx].intervalo = intervalo;
-                    estudios[idx].ordenModo = ordenModo;
-                    estudios[idx].estimulos = estimulos;
+                if (!nombre || estimulos.length === 0 || !estimulos[0].imagen) {
+                    alert('⚠️ No se puede guardar: Asigna un nombre al estudio y asegúrate de cargar al menos una imagen.');
+                    return;
                 }
-            } else {
-                const nuevoEstudio = {
-                    id: 'est_' + Math.random().toString(36).substr(2, 9),
-                    nombre,
-                    intervalo,
-                    ordenModo,
-                    creado: Date.now(),
-                    estimulos,
-                    participantes: []
-                };
-                estudios.push(nuevoEstudio);
-            }
 
-            localStorage.setItem('et_estudios', JSON.stringify(estudios));
-            
-            // Pop-up nativo para confirmación absoluta
-            alert('✅ ¡Estudio guardado exitosamente!');
-            navegarA('dashboard');
+                if (idEdit) {
+                    const idx = estudios.findIndex(e => e.id === idEdit);
+                    if (idx !== -1) {
+                        estudios[idx].nombre = nombre;
+                        estudios[idx].intervalo = intervalo;
+                        estudios[idx].ordenModo = ordenModo;
+                        estudios[idx].estimulos = estimulos;
+                    }
+                } else {
+                    const nuevoEstudio = {
+                        id: 'est_' + Math.random().toString(36).substr(2, 9),
+                        nombre,
+                        intervalo,
+                        ordenModo,
+                        creado: Date.now(),
+                        estimulos,
+                        participantes: []
+                    };
+                    estudios.push(nuevoEstudio);
+                }
+
+                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                
+                // Confirmación Visual Directa en el Botón
+                const btn = document.getElementById('btn-guardar-estudio');
+                const textoOriginal = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> ¡Guardado Exitosamente!';
+                btn.classList.replace('btn-primary', 'btn-success');
+                
+                setTimeout(() => {
+                    btn.innerHTML = textoOriginal;
+                    btn.classList.replace('btn-success', 'btn-primary');
+                    navegarA('dashboard');
+                }, 1200);
+
+            } catch(e) {
+                console.error("Error guardando estudio:", e);
+                alert("Ocurrió un error al intentar guardar.");
+            }
         };
 
         window.eliminarEstudio = (id) => {
@@ -762,7 +736,6 @@
                 estudios = estudios.filter(e => e.id !== id);
                 localStorage.setItem('et_estudios', JSON.stringify(estudios));
                 actualizarDashboard();
-                mostrarToast('Estudio eliminado', 'info');
             }
         };
 
@@ -822,7 +795,6 @@
             const container = document.createElement('div');
             container.className = 'heatmap-container';
             const img = document.createElement('img');
-            // Eliminado crossorigin del heatmap para evitar problemas de redibujado con URLs
             img.src = material.imagen;
             const canvas = document.createElement('canvas');
             container.appendChild(img);
@@ -854,7 +826,7 @@
             if (!estudioActualId) return;
             const estudio = estudios.find(e => e.id === estudioActualId);
             if (!estudio || !estudio.participantes || estudio.participantes.length === 0) {
-                mostrarToast('No hay datos de participantes para exportar.', 'error');
+                alert('No hay datos de participantes para exportar.');
                 return;
             }
 
@@ -903,7 +875,7 @@
             const ocupacion = document.getElementById('part-ocupacion').value;
 
             if (!edadRango || !genero) {
-                mostrarToast('Por favor selecciona tu rango de edad y género', 'error');
+                alert('Por favor selecciona tu rango de edad y género');
                 return;
             }
 
@@ -941,23 +913,32 @@
             }
         };
 
-        // CORRECCIÓN: Orden de calibración ideal (Centro primero)
+        // CALIBRACIÓN REAL CON INTELIGENCIA ARTIFICIAL EN VIVO
         const puntosCalibracion = [
-            { top: '50%', left: '50%' },  // Centro 
+            { top: '50%', left: '50%' },  // Centro
             { top: '10%', left: '10%' },  // Arriba - Izquierda
             { top: '10%', left: '90%' },  // Arriba - Derecha
             { top: '90%', left: '90%' },  // Abajo - Derecha
             { top: '90%', left: '10%' }   // Abajo - Izquierda
         ];
+        
         let pasoCalibracionActual = 0;
+        let calibracionActiva = false;
+        let validandoRostro = false;
 
         function iniciarCalibracionPasoAPaso() {
             pasoCalibracionActual = 0;
+            calibracionActiva = true;
+            validandoRostro = true;
+            verificarRostroParaPunto(); // Inicia el Loop de Face Tracking
             mostrarPuntoCalibracion();
         }
 
         function mostrarPuntoCalibracion() {
             if (pasoCalibracionActual >= puntosCalibracion.length) {
+                calibracionActiva = false;
+                validandoRostro = false;
+                document.getElementById('punto-calibracion').style.display = 'none';
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -970,26 +951,52 @@
             punto.style.left = pos.left;
             
             punto.className = 'rojo';
-            punto.innerHTML = ''; 
+            punto.innerHTML = '<i class="fas fa-eye"></i>'; 
             punto.onclick = null; 
+        }
 
-            setTimeout(() => {
-                punto.className = 'verde';
-                punto.innerHTML = 'CLIC'; 
-                
-                punto.onclick = () => {
-                    punto.style.display = 'none';
+        // Esta función escanea la cámara cada milisegundo durante la calibración
+        function verificarRostroParaPunto() {
+            if (!validandoRostro) return;
+            const video = document.getElementById('video-participante');
+            let rostroDetectado = false;
+            
+            if (faceLandmarker && video.readyState >= 2) {
+                const results = faceLandmarker.detectForVideo(video, performance.now());
+                if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                    rostroDetectado = true; // La IA físicamente encontró una cara
+                }
+            }
+
+            const punto = document.getElementById('punto-calibracion');
+            if (calibracionActiva) {
+                if (rostroDetectado) {
+                    // Si te está viendo, cambia a verde y permite el clic
+                    if (punto.className !== 'verde') {
+                        punto.className = 'verde';
+                        punto.innerHTML = 'CLIC';
+                        punto.onclick = () => {
+                            punto.style.display = 'none';
+                            punto.onclick = null;
+                            pasoCalibracionActual++;
+                            setTimeout(mostrarPuntoCalibracion, 300);
+                        };
+                    }
+                } else {
+                    // Si no te ve, se pone rojo y no te deja avanzar
+                    punto.className = 'rojo';
+                    punto.innerHTML = '<i class="fas fa-eye-slash"></i>';
                     punto.onclick = null;
-                    pasoCalibracionActual++;
-                    setTimeout(mostrarPuntoCalibracion, 300);
-                };
-            }, 1500); 
+                }
+            }
+            
+            requestAnimationFrame(verificarRostroParaPunto);
         }
 
         function iniciarSecuenciaEstimulos() {
             estudioParticipanteObj = estudios.find(e => e.id === estudioActualId);
             if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos.length) {
-                alert('Estudio no encontrado.');
+                alert('Error: Datos del estudio no localizados.');
                 return;
             }
 
@@ -1007,6 +1014,9 @@
         }
 
         window.mostrarPreguntaMaterial = () => {
+            // Apagar explícitamente cualquier estímulo anterior
+            document.getElementById('estimulo-participante').style.display = 'none';
+            
             const mat = estimulosOrdenadosActuales[materialActualIndex];
             document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
             document.getElementById('texto-pregunta-material').textContent = mat.pregunta;
@@ -1017,9 +1027,6 @@
             document.getElementById('p-pregunta').style.display = 'none';
             const mat = estimulosOrdenadosActuales[materialActualIndex];
             const imgEl = document.getElementById('estimulo-participante');
-            
-            // Manejo de error por si la imagen sigue caída
-            imgEl.onerror = () => { console.warn("La imagen no cargó. Puede que la URL sea inválida o esté protegida."); };
             
             imgEl.src = mat.imagen;
             imgEl.style.display = 'block';
@@ -1049,6 +1056,7 @@
             setTimeout(() => {
                 cancelAnimationFrame(rafId);
                 imgEl.style.display = 'none';
+                
                 if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
                 resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
 
@@ -1061,15 +1069,19 @@
             }, duracionMs);
         };
 
-        // CORRECCIÓN: Prevención de crash al guardar
         function finalizarParticipacion() {
+            // Apagado de cámara blindado contra errores (Try-Catch) para evitar bloqueos
             try {
                 if (streamCamara) {
                     streamCamara.getTracks().forEach(t => t.stop());
                 }
             } catch (error) {
-                console.warn("Ignorando error al apagar cámara", error);
+                console.warn("La cámara ya estaba cerrada o ignoró el comando.", error);
             }
+
+            // Ocultar cualquier elemento restante que cause pantalla negra
+            document.getElementById('p-pregunta').style.display = 'none';
+            document.getElementById('estimulo-participante').style.display = 'none';
 
             if (!estudioParticipanteObj.participantes) estudioParticipanteObj.participantes = [];
             
@@ -1077,9 +1089,10 @@
                 id: 'part_' + Math.random().toString(36).substr(2, 9),
                 fecha: Date.now(),
                 ...datosDemograficosTemp,
-                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial
+                gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial || {}
             });
 
+            // Guardado final en Storage garantizado
             const idx = estudios.findIndex(e => e.id === estudioParticipanteObj.id);
             if (idx !== -1) {
                 estudios[idx] = estudioParticipanteObj;
