@@ -76,6 +76,9 @@
         }
         .stat-card.green::after { background: var(--accent); }
         .stat-card.amber::after { background: var(--warn); }
+        .stat-card.blue::after { background: #3b82f6; }
+        .stat-card.purple::after { background: #8b5cf6; }
+        
         .stat-number { font-size: 2.5rem; font-weight: 900; line-height: 1; }
         .stat-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem; }
 
@@ -122,6 +125,11 @@
         }
         .tab-btn:hover { color: var(--fg); }
         .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        /* NUEVO: Controles de vista (Toggle) */
+        .toggle-group { display: inline-flex; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.25rem; }
+        .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'Outfit'; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+        .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
         .pantalla-participante {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -327,7 +335,7 @@
                     </div>
                 </div>
 
-                <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
+                <div style="display:flex; gap:1rem; margin-bottom:1.5rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
                     <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
                     <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
                         <option value="todos">Todos los géneros</option>
@@ -346,17 +354,40 @@
 
                 <div class="tabs" id="tabs-materiales"></div>
 
+                <!-- NUEVO: PANEL DE MÉTRICAS CUANTITATIVAS -->
+                <div style="display:flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <div class="stat-card blue" style="padding: 1.25rem; flex: 1; min-width: 200px;">
+                        <div class="stat-label" style="margin-top:0; color:#93c5fd;"><i class="fas fa-stopwatch"></i> TTFF Promedio</div>
+                        <div class="stat-number" style="font-size:2rem; margin-top:0.5rem;" id="metrica-ttff">-</div>
+                    </div>
+                    <div class="stat-card purple" style="padding: 1.25rem; flex: 1; min-width: 200px;">
+                        <div class="stat-label" style="margin-top:0; color:#c4b5fd;"><i class="fas fa-eye"></i> Duración Promedio</div>
+                        <div class="stat-number" style="font-size:2rem; margin-top:0.5rem;" id="metrica-duracion">-</div>
+                    </div>
+                    <div class="stat-card amber" style="padding: 1.25rem; flex: 1; min-width: 200px;">
+                        <div class="stat-label" style="margin-top:0; color:#fcd34d;"><i class="fas fa-compress-arrows-alt"></i> Fijaciones / Usuario</div>
+                        <div class="stat-number" style="font-size:2rem; margin-top:0.5rem;" id="metrica-cantidad">-</div>
+                    </div>
+                </div>
+
                 <div class="card" style="margin-bottom: 2rem;">
-                    <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap;">
-                        <div>
-                            <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                            <input type="range" min="10" max="80" value="40" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                    <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap; justify-content: space-between;">
+                        <div style="display: flex; gap: 1.5rem; align-items: center;">
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
+                                <input type="range" min="10" max="80" value="40" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem;">Desenfoque (Blur)</label>
+                                <input type="range" min="5" max="60" value="30" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                            </div>
                         </div>
-                        <div>
-                            <label class="form-label" style="font-size: 0.75rem;">Desenfoque (Blur)</label>
-                            <input type="range" min="5" max="60" value="30" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                        
+                        <!-- NUEVO: Toggle Calor vs Foco -->
+                        <div class="toggle-group">
+                            <button id="btn-modo-calor" class="toggle-btn active" onclick="cambiarModoVisualizacion('calor')">🔥 Calor</button>
+                            <button id="btn-modo-foco" class="toggle-btn" onclick="cambiarModoVisualizacion('foco')">🔦 Foco</button>
                         </div>
-                        <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem;"></div>
                     </div>
 
                     <div id="heatmap-wrap" style="text-align:center;"></div>
@@ -367,7 +398,6 @@
                     </div>
                 </div>
 
-                <!-- TABLA DE PARTICIPANTES PARA BORRADO INDIVIDUAL -->
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados</h3>
@@ -475,7 +505,6 @@
             </div>
         </div>
         
-        <!-- PANTALLA: INTERVALO CON CRUZ DE FIJACIÓN -->
         <div id="p-intervalo" class="pantalla-participante" style="display:none;">
             <div class="cruz"></div>
         </div>
@@ -488,7 +517,6 @@
         </div>
     </div>
 
-    <!-- LÓGICA -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -507,12 +535,18 @@
         let resultadosParticipanteGaze = {};
         
         let lastMpTime = -1; 
+        let currentGazeSample = { x: 0.5, y: 0.5 };
+        let isStimulusActive = false;
+        let timeoutEstimulo = null;
+        let timeoutIntervalo = null;
+        let timeoutCalib = null;
+        let visualizacionModo = 'calor'; // 'calor' o 'foco'
+
         window.calibPuntosCapturados = [];
         window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
-        // GESTOR DE PANTALLAS SEGURO
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin'];
             pantallas.forEach(p => { 
@@ -531,7 +565,6 @@
                 const activo = document.getElementById(idActiva);
                 if(activo) activo.style.display = 'flex';
                 
-                // Mostrar "Salir" SÓLO en la pantalla de instrucciones y SÓLO para el administrador probando
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.get('estudio') && idActiva === 'p-pregunta') {
                     btnAbortar.style.display = 'flex';
@@ -548,11 +581,8 @@
             setTimeout(() => toast.remove(), 4000); 
         };
 
-        // EVENTO AL CERRAR PESTAÑA (Seguro anti-camara zombie)
         window.addEventListener('beforeunload', () => {
-            if (streamCamara) {
-                streamCamara.getTracks().forEach(t => t.stop());
-            }
+            if (streamCamara) streamCamara.getTracks().forEach(t => t.stop());
         });
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -595,10 +625,8 @@
             window.lastSmoothedY = undefined;
             
             if (rafId) cancelAnimationFrame(rafId);
-            
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
-            
             mostrarPantalla('p-demografia');
         };
 
@@ -649,6 +677,13 @@
                     mostrarToast('Participante eliminado', 'success');
                 }
             }
+        };
+
+        window.cambiarModoVisualizacion = (modo) => {
+            visualizacionModo = modo;
+            document.getElementById('btn-modo-calor').classList.toggle('active', modo === 'calor');
+            document.getElementById('btn-modo-foco').classList.toggle('active', modo === 'foco');
+            actualizarSensibilidadHeatmap();
         };
 
         function actualizarDashboard() {
@@ -912,7 +947,7 @@
             if (!est) return;
 
             document.getElementById('results-titulo').textContent = est.nombre;
-            document.getElementById('results-subtitulo').textContent = `${est.participantes.length} participantes registrados`;
+            document.getElementById('results-subtitulo').textContent = `${est.participantes ? est.participantes.length : 0} participantes registrados`;
 
             const tabsContainer = document.getElementById('tabs-materiales');
             tabsContainer.innerHTML = '';
@@ -956,6 +991,44 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
+        // ALGORITMO I-DT: DETECCIÓN DE FIJACIONES (Para Métricas Cuantitativas)
+        function analizarFijaciones(puntosArray) {
+            let fijaciones = [];
+            let i = 0;
+            const umbralDistancia = 0.08; // 8% de la pantalla de tolerancia al micro-movimiento
+            const umbralTiempo = 150; // 150ms minimo para considerar que la mirada se fijó
+
+            while(i < puntosArray.length) {
+                let j = i + 1;
+                let minX = puntosArray[i].x, maxX = puntosArray[i].x;
+                let minY = puntosArray[i].y, maxY = puntosArray[i].y;
+
+                while(j < puntosArray.length) {
+                    minX = Math.min(minX, puntosArray[j].x);
+                    maxX = Math.max(maxX, puntosArray[j].x);
+                    minY = Math.min(minY, puntosArray[j].y);
+                    maxY = Math.max(maxY, puntosArray[j].y);
+
+                    let dist = Math.max(maxX - minX, maxY - minY);
+                    if(dist > umbralDistancia) break; 
+                    j++;
+                }
+
+                let duracion = puntosArray[j-1].time - puntosArray[i].time;
+                if(duracion >= umbralTiempo) {
+                    fijaciones.push({
+                        inicio: puntosArray[i].time,
+                        duracion: duracion,
+                        x: (minX + maxX)/2,
+                        y: (minY + maxY)/2
+                    });
+                }
+                i = j;
+            }
+            return fijaciones;
+        }
+
+        // RENDERIZADO DEL MAPA DE CALOR Y CÁLCULO DE MÉTRICAS
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             const estudio = estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
@@ -963,20 +1036,52 @@
 
             if (!estudio || !estudio.estimulos[materialIndex]) return;
             const material = estudio.estimulos[materialIndex];
-            document.getElementById('instruccion-badge').textContent = `Instrucción: "${material.pregunta}"`;
+            
+            let puntosBrutos = [];
+            let totalParticipantesFiltro = 0;
+            let sumTTFF = 0;
+            let sumDuracionFijacion = 0;
+            let totalFijacionesCalculadas = 0;
+            let countTTFFValidos = 0;
 
-            let puntos = [];
             if (estudio.participantes) {
                 estudio.participantes.forEach(p => {
                     if (filtroGenero !== 'todos' && p.genero !== filtroGenero) return;
                     if (filtroEdad !== 'todos' && p.edadRango !== filtroEdad) return;
-                    if (p.gazePorMaterial && p.gazePorMaterial[material.id]) {
-                        puntos = puntos.concat(p.gazePorMaterial[material.id]);
+                    
+                    if (p.gazePorMaterial && p.gazePorMaterial[material.id] && p.gazePorMaterial[material.id].length > 0) {
+                        totalParticipantesFiltro++;
+                        const dataUsuario = p.gazePorMaterial[material.id];
+                        puntosBrutos = puntosBrutos.concat(dataUsuario);
+
+                        // Calcular fijaciones para este usuario
+                        const fijacionesUsr = analizarFijaciones(dataUsuario);
+                        
+                        if(fijacionesUsr.length > 0) {
+                            sumTTFF += fijacionesUsr[0].inicio; // El inicio de la 1ra fijacion
+                            countTTFFValidos++;
+                            totalFijacionesCalculadas += fijacionesUsr.length;
+                            
+                            fijacionesUsr.forEach(f => sumDuracionFijacion += f.duracion);
+                        }
                     }
                 });
             }
 
-            if (puntos.length === 0) {
+            // ACTUALIZAR TARJETAS DE MÉTRICAS
+            const msToSecs = (ms) => (ms/1000).toFixed(2) + 's';
+            
+            if (totalParticipantesFiltro > 0 && countTTFFValidos > 0) {
+                document.getElementById('metrica-ttff').textContent = msToSecs(sumTTFF / countTTFFValidos);
+                document.getElementById('metrica-duracion').textContent = msToSecs(sumDuracionFijacion / totalFijacionesCalculadas);
+                document.getElementById('metrica-cantidad').textContent = (totalFijacionesCalculadas / totalParticipantesFiltro).toFixed(1);
+            } else {
+                document.getElementById('metrica-ttff').textContent = '-';
+                document.getElementById('metrica-duracion').textContent = '-';
+                document.getElementById('metrica-cantidad').textContent = '-';
+            }
+
+            if (puntosBrutos.length === 0) {
                 document.getElementById('heatmap-empty').style.display = 'block';
                 return;
             }
@@ -997,28 +1102,59 @@
             img.onload = () => {
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
+                canvas.style.width = '100%';
+                canvas.style.height = '100%';
                 
-                const heat = simpleheat(canvas);
                 const scaleFactor = img.naturalWidth / 800;
-                const radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
-                const blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
-                
-                heat.radius(radius, blur);
+                let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
+                let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
                 
                 const validPoints = [];
-                puntos.forEach(p => {
+                puntosBrutos.forEach(p => {
                     let nx = p.x;
                     let ny = p.y;
-                    if (nx > 2) { 
-                        nx = nx / window.screen.width;
-                        ny = ny / window.screen.height;
-                    }
+                    if (nx > 2) { nx = nx / window.screen.width; ny = ny / window.screen.height; }
                     validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
                 });
-                
-                heat.data(validPoints);
-                heat.max(Math.max(2, validPoints.length / 20)); 
-                heat.draw();
+
+                if (visualizacionModo === 'calor') {
+                    // DIBUJA EL MAPA DE CALOR TRADICIONAL
+                    const heat = simpleheat(canvas);
+                    heat.radius(radius, blur);
+                    heat.data(validPoints);
+                    heat.max(Math.max(2, validPoints.length / 20)); 
+                    heat.draw();
+                } else if (visualizacionModo === 'foco') {
+                    // DIBUJA EL MAPA DE OPACIDAD (FOCUS MAP)
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 1. Pinta todo el canvas de negro semitransparente
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 2. Cambia el modo a "borrar"
+                    ctx.globalCompositeOperation = 'destination-out';
+                    
+                    // 3. Por cada punto de fijación, "borra" un circulo difuminado
+                    const fijacionesTotales = analizarFijaciones(puntosBrutos);
+                    // Radio del foco ligeramente mayor
+                    const focusRadius = radius * 1.5; 
+
+                    fijacionesTotales.forEach(f => {
+                        let cx = f.x * canvas.width;
+                        let cy = f.y * canvas.height;
+                        
+                        let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, focusRadius);
+                        grd.addColorStop(0, 'rgba(255, 255, 255, 1)'); // Borra 100% al centro
+                        grd.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); // Borra 40% a la mitad
+                        grd.addColorStop(1, 'rgba(255, 255, 255, 0)'); // No borra en el borde
+                        
+                        ctx.fillStyle = grd;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
             };
         };
 
@@ -1094,11 +1230,29 @@
             mostrarPantalla('p-consentimiento');
         };
 
+        function iniciarLoopVision() {
+            const video = document.getElementById('video-participante');
+            function loop() {
+                let now = performance.now();
+                if (faceLandmarker && video.readyState >= 2 && now > lastMpTime) {
+                    try {
+                        const results = faceLandmarker.detectForVideo(video, now);
+                        lastMpTime = now;
+                        if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                            const nose = results.faceLandmarks[0][1];
+                            currentGazeSample = { x: 1 - nose.x, y: nose.y };
+                        }
+                    } catch(e) {}
+                }
+                rafId = requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
         window.participanteAceptar = async () => {
             document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando IA...';
             document.getElementById('btn-iniciar-camara').disabled = true;
 
-            // PASO 1: Descargar la Inteligencia Artificial (MediaPipe)
             try {
                 const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
                 faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
@@ -1110,31 +1264,26 @@
                     numFaces: 1
                 });
             } catch (e) {
-                console.error("Error al cargar IA:", e);
-                alert('Error de red: No se pudo descargar la Inteligencia Artificial. Revisa tu conexión a internet.');
-                document.getElementById('btn-iniciar-camara').disabled = false;
-                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar';
-                return; // Detener ejecución
+                alert('Error de red al descargar IA.');
+                location.reload();
+                return;
             }
 
-            // PASO 2: Encender la cámara web
-            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Encendiendo cámara...';
             try {
                 streamCamara = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
                 const video = document.getElementById('video-participante');
                 video.srcObject = streamCamara;
                 await video.play();
             } catch (e) {
-                console.error("Error de cámara:", e);
-                alert('Cámara bloqueada. Asegúrate de dar permisos en el navegador y que ninguna otra app (Zoom, Meet) la esté usando.');
-                document.getElementById('btn-iniciar-camara').disabled = false;
-                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar cámara';
-                return; // Detener ejecución
+                alert('Cámara bloqueada o en uso por otra app.');
+                location.reload();
+                return;
             }
 
-            // SI TODO FUE BIEN:
             document.getElementById('btn-iniciar-camara').disabled = false;
             document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Acepto y calibrar cámara';
+            
+            iniciarLoopVision();
             iniciarCalibracionPasoAPaso();
         };
 
@@ -1156,6 +1305,7 @@
         }
 
         function mostrarPuntoCalibracion() {
+            if (timeoutCalib) clearTimeout(timeoutCalib);
             const punto = document.getElementById('punto-calibracion');
 
             if (pasoCalibracionActual >= puntosCalibracion.length) {
@@ -1181,28 +1331,22 @@
             }
 
             const pos = puntosCalibracion[pasoCalibracionActual];
+            punto.style.display = 'flex'; 
             punto.style.top = pos.top;
             punto.style.left = pos.left;
             punto.className = 'rojo';
             punto.innerHTML = ''; 
             punto.onclick = null;
 
-            setTimeout(() => {
+            timeoutCalib = setTimeout(() => {
                 punto.className = 'verde';
-                punto.innerHTML = '<span style="font-size:0.75rem;font-weight:900;">CLIC</span>';
+                punto.innerHTML = 'CLIC';
                 
                 punto.onclick = (e) => {
                     e.preventDefault();
                     if(punto.className !== 'verde') return;
                     
-                    try {
-                        let now = performance.now();
-                        const results = faceLandmarker.detectForVideo(document.getElementById('video-participante'), now);
-                        if (results && results.faceLandmarks && results.faceLandmarks.length > 0) {
-                            const nose = results.faceLandmarks[0][1];
-                            window.calibPuntosCapturados.push({ x: 1 - nose.x, y: nose.y });
-                        }
-                    } catch(err) {}
+                    window.calibPuntosCapturados.push({ x: currentGazeSample.x, y: currentGazeSample.y });
 
                     punto.className = 'rojo';
                     punto.innerHTML = '';
@@ -1210,9 +1354,9 @@
                     punto.style.display = 'none';
                     
                     pasoCalibracionActual++;
-                    setTimeout(mostrarPuntoCalibracion, 300);
+                    setTimeout(mostrarPuntoCalibracion, 250);
                 };
-            }, 1000); 
+            }, 800); 
         }
 
         function iniciarSecuenciaEstimulos() {
@@ -1276,44 +1420,29 @@
 
                 window.lastSmoothedX = undefined;
                 window.lastSmoothedY = undefined;
-                const video = document.getElementById('video-participante');
+                
+                // INICIO DEL BUCLE DE GUARDADO DE VISTA
+                const trackingInterval = setInterval(() => {
+                    let normX = (currentGazeSample.x - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
+                    let normY = (currentGazeSample.y - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
 
-                function loopTracking() {
-                    let now = performance.now();
-                    if (faceLandmarker && video.readyState >= 2) {
-                        try {
-                            const results = faceLandmarker.detectForVideo(video, now);
-                            if (results.faceLandmarks?.[0]) {
-                                const rawX = 1 - results.faceLandmarks[0][1].x;
-                                const rawY = results.faceLandmarks[0][1].y;
-                                
-                                let normX = (rawX - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
-                                let normY = (rawY - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
+                    // Expandimos algorítmicamente para alcanzar esquinas físicas
+                    normX = (normX - 0.5) * 1.5 + 0.5;
+                    normY = (normY - 0.5) * 1.5 + 0.5;
 
-                                normX = (normX - 0.5) * 1.2 + 0.5;
-                                normY = (normY - 0.5) * 1.2 + 0.5;
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
 
-                                normX += (Math.random() - 0.5) * 0.03;
-                                normY += (Math.random() - 0.5) * 0.03;
+                    datosGazeActuales.push({
+                        x: Math.max(0, Math.min(1, window.lastSmoothedX)), 
+                        y: Math.max(0, Math.min(1, window.lastSmoothedY)),
+                        time: Date.now() - tiempoInicioEstimulo,
+                        intensity: 1
+                    });
+                }, 30); // 30ms = ~33 fps de guardado de datos
 
-                                window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.7 + normX * 0.3 : normX;
-                                window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.7 + normY * 0.3 : normY;
-
-                                datosGazeActuales.push({
-                                    x: Math.max(0, Math.min(1, window.lastSmoothedX)), 
-                                    y: Math.max(0, Math.min(1, window.lastSmoothedY)),
-                                    time: Date.now() - tiempoInicioEstimulo,
-                                    intensity: 1
-                                });
-                            }
-                        } catch(e) {}
-                    }
-                    rafId = requestAnimationFrame(loopTracking);
-                }
-                loopTracking();
-
-                setTimeout(() => {
-                    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+                timeoutEstimulo = setTimeout(() => {
+                    clearInterval(trackingInterval);
                     
                     if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
                     resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
@@ -1325,7 +1454,7 @@
                         let waitTime = Number(estudioParticipanteObj.intervalo);
                         if(isNaN(waitTime) || waitTime < 0) waitTime = 2; 
                         
-                        setTimeout(() => {
+                        timeoutIntervalo = setTimeout(() => {
                             try {
                                 mostrarPreguntaMaterial();
                             } catch(e) { finalizarParticipacion(); }
@@ -1351,6 +1480,7 @@
             mostrarPantalla('p-fin');
 
             if (estudioParticipanteObj) {
+                // ACTUALIZACIÓN SEGURA DE BASE DE DATOS
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
                 const idx = dbEstudios.findIndex(e => e.id === estudioParticipanteObj.id);
                 
