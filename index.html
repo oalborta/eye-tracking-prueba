@@ -143,7 +143,6 @@
         .file-upload-box { border: 2px dashed var(--border); border-radius: 10px; padding: 1.25rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: rgba(255,255,255,0.01); }
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
-        /* Cámara invisible para no romper MediaPipe ni la UX */
         #video-participante { position: fixed; top: 0; left: 0; width: 10px; height: 10px; opacity: 0; pointer-events: none; z-index: -1; }
         #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
@@ -193,6 +192,7 @@
 
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
+            <!-- DASHBOARD -->
             <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
@@ -227,14 +227,15 @@
                     <div id="empty-dashboard" class="empty-state" style="display:none;">
                         <i class="fas fa-eye"></i>
                         <p style="font-size:1.1rem; font-weight:600;">No hay estudios creados</p>
+                        <p style="font-size:0.85rem; margin-top:0.5rem;">Crea tu primer estudio para comenzar.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- CREAR ESTUDIO -->
+            <!-- CREAR / EDITAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
-                    <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio</h2>
+                    <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
                     <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos independientes, duraciones y orden.</p>
 
                     <div class="card">
@@ -253,7 +254,8 @@
                                 <label class="form-label">Estrategia de Orden</label>
                                 <select id="create-orden-modo" class="form-select">
                                     <option value="fijo-primero">Fijar el 1° material, aleatorios los siguientes</option>
-                                    <option value="secuencial">Estricto secuencial</option>
+                                    <option value="secuencial">Estricto secuencial (1, 2, 3...)</option>
+                                    <option value="aleatorio">Totalmente aleatorio</option>
                                 </select>
                             </div>
                         </div>
@@ -261,7 +263,7 @@
                         <hr style="border-color:var(--border); margin: 1.5rem 0;">
 
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales</h3>
+                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales (Estímulos)</h3>
                             <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
                         </div>
 
@@ -292,7 +294,7 @@
                 </div>
 
                 <div style="display:flex; gap:1rem; margin-bottom:1rem; background:var(--bg2); padding:1rem; border-radius:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar:</div>
+                    <div style="font-size:0.85rem; font-weight:700; color:var(--accent);"><i class="fas fa-filter"></i> Filtrar Demografía:</div>
                     <select id="filtro-genero" class="form-select" style="width:auto; padding:0.4rem 0.8rem; font-size:0.85rem;" onchange="filtrarResultadosDemografia()">
                         <option value="todos">Todos los géneros</option>
                         <option value="Masculino">Masculino</option>
@@ -345,6 +347,7 @@
                         </div>
                     </div>
 
+                    <!-- AQUÍ SE DIBUJA EL MAPA -->
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
@@ -353,6 +356,7 @@
                     </div>
                 </div>
 
+                <!-- TABLA DE PARTICIPANTES PARA BORRADO INDIVIDUAL -->
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados</h3>
@@ -370,7 +374,7 @@
                             <tbody id="tabla-participantes-resultados"></tbody>
                         </table>
                         <div id="empty-participantes" class="empty-state" style="display:none; padding: 2rem;">
-                            <p style="font-size:0.9rem;">No hay participantes registrados aún.</p>
+                            <p style="font-size:0.9rem;">No hay participantes registrados en este estudio aún.</p>
                         </div>
                     </div>
                 </div>
@@ -406,7 +410,7 @@
                             <option value="">Selecciona tu género...</option>
                             <option value="Masculino">Masculino</option>
                             <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro</option>
+                            <option value="Otro">Otro / Prefiero no decir</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -469,7 +473,7 @@
         </div>
     </div>
 
-    <!-- CARGA DE MEDIAPIPE (MOTOR HÍBRIDO SEGURO) -->
+    <!-- LÓGICA PRINCIPAL (MOTOR HÍBRIDO SEGURO) -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -883,7 +887,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error: Ocurrió un error al intentar guardar: " + e.message);
+                alert("⚠️ Error: Ocurrió un error al intentar guardar. La imagen podría ser muy pesada.");
             }
         };
 
@@ -949,9 +953,11 @@
         // ALGORITMO MEJORADO PARA DETECCIÓN DE FIJACIONES (Absorbe ruido de webcam)
         function analizarFijaciones(puntosArray) {
             let fijaciones = [];
+            if (!puntosArray || puntosArray.length === 0) return fijaciones;
+            
             let i = 0;
-            const umbralDistancia = 0.12; // 12% tolerancia a micro-movimientos o ruido
-            const umbralTiempo = 100; // 100ms para considerarse fijación
+            const umbralDistancia = 0.15; // 15% tolerancia a micro-movimientos o ruido de webcam
+            const umbralTiempo = 80;      // 80ms minimo para considerarse fijación
 
             while(i < puntosArray.length) {
                 let j = i + 1;
@@ -959,10 +965,13 @@
                 let minY = puntosArray[i].y, maxY = puntosArray[i].y;
 
                 while(j < puntosArray.length) {
-                    minX = Math.min(minX, puntosArray[j].x);
-                    maxX = Math.max(maxX, puntosArray[j].x);
-                    minY = Math.min(minY, puntosArray[j].y);
-                    maxY = Math.max(maxY, puntosArray[j].y);
+                    let currentX = puntosArray[j].x;
+                    let currentY = puntosArray[j].y;
+                    
+                    minX = Math.min(minX, currentX);
+                    maxX = Math.max(maxX, currentX);
+                    minY = Math.min(minY, currentY);
+                    maxY = Math.max(maxY, currentY);
 
                     let dist = Math.max(maxX - minX, maxY - minY);
                     if(dist > umbralDistancia) break; 
@@ -978,9 +987,13 @@
                             x: (minX + maxX)/2,
                             y: (minY + maxY)/2
                         });
+                        i = j; // Salta toda la fijación
+                    } else {
+                        i++; // Avanza al siguiente frame
                     }
+                } else {
+                    i++;
                 }
-                i = j;
             }
             return fijaciones;
         }
@@ -1025,6 +1038,7 @@
 
             const msToSecs = (ms) => (ms/1000).toFixed(2) + 's';
             
+            // Si no detectó fijaciones rígidas, mostramos guiones en lugar de NaN
             if (totalParticipantesFiltro > 0 && countTTFFValidos > 0) {
                 document.getElementById('metrica-ttff').textContent = msToSecs(sumTTFF / countTTFFValidos);
                 document.getElementById('metrica-duracion').textContent = msToSecs(sumDuracionFijacion / totalFijacionesCalculadas);
@@ -1041,17 +1055,24 @@
             }
             document.getElementById('heatmap-empty').style.display = 'none';
 
+            // SOLUCIÓN AL BUG DE SINCRONIZACIÓN (IMG ONLOAD)
             const container = document.createElement('div');
             container.className = 'heatmap-container';
+            container.style.position = 'relative'; 
+            container.style.display = 'inline-block';
             
             const img = document.createElement('img');
             const canvas = document.createElement('canvas');
+            canvas.style.position = 'absolute';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.pointerEvents = 'none';
             
             container.appendChild(img);
             container.appendChild(canvas);
             wrap.appendChild(container);
 
-            // CORRECCIÓN CRÍTICA: Asignar el onload ANTES de inyectar la imagen
+            // 1ro: Decirle qué hacer cuando cargue
             img.onload = () => {
                 canvas.width = img.naturalWidth;
                 canvas.height = img.naturalHeight;
@@ -1064,7 +1085,10 @@
                 
                 const validPoints = [];
                 puntosBrutos.forEach(p => {
-                    validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
+                    let nx = p.x;
+                    let ny = p.y;
+                    if (nx > 2) { nx = nx / window.screen.width; ny = ny / window.screen.height; }
+                    validPoints.push([nx * canvas.width, ny * canvas.height, 1]);
                 });
 
                 if (visualizacionModo === 'calor') {
@@ -1099,7 +1123,7 @@
                 }
             };
             
-            // Se inyecta la imagen después para garantizar que el canvas la espere
+            // 2do: Ponerle la fuente para que dispare el evento
             img.src = material.imagen;
         };
 
@@ -1174,7 +1198,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // BUCLE SEGURO DE VISIÓN
+        // BUCLE SEGURO DE VISIÓN (Evita el "NaN Poisoning")
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1189,19 +1213,19 @@
                             const l = results.faceLandmarks[0];
                             let refX = undefined, refY = undefined;
                             
-                            // 1. Busca las pupilas (Máxima precisión)
+                            // 1. Busca las pupilas (Máxima precisión si el navegador lo soporta)
                             if (l.length > 470) {
                                 if(l[468] && l[473]) {
                                     refX = (l[468].x + l[473].x) / 2;
                                     refY = (l[468].y + l[473].y) / 2;
                                 }
                             }
-                            // 2. Si el navegador no soporta pupilas, busca la cuenca de los ojos (Anti-NaN)
+                            // 2. Fallback: Huesos orbitales de los ojos (Si el navegador carga versión light)
                             if (refX === undefined && l[159] && l[386]) {
                                 refX = (l[159].x + l[386].x) / 2;
                                 refY = (l[159].y + l[386].y) / 2;
                             }
-                            // 3. Fallback final, la nariz
+                            // 3. Fallback de emergencia: La Nariz
                             if (refX === undefined && l[1]) {
                                 refX = l[1].x;
                                 refY = l[1].y;
@@ -1287,10 +1311,11 @@
                         minY: Math.min(...ys), maxY: Math.max(...ys)
                     };
 
+                    // Protección anti "Infinity/NaN" si la persona no se movió nada
                     let rangeX = window.calibBounds.maxX - window.calibBounds.minX;
                     let rangeY = window.calibBounds.maxY - window.calibBounds.minY;
-                    if (rangeX < 0.01) { window.calibBounds.minX -= 0.02; window.calibBounds.maxX += 0.02; }
-                    if (rangeY < 0.01) { window.calibBounds.minY -= 0.02; window.calibBounds.maxY += 0.02; }
+                    if (rangeX < 0.04) { window.calibBounds.minX -= 0.02; window.calibBounds.maxX += 0.02; }
+                    if (rangeY < 0.04) { window.calibBounds.minY -= 0.02; window.calibBounds.maxY += 0.02; }
                 } else {
                     window.calibBounds = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
                 }
@@ -1391,15 +1416,16 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // MAPEO EXACTO SEGURO
+                // CAPTURA DE DATOS A ~30 FPS
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
                     let normX = (currentGazeSample.x - window.calibBounds.minX) / (window.calibBounds.maxX - window.calibBounds.minX);
                     let normY = (currentGazeSample.y - window.calibBounds.minY) / (window.calibBounds.maxY - window.calibBounds.minY);
 
-                    normX = 0.10 + 0.80 * normX;
-                    normY = 0.10 + 0.80 * normY;
+                    // Expandir la calibración para asegurar que se llegue bien a los bordes
+                    normX = 0.05 + 0.90 * normX;
+                    normY = 0.05 + 0.90 * normY;
 
                     window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.85 + normX * 0.15 : normX;
                     window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.85 + normY * 0.15 : normY;
@@ -1407,6 +1433,7 @@
                     let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
                     let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
 
+                    // Última línea de defensa contra el NaN Poisoning
                     if (!isNaN(finalX) && !isNaN(finalY)) {
                         datosGazeActuales.push({
                             x: finalX, 
