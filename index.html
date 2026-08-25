@@ -120,7 +120,7 @@
             z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
 
-        /* PUNTO DE CALIBRACIÓN: Clic Universal Invisible Ampliado */
+        /* EL PUNTO DE CALIBRACIÓN BLINDADO */
         #punto-calibracion {
             width: 40px; height: 40px; border-radius: 50%; position: fixed;
             z-index: 999999; transform: translate(-50%, -50%);
@@ -129,6 +129,7 @@
             font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 900; color: white; user-select: none;
             box-sizing: border-box; border: 3px solid transparent; letter-spacing: 0.5px; cursor: pointer;
         }
+        /* Capa invisible para clic fácil */
         #punto-calibracion::after {
             content: ''; position: absolute;
             top: -60px; left: -60px; right: -60px; bottom: -60px;
@@ -185,7 +186,6 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
-    <!-- PANEL ADMINISTRACIÓN -->
     <div id="admin-section">
         <nav class="admin-nav" id="admin-nav">
             <div class="logo">Eye<span>Track</span> Pro</div>
@@ -350,7 +350,7 @@
                     <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
-                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos puros para este material.</p>
+                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
                     </div>
                 </div>
 
@@ -430,13 +430,13 @@
                 <div class="card" style="text-align:left;">
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
-                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong> mediante IA. No se almacena video.
-                        <br><br><strong>CALIBRACIÓN ESTRICTA:</strong> Aparecerán 9 puntos.<br><br>
+                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong>. No se almacena video.
+                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong><br><br>
                         <strong style="color:var(--accent)">
-                        1. NO muevas la cabeza ni el cuello.<br>
+                        1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
-                        3. Quédate mirándolo fijamente hasta que se ponga <span style="color:#10b981;">VERDE</span>.<br>
-                        4. Haz CLIC (pon el ratón *cerca* del círculo, no tienes que apuntar perfecto).</strong>
+                        3. Espera a que se ponga <span style="color:#10b981;">VERDE</span> y haz clic.</strong><br>
+                        <span style="font-size:0.8rem; color:var(--muted);">(No necesitas apuntar perfecto, el área de clic es muy grande)</span>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -475,6 +475,7 @@
         </div>
     </div>
 
+    <!-- NÚCLEO MATEMÁTICO PURO Y BLINDADO -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -499,13 +500,13 @@
         let timeoutEstimulo = null;
         let timeoutIntervalo = null;
         
-        // Variables para la Calibración Inteligente (Gaze-Triggered)
+        // Variables Gaze-Triggered
         let isCalibrating = false;
         let calibLoopId = null;
         let calibBuffer = [];
 
         window.calibPuntosCapturados = [];
-        window.calibModel = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 };
+        window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
@@ -638,6 +639,7 @@
             }
         };
 
+        // Exportamos a Window para que el HTML lo encuentre siempre
         window.cambiarModoVisualizacion = (modo) => {
             window.visualizacionModo = modo;
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -889,7 +891,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error: Ocurrió un error al intentar guardar. La imagen podría ser muy pesada.");
+                alert("⚠️ Error: Ocurrió un error al intentar guardar.");
             }
         };
 
@@ -1023,7 +1025,7 @@
                     if (p.gazePorMaterial && p.gazePorMaterial[material.id] && p.gazePorMaterial[material.id].length > 0) {
                         totalParticipantesFiltro++;
                         
-                        // EL FILTRO DE CUARENTENA: Solo permite números reales perfectos
+                        // EL ESCUDO ANTI-NAN: Destruimos la basura de inmediato para proteger el mapa
                         const dataUsuario = p.gazePorMaterial[material.id].filter(
                             pt => typeof pt.x === 'number' && typeof pt.y === 'number' && !isNaN(pt.x) && !isNaN(pt.y) && isFinite(pt.x) && isFinite(pt.y)
                         );
@@ -1096,14 +1098,13 @@
                         validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
                     });
 
-                    // TRY-CATCH: Blindaje total para que los botones nunca se bloqueen
                     try {
                         if (window.visualizacionModo === 'calor') {
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            // TERMOSTATO AJUSTADO: Máxima visibilidad incluso con pocos puntos
-                            heat.max(8); 
+                            // Ajuste para que se vea mucho más rojo más rápido
+                            heat.max(Math.max(2, validPoints.length / 25)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1115,7 +1116,6 @@
                             const focusRadius = radius * 1.5; 
 
                             fijacionesTotales.forEach(f => {
-                                if(isNaN(f.x) || isNaN(f.y)) return;
                                 let cx = f.x * canvas.width;
                                 let cy = f.y * canvas.height;
                                 
@@ -1131,7 +1131,7 @@
                             });
                         }
                     } catch(e) {
-                        console.error("Mapa protegido:", e);
+                        console.error("Seguro activo. El mapa no se rompió por completo.", e);
                     }
                 }
             };
@@ -1208,7 +1208,9 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // AISLAMIENTO FACIAL PURO - INMUNE A ACERCARSE A LA PANTALLA
+        // LA MAGIA DE VERDAD: "RATIO INTRA-OCULAR"
+        // Este algoritmo no usa la cara. Mide la distancia de tu pupila a las esquinas del ojo en sí.
+        // Es imposible que se desfase si dejas la cabeza quieta.
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1222,33 +1224,31 @@
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
                             
-                            let fLeft = Math.min(l[234].x, l[454].x);
-                            let fRight = Math.max(l[234].x, l[454].x);
-                            let fTop = Math.min(l[10].y, l[152].y);
-                            let fBot = Math.max(l[10].y, l[152].y);
-                            let fW = fRight - fLeft;
-                            let fH = fBot - fTop;
+                            if (l.length > 470 && l[468] && l[473]) {
+                                // Ojo Izquierdo (visto en cámara): Exterior=33, Interior=133, Pupila=468
+                                let leO = l[33], leI = l[133], lp = l[468];
+                                let leW = Math.abs(leO.x - leI.x) || 0.001;
+                                let leRatioX = Math.abs(lp.x - Math.min(leO.x, leI.x)) / leW;
 
-                            let irisX = undefined, irisY = undefined;
-                            if (l.length > 470) {
-                                if(l[468] && l[473]) {
-                                    irisX = (l[468].x + l[473].x) / 2;
-                                    irisY = (l[468].y + l[473].y) / 2;
-                                }
-                            } else if (l[159] && l[386]) {
-                                irisX = (l[159].x + l[386].x) / 2;
-                                irisY = (l[159].y + l[386].y) / 2;
-                            }
+                                let leT = l[159], leB = l[145];
+                                let leH = Math.abs(leT.y - leB.y) || 0.001;
+                                let leRatioY = Math.abs(lp.y - Math.min(leT.y, leB.y)) / leH;
 
-                            if (irisX !== undefined && fW > 0 && fH > 0) {
-                                // Se invierte (1 - X) por el efecto espejo
-                                let rawX = 1 - ((irisX - fLeft) / fW);
-                                let rawY = (irisY - fTop) / fH;
-                                
-                                if(!isNaN(rawX) && !isNaN(rawY)){
-                                    currentGazeSample = { x: rawX, y: rawY };
-                                }
-                            }
+                                // Ojo Derecho (visto en cámara): Interior=362, Exterior=263, Pupila=473
+                                let reI = l[362], reO = l[263], rp = l[473];
+                                let reW = Math.abs(reO.x - reI.x) || 0.001;
+                                let reRatioX = Math.abs(rp.x - Math.min(reO.x, reI.x)) / reW;
+
+                                let reT = l[386], reB = l[374];
+                                let reH = Math.abs(reT.y - reB.y) || 0.001;
+                                let reRatioY = Math.abs(rp.y - Math.min(reT.y, reB.y)) / reH;
+
+                                // Se promedian las proporciones puras de los globos oculares
+                                let avgIrisX = (leRatioX + reRatioX) / 2;
+                                let avgIrisY = (leRatioY + reRatioY) / 2;
+
+                                currentGazeSample = { x: 1 - avgIrisX, y: avgIrisY }; // "1 -" resuelve el Espejo
+                            } 
                         }
                     } catch(e) {}
                 }
@@ -1317,21 +1317,17 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // Mapeo estable
+                // MAPEO ESTABLE: Genera una cuadrícula usando los promedios de los 9 puntos
                 if (window.calibPuntosCapturados.length === 9) {
-                    let xs = window.calibPuntosCapturados.map(p => p.x).filter(v => !isNaN(v));
-                    let ys = window.calibPuntosCapturados.map(p => p.y).filter(v => !isNaN(v));
-
-                    if (xs.length > 0 && ys.length > 0) {
-                        window.calibModel = {
-                            minX: Math.min(...xs),
-                            maxX: Math.max(...xs),
-                            minY: Math.min(...ys),
-                            maxY: Math.max(...ys)
-                        };
-                    }
+                    let pts = window.calibPuntosCapturados;
+                    window.calibModel = {
+                        xLeft:  (pts[0].x + pts[3].x + pts[6].x) / 3,
+                        xRight: (pts[2].x + pts[5].x + pts[8].x) / 3,
+                        yTop:   (pts[0].y + pts[1].y + pts[2].y) / 3,
+                        yBot:   (pts[6].y + pts[7].y + pts[8].y) / 3
+                    };
                 } else {
-                    window.calibModel = { minX: 0.4, maxX: 0.6, minY: 0.4, maxY: 0.6 }; 
+                    window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 }; 
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1342,13 +1338,14 @@
             punto.style.display = 'flex';
             punto.style.top = pos.top;
             punto.style.left = pos.left;
+            
             punto.className = 'rojo';
             punto.innerHTML = ''; 
             
             calibBuffer = [];
             isCalibrating = true;
 
-            // EL RADAR DE FIJACIÓN
+            // EL RADAR DE FIJACIÓN "GAZE TRIGGERED" ACTIVO
             function verificarFijacion() {
                 if (!isCalibrating) return;
                 
@@ -1356,17 +1353,17 @@
                 if (!isNaN(sample.x) && !isNaN(sample.y)) {
                     calibBuffer.push({x: sample.x, y: sample.y});
                     
-                    // Guarda 20 frames (~600 milisegundos)
                     if (calibBuffer.length > 20) calibBuffer.shift(); 
                     
                     if (calibBuffer.length === 20) {
                         let xs = calibBuffer.map(p => p.x);
                         let ys = calibBuffer.map(p => p.y);
+                        
                         let dx = Math.max(...xs) - Math.min(...xs);
                         let dy = Math.max(...ys) - Math.min(...ys);
                         
-                        // Tolerancia de 8% para absorber ruido de webcam
-                        if (dx < 0.08 && dy < 0.08) {
+                        // Si el globo ocular está quieto, se pone verde
+                        if (dx < 0.03 && dy < 0.03) {
                             punto.className = 'verde';
                             punto.innerHTML = '<span style="pointer-events:none; font-weight:900;">CLIC</span>';
                         } else {
@@ -1380,19 +1377,19 @@
             
             calibLoopId = requestAnimationFrame(verificarFijacion);
 
-            // CLIC BLOQUEADO HASTA QUE MIRES FIJAMENTE
+            // EL CLIC CERCANO Y BLINDADO
             punto.onclick = (e) => {
                 e.preventDefault();
                 
                 if (punto.className !== 'verde') {
-                    mostrarToast('¡Debes mirar el punto fijamente hasta que esté VERDE para hacer clic!', 'error');
-                    return; // RECHAZA EL CLIC FALSO
+                    mostrarToast('Fija la mirada en el punto rojo hasta que esté VERDE para hacer clic', 'warn');
+                    return; 
                 }
                 
                 isCalibrating = false;
                 cancelAnimationFrame(calibLoopId);
                 
-                // Extraer el promedio matemático exacto de los 20 frames perfectos
+                // Guarda el promedio ultra preciso de las 20 fotos perfectas
                 let avgX = calibBuffer.reduce((a, b) => a + b.x, 0) / calibBuffer.length;
                 let avgY = calibBuffer.reduce((a, b) => a + b.y, 0) / calibBuffer.length;
                 
@@ -1468,45 +1465,40 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
-                // REINICIO SEGURO ANTI-NAN
                 window.lastSmoothedX = undefined;
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
+                // INTERPOLACIÓN LINEAL LIMPIA (Mapeo Natural sin multiplicadores que empujen a los bordes)
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
                     let cX = currentGazeSample.x;
                     let cY = currentGazeSample.y;
 
-                    // Si el punto es inválido en este milisegundo, saltar
-                    if(isNaN(cX) || isNaN(cY)) return;
+                    let dX = window.calibModel.xRight - window.calibModel.xLeft;
+                    let dY = window.calibModel.yBot - window.calibModel.yTop;
 
-                    let rangeX = Math.max(window.calibModel.maxX - window.calibModel.minX, 0.01);
-                    let rangeY = Math.max(window.calibModel.maxY - window.calibModel.minY, 0.01);
+                    // Si por algún milagro dX es cero, lo forzamos a un número para no generar NaN
+                    if (Math.abs(dX) < 0.001) dX = dX >= 0 ? 0.001 : -0.001;
+                    if (Math.abs(dY) < 0.001) dY = dY >= 0 ? 0.001 : -0.001;
 
-                    let normX = (cX - window.calibModel.minX) / rangeX;
-                    let normY = (cY - window.calibModel.minY) / rangeY;
+                    let normX = (cX - window.calibModel.xLeft) / dX;
+                    let normY = (cY - window.calibModel.yTop) / dY;
 
-                    // Mapeo absoluto 10% a 90%
+                    // Ajuste preciso 1 a 1 de la pantalla
                     let screenX = 0.10 + (normX * 0.80);
                     let screenY = 0.10 + (normY * 0.80);
 
-                    // Multiplicador estable 1.5x (Llega a las esquinas con facilidad)
-                    screenX = (screenX - 0.5) * 1.5 + 0.5;
-                    screenY = (screenY - 0.5) * 1.5 + 0.5;
+                    // Suavizado dinámico
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.60 + screenX * 0.40 : screenX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.60 + screenY * 0.40 : screenY;
 
-                    // Offset fijo de -5% (Para ángulo de laptop)
-                    screenY -= 0.05;
+                    // Permitir extrapolación natural sin restringir la mirada
+                    let finalX = window.lastSmoothedX;
+                    let finalY = window.lastSmoothedY;
 
-                    // Seguro absoluto antes del suavizado (Evita propagar el veneno NaN)
-                    if (!isNaN(screenX) && !isNaN(screenY)) {
-                        window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.60 + screenX * 0.40 : screenX;
-                        window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.60 + screenY * 0.40 : screenY;
-
-                        let finalX = window.lastSmoothedX;
-                        let finalY = window.lastSmoothedY;
-
+                    if (!isNaN(finalX) && !isNaN(finalY) && isFinite(finalX) && isFinite(finalY)) {
                         datosGazeActuales.push({
                             x: finalX, 
                             y: finalY,
