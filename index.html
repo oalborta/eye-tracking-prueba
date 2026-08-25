@@ -335,11 +335,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -432,10 +432,10 @@
                 <div class="card" style="text-align:left;">
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
-                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong> mediante IA. No se almacena video.
+                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong>. No se almacena video.
                         <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos en pantalla. <br><br>
                         <strong style="color:var(--accent)">
-                        1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
+                        1. NO muevas la cabeza ni el cuello.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
                         3. Espera a que se ponga <span style="color:#10b981;">VERDE</span> y haz clic.</strong><br>
                         <span style="font-size:0.8rem; color:var(--muted);">(No necesitas apuntar perfecto, el área de clic es enorme)</span>
@@ -477,7 +477,7 @@
         </div>
     </div>
 
-    <!-- EL NÚCLEO MAGISTRAL: "Anclaje Nasal" + "Geometría Restringida" -->
+    <!-- EL MOTOR CIENTÍFICO FINAL: ANCLA NASAL + X-AMPLIFIER -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -1025,7 +1025,6 @@
                     if (p.gazePorMaterial && p.gazePorMaterial[material.id] && p.gazePorMaterial[material.id].length > 0) {
                         totalParticipantesFiltro++;
                         
-                        // FILTRO ANTI-CRASH: Garantiza que solo entren números puros
                         const dataUsuario = p.gazePorMaterial[material.id].filter(
                             pt => typeof pt.x === 'number' && typeof pt.y === 'number' && !isNaN(pt.x) && !isNaN(pt.y) && isFinite(pt.x) && isFinite(pt.y)
                         );
@@ -1103,8 +1102,7 @@
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            // TERMOSTATO SÚPER SENSIBLE: 5 puntos = rojo intenso (aprox 150ms)
-                            heat.max(5); 
+                            heat.max(Math.max(2, validPoints.length / 30)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1209,7 +1207,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // LA CIENCIA: "VECTOR AL PUENTE NASAL" (El más estable del mundo web)
+        // LA CIENCIA: "VECTOR NASAL" 
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1224,20 +1222,16 @@
                             const l = results.faceLandmarks[0];
                             
                             if (l.length > 470 && l[468] && l[473]) {
-                                // Promedio del centro de las pupilas
                                 let px = (l[468].x + l[473].x) / 2;
                                 let py = (l[468].y + l[473].y) / 2;
 
-                                // Ancla: Puente Nasal
-                                let anchor = l[168];
+                                let anchor = l[168]; // Puente de la nariz
 
-                                // Distancia interpupilar para normalizar si el usuario se acerca
                                 let eyeW = Math.hypot(l[263].x - l[33].x, l[263].y - l[33].y);
 
                                 if (eyeW > 0) {
-                                    // El "1 -" es la inversión vital para el modo Espejo
                                     currentGazeSample = { 
-                                        x: 1 - ((px - anchor.x) / eyeW),
+                                        x: 1 - ((px - anchor.x) / eyeW), // Invertido para Espejo
                                         y: (py - anchor.y) / eyeW 
                                     };
                                 }
@@ -1310,7 +1304,6 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // MAPEO ESTRUCTURAL ESTRICTO (No importan los signos, funciona siempre)
                 if (window.calibPuntosCapturados.length === 9) {
                     let pts = window.calibPuntosCapturados;
                     window.calibModel = {
@@ -1355,8 +1348,7 @@
                         let dx = Math.max(...xs) - Math.min(...xs);
                         let dy = Math.max(...ys) - Math.min(...ys);
                         
-                        // Si la pupila está estable
-                        if (dx < 0.02 && dy < 0.02) {
+                        if (dx < 0.03 && dy < 0.03) {
                             if (punto.className !== 'verde') {
                                 punto.className = 'verde';
                                 punto.innerHTML = '<span style="pointer-events:none; font-weight:900;">CLIC</span>';
@@ -1374,7 +1366,7 @@
             
             calibLoopId = requestAnimationFrame(verificarFijacion);
 
-            // CLIC BLOQUEADO HASTA QUE MIRES FIJAMENTE
+            // CLIC BLOQUEADO SI NO ESTÁ VERDE
             punto.onclick = (e) => {
                 e.preventDefault();
                 
@@ -1465,7 +1457,7 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // SEGUIMIENTO DE GEOMETRÍA DESNUDA
+                // SEGUIMIENTO MATEMÁTICO PURO
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
@@ -1475,26 +1467,28 @@
                     let dX = window.calibModel.xRight - window.calibModel.xLeft;
                     let dY = window.calibModel.yBot - window.calibModel.yTop;
 
-                    // El escudo matemático que mantiene vivo el mapa si hay cero
-                    if (Math.abs(dX) < 0.0001) dX = dX >= 0 ? 0.0001 : -0.0001;
-                    if (Math.abs(dY) < 0.0001) dY = dY >= 0 ? 0.0001 : -0.0001;
+                    if (Math.abs(dX) < 0.001) dX = dX >= 0 ? 0.001 : -0.001;
+                    if (Math.abs(dY) < 0.001) dY = dY >= 0 ? 0.001 : -0.001;
 
-                    // Álgebra pura 1 a 1
                     let normX = (cX - window.calibModel.xLeft) / dX;
                     let normY = (cY - window.calibModel.yTop) / dY;
 
-                    // Mapeo estable 1:1 a los puntos de calibración (10% a 90%)
                     let screenX = 0.10 + (normX * 0.80);
                     let screenY = 0.10 + (normY * 0.80);
 
-                    // Suavizado dinámico suave (Solo retiene el 50% para que atrape las diagonales rápidas)
+                    // 🔥 EL AJUSTE FINO DEL QA:
+                    // Multiplicamos por 1.45 solo el eje X para que llegue a las esquinas laterales.
+                    // El eje Y (Vertical) se queda exactamente igual (multiplicador 1.0 implícito).
+                    screenX = (screenX - 0.5) * 1.45 + 0.5;
+
+                    // Suavizado dinámico suave (Retiene 50%, reacciona 50%)
                     window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.50 + screenX * 0.50 : screenX;
                     window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.50 + screenY * 0.50 : screenY;
 
-                    // EL MURO DE CONTENCIÓN: Impide que los puntos salgan volando fuera de la imagen (0 a 1)
                     let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
                     let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
 
+                    // GUARDADO LIMPIO
                     if (!isNaN(finalX) && !isNaN(finalY) && isFinite(finalX) && isFinite(finalY)) {
                         datosGazeActuales.push({
                             x: finalX, 
