@@ -115,27 +115,29 @@
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
-        /* EL ENTORNO DE LABORATORIO: Gris Neutro para todas las pantallas del usuario */
         .pantalla-participante {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000; background: var(--gray-neutral); overflow-y: auto; padding: 2rem;
-            color: #111; /* Texto oscuro para legibilidad en gris */
+            z-index: 1000; background: var(--bg); overflow-y: auto; padding: 2rem;
         }
-        .pantalla-participante .card { background: #fdfdfd; border: 1px solid #ddd; box-shadow: 0 10px 40px rgba(0,0,0,0.15); color: #222; }
-        .pantalla-participante .form-label { color: #555; }
-        .pantalla-participante .form-input, .pantalla-participante .form-select { background: #fff; border-color: #bbb; color: #111; }
-        .pantalla-participante p { color: #444; }
 
-        /* PUNTO DE CALIBRACIÓN BLINDADO */
+        /* 
+         * ENTORNO DE LABORATORIO GRIS (Pupillometry Control) 
+         */
+        #contenedor-calibracion, #p-intervalo {
+            background: var(--gray-neutral) !important;
+        }
+
+        /* PUNTO DE CALIBRACIÓN BLINDADO Y UX */
         #punto-calibracion {
-            width: 40px; height: 40px; border-radius: 50%; position: fixed;
+            width: 40px; height: 40px; border-radius: 50%; position: absolute;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
             transition: top 0.3s ease-out, left 0.3s ease-out, background-color 0.2s, box-shadow 0.2s;
             font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 900; color: white; user-select: none;
             box-sizing: border-box; border: 3px solid transparent; letter-spacing: 0.5px; cursor: pointer;
         }
+        /* Capa invisible para atrapar el clic sin desviar la mirada */
         #punto-calibracion::after {
             content: ''; position: absolute;
             top: -60px; left: -60px; right: -60px; bottom: -60px;
@@ -156,12 +158,12 @@
         .file-upload-box:hover, .file-upload-box.dragover { border-color: var(--accent); background: rgba(16,185,129,0.04); }
 
         #video-participante { position: fixed; top: 0; left: 0; width: 10px; height: 10px; opacity: 0; pointer-events: none; z-index: -1; }
-        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: var(--gray-neutral); }
+        #estimulo-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: contain; z-index: 1; display: none; background: #000; }
         
         .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
         .empty-state i { font-size: 3rem; margin-bottom: 1rem; opacity: 0.3; }
         
-        #toast-container { position: fixed; top: 80px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 0.5rem; }
+        #toast-container { fixed; top: 80px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 0.5rem; }
         .toast { padding: 0.85rem 1.25rem; border-radius: 10px; font-size: 0.875rem; font-weight: 600; animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards; display: flex; align-items: center; gap: 0.5rem; min-width: 280px; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
         .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
@@ -170,11 +172,13 @@
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
-        #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
+        /* Modales sobrestimulo */
+        #p-pregunta { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; }
+
+        #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
         #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
 
-        /* ESTILOS DE LA CRUZ Y CONTEO */
-        #p-intervalo { background: var(--gray-neutral); }
+        /* ESTILOS DE LA CRUZ Y CONTEO REALEYE */
         #countdown-text { font-size: 8rem; font-weight: 900; color: #222; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #p-intervalo .cruz { position: relative; width: 50px; height: 50px; }
         #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: #222; border-radius: 2px; }
@@ -242,6 +246,7 @@
                 </div>
             </div>
 
+            <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -285,6 +290,7 @@
                 </div>
             </div>
 
+            <!-- RESULTADOS -->
             <div id="view-results" class="view">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
                     <div style="display:flex; align-items:center; gap:1rem;">
@@ -339,11 +345,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -389,7 +395,11 @@
     <div id="participant-section" style="display:none;">
         <video id="video-participante" playsinline muted autoplay></video>
         <img id="estimulo-participante" alt="Estímulo">
-        <div id="punto-calibracion" class="rojo"></div>
+
+        <!-- PANTALLA GRIS DE CALIBRACIÓN -->
+        <div id="contenedor-calibracion" class="pantalla-participante" style="display:none;">
+            <div id="punto-calibracion" class="rojo"></div>
+        </div>
 
         <div id="p-demografia" class="pantalla-participante">
             <div style="max-width:450px; text-align:center;">
@@ -435,14 +445,14 @@
             <div style="max-width:500px; text-align:center; padding:2rem;">
                 <div class="card" style="text-align:left;">
                     <h3 style="font-weight:700; margin-bottom:1rem;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
-                    <p style="line-height:1.7; color:#444; font-size:0.92rem; margin-bottom:1.5rem;">
-                        Usaremos tu cámara web <strong style="color:#111;">exclusivamente para rastrear tu vista</strong>. No se almacena video.
-                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> Aparecerán 9 puntos en pantalla.<br><br>
-                        <strong style="color:#059669;">
+                    <p style="line-height:1.7; color:var(--muted); font-size:0.92rem; margin-bottom:1.5rem;">
+                        Usaremos tu cámara web <strong style="color:var(--fg);">exclusivamente para rastrear tu vista</strong>. No se almacena video.
+                        <br><br><strong>CALIBRACIÓN CIENTÍFICA:</strong> El entorno se volverá gris para controlar la luz en tus pupilas.<br><br>
+                        <strong style="color:var(--accent)">
                         1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
                         3. Espera a que se ponga <span style="color:#10b981;">VERDE</span> y haz clic.</strong><br>
-                        <span style="font-size:0.8rem; color:#666;">(No necesitas apuntar perfecto, el área de clic es enorme)</span>
+                        <span style="font-size:0.8rem; color:var(--muted);">(No necesitas apuntar perfecto, el área de clic es enorme)</span>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -453,7 +463,7 @@
 
         <div id="p-carga" class="pantalla-participante" style="display:none;">
             <div style="text-align:center;">
-                <div style="width:48px; height:48px; border:3px solid #ccc; border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
+                <div style="width:48px; height:48px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
                 <p style="font-weight:600; font-size:1.1rem;">Conectando Motor Visual...</p>
             </div>
         </div>
@@ -462,28 +472,28 @@
         <div id="p-pregunta" class="pantalla-participante" style="display:none;">
             <div class="card" style="max-width:500px; text-align:center;">
                 <span id="label-num-material" style="font-size:0.85rem; color:var(--accent); font-weight:800; text-transform:uppercase; letter-spacing:1px;">Material 1</span>
-                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.5rem; margin:1rem 0; color:#111 !important;">Instrucción</h3>
+                <h3 id="texto-pregunta-material" style="font-weight:800; font-size:1.5rem; margin:1rem 0; color:white;">Instrucción</h3>
                 <button class="btn btn-primary" style="width:100%; justify-content:center; padding: 0.85rem;" onclick="prepararSiguienteEstimulo()">
                     Ver estímulo ahora <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
         </div>
         
-        <!-- PANTALLA DE INTERVALO: Conteo 3,2,1 y Cruz de Fijación -->
+        <!-- PANTALLA INTERVALO REALEYE (Fondo Gris) -->
         <div id="p-intervalo" class="pantalla-participante" style="display:none;">
             <div id="countdown-text">3</div>
             <div id="cruz-fijacion" class="cruz" style="display:none;"></div>
         </div>
 
-        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem;">
+        <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background:#08080d;">
             <div style="font-size:4rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
-            <h2 style="font-weight:900; font-size:2rem; color:#111;">¡Estudio completado!</h2>
-            <p style="color:#444; max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
-            <button class="btn btn-primary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Volver al Dashboard</button>
+            <h2 style="font-weight:900; font-size:2rem; color:white;">¡Estudio completado!</h2>
+            <p style="color:var(--muted); max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
+            <button class="btn btn-primary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Cerrar esta ventana</button>
         </div>
     </div>
 
-    <!-- EL MOTOR CIENTÍFICO FINAL: CUADRANTES INTERPOLADOS -->
+    <!-- EL NÚCLEO CIENTÍFICO FINAL -->
     <script type="module">
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
 
@@ -512,11 +522,12 @@
         let calibBuffer = [];
 
         window.calibPuntosCapturados = [];
+        window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 };
         window.lastSmoothedX = undefined;
         window.lastSmoothedY = undefined;
 
         function mostrarPantalla(idActiva) {
-            const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin'];
+            const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
             pantallas.forEach(p => { 
                 const el = document.getElementById(p);
                 if(el) el.style.display = 'none'; 
@@ -557,6 +568,10 @@
         const estudioParam = urlParams.get('estudio');
 
         window.onload = () => {
+            if (window.location.protocol === 'file:') {
+                alert('🚨 BLOQUEO DE SEGURIDAD DETECTADO:\n\nEstás abriendo el archivo localmente (file:///). Por seguridad, Chrome y Safari bloquean la cámara web.\n\nSube este archivo a Netlify Drop o usa "Live Server" para que funcione correctamente.');
+            }
+
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
@@ -670,7 +685,7 @@
                 
                 tr.innerHTML = `
                     <td style="font-weight:600;">${est.nombre}</td>
-                    <td><span style="background:var(--bg2); padding:2px 8px; border-radius:4px; font-size:0.8rem; color:#fff;">${est.estimulos ? est.estimulos.length : 0} mat.</span></td>
+                    <td><span style="background:var(--bg2); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${est.estimulos ? est.estimulos.length : 0} mat.</span></td>
                     <td>${est.participantes ? est.participantes.length : 0}</td>
                     <td>
                         <div class="study-link">
@@ -1102,6 +1117,7 @@
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
+                            // Sensibilidad térmica ajustada para máxima claridad
                             heat.max(Math.max(2, validPoints.length / 30)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
@@ -1207,7 +1223,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // LA CIENCIA: "RATIO FACIAL PURO" (Vertical Seguro, Horizontal Amplio)
+        // LA CIENCIA: "RATIO DE ROSTRO COMPLETO" (Mantiene el eje Y perfecto)
         function iniciarLoopVision() {
             const video = document.getElementById('video-participante');
             
@@ -1221,6 +1237,7 @@
                         if (results.faceLandmarks && results.faceLandmarks.length > 0) {
                             const l = results.faceLandmarks[0];
                             
+                            // Coordenadas extremas de la cara para un anclaje estable
                             let fLeft = Math.min(l[234].x, l[454].x);
                             let fRight = Math.max(l[234].x, l[454].x);
                             let fTop = Math.min(l[10].y, l[152].y);
@@ -1241,7 +1258,7 @@
 
                             if (irisX !== undefined && fW > 0 && fH > 0) {
                                 currentGazeSample = { 
-                                    x: (irisX - fLeft) / fW,
+                                    x: 1 - ((irisX - fLeft) / fW), // 1- para resolver el modo espejo
                                     y: (irisY - fTop) / fH 
                                 };
                             }
@@ -1302,7 +1319,7 @@
         function iniciarCalibracionPasoAPaso() {            
             pasoCalibracionActual = 0;
             window.calibPuntosCapturados = []; 
-            mostrarPantalla('punto-calibracion');
+            mostrarPantalla('contenedor-calibracion'); // Activa la pantalla gris sólida
             mostrarPuntoCalibracion();
         }
 
@@ -1313,19 +1330,17 @@
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
                 
-                // MAPEO POR CUADRANTES (Elimina el desvío a la derecha para siempre)
+                // MAPEO LINEAL PURO (Resuelve el desvío a la derecha, ignora el centro asimétrico)
                 if (window.calibPuntosCapturados.length === 9) {
                     let pts = window.calibPuntosCapturados;
                     window.calibModel = {
-                        xLeft:   (pts[0].x + pts[3].x + pts[6].x) / 3,
-                        xCenter: (pts[1].x + pts[4].x + pts[7].x) / 3, // El centro forzado a 50%
-                        xRight:  (pts[2].x + pts[5].x + pts[8].x) / 3,
-                        yTop:    (pts[0].y + pts[1].y + pts[2].y) / 3,
-                        yCenter: (pts[3].y + pts[4].y + pts[5].y) / 3,
-                        yBot:    (pts[6].y + pts[7].y + pts[8].y) / 3
+                        xLeft:  (pts[0].x + pts[3].x + pts[6].x) / 3,
+                        xRight: (pts[2].x + pts[5].x + pts[8].x) / 3,
+                        yTop:   (pts[0].y + pts[1].y + pts[2].y) / 3,
+                        yBot:   (pts[6].y + pts[7].y + pts[8].y) / 3
                     };
                 } else {
-                    window.calibModel = { xLeft: 0.4, xCenter: 0.5, xRight: 0.6, yTop: 0.4, yCenter: 0.5, yBot: 0.6 }; 
+                    window.calibModel = { xLeft: 0.4, xRight: 0.6, yTop: 0.4, yBot: 0.6 }; 
                 }
 
                 iniciarSecuenciaEstimulos();
@@ -1343,6 +1358,7 @@
             calibBuffer = [];
             isCalibrating = true;
 
+            // RADAR GAZE-TRIGGERED
             function verificarFijacion() {
                 if (!isCalibrating) return;
                 
@@ -1377,6 +1393,7 @@
             
             calibLoopId = requestAnimationFrame(verificarFijacion);
 
+            // CLIC PROTEGIDO
             punto.onclick = (e) => {
                 e.preventDefault();
                 
@@ -1449,9 +1466,9 @@
             }
         };
 
-        // LA MEJORA REALEYE: Preparador de estímulo (Conteo y Cruz)
+        // LA MEJORA REALEYE: Conteo y Cruz de Fijación
         window.prepararSiguienteEstimulo = () => {
-            mostrarPantalla('p-intervalo');
+            mostrarPantalla('p-intervalo'); // Fondo Gris Neutro
             const countEl = document.getElementById('countdown-text');
             const cruzEl = document.getElementById('cruz-fijacion');
             
@@ -1468,9 +1485,9 @@
                 } else {
                     clearInterval(intervaloConteo);
                     countEl.style.display = 'none';
-                    cruzEl.style.display = 'block'; // Muestra la cruz central
+                    cruzEl.style.display = 'block'; // Muestra la cruz central (Fijación Cero)
                     
-                    // Espera 1 segundo para la "Fijación Cero"
+                    // Espera 1 segundo y lanza el estímulo
                     setTimeout(() => {
                         lanzarSiguienteEstimuloActual();
                     }, 1000);
@@ -1496,60 +1513,34 @@
                 window.lastSmoothedY = undefined;
                 isStimulusActive = true; 
 
-                // SEGUIMIENTO MATEMÁTICO POR CUADRANTES (Adiós concentración a la derecha)
+                // SEGUIMIENTO MATEMÁTICO PURO
                 const trackingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
 
                     let cX = currentGazeSample.x;
                     let cY = currentGazeSample.y;
 
-                    let screenX = 0.5;
-                    let screenY = 0.5;
+                    let dX = window.calibModel.xRight - window.calibModel.xLeft;
+                    let dY = window.calibModel.yBot - window.calibModel.yTop;
 
-                    // Mapeo Horizontal Dinámico (Izquierda vs Derecha)
-                    let dXLeft = window.calibModel.xCenter - window.calibModel.xLeft;
-                    let dXRight = window.calibModel.xRight - window.calibModel.xCenter;
-                    
-                    if (Math.abs(dXLeft) < 0.001) dXLeft = dXLeft >= 0 ? 0.001 : -0.001;
-                    if (Math.abs(dXRight) < 0.001) dXRight = dXRight >= 0 ? 0.001 : -0.001;
+                    if (Math.abs(dX) < 0.001) dX = dX >= 0 ? 0.001 : -0.001;
+                    if (Math.abs(dY) < 0.001) dY = dY >= 0 ? 0.001 : -0.001;
 
-                    let dirX = Math.sign(window.calibModel.xRight - window.calibModel.xLeft); 
-                    let isLeftHalf = dirX > 0 ? (cX <= window.calibModel.xCenter) : (cX >= window.calibModel.xCenter);
+                    let normX = (cX - window.calibModel.xLeft) / dX;
+                    let normY = (cY - window.calibModel.yTop) / dY;
 
-                    if (isLeftHalf) {
-                        let normX = (cX - window.calibModel.xLeft) / dXLeft; 
-                        screenX = 0.10 + (normX * 0.40); // Mapea 10% a 50%
-                    } else {
-                        let normX = (cX - window.calibModel.xCenter) / dXRight; 
-                        screenX = 0.50 + (normX * 0.40); // Mapea 50% a 90%
-                    }
+                    let screenX = 0.10 + (normX * 0.80);
+                    let screenY = 0.10 + (normY * 0.80);
 
-                    // Mapeo Vertical Dinámico (Arriba vs Abajo)
-                    let dYTop = window.calibModel.yCenter - window.calibModel.yTop;
-                    let dYBot = window.calibModel.yBot - window.calibModel.yCenter;
-                    
-                    if (Math.abs(dYTop) < 0.001) dYTop = dYTop >= 0 ? 0.001 : -0.001;
-                    if (Math.abs(dYBot) < 0.001) dYBot = dYBot >= 0 ? 0.001 : -0.001;
+                    // Eje X Amplificado (Alcanza los bordes laterales)
+                    screenX = (screenX - 0.5) * 1.25 + 0.5;
+                    // Eje Y Puro (No se expande hacia arriba)
+                    screenY = (screenY - 0.5) * 1.00 + 0.5;
 
-                    let dirY = Math.sign(window.calibModel.yBot - window.calibModel.yTop);
-                    let isTopHalf = dirY > 0 ? (cY <= window.calibModel.yCenter) : (cY >= window.calibModel.yCenter);
+                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.60 + screenX * 0.40 : screenX;
+                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.60 + screenY * 0.40 : screenY;
 
-                    if (isTopHalf) {
-                        let normY = (cY - window.calibModel.yTop) / dYTop;
-                        screenY = 0.10 + (normY * 0.40);
-                    } else {
-                        let normY = (cY - window.calibModel.yCenter) / dYBot;
-                        screenY = 0.50 + (normY * 0.40);
-                    }
-
-                    // Expansión Limpia
-                    screenX = (screenX - 0.5) * 1.35 + 0.5;
-                    screenY = (screenY - 0.5) * 1.15 + 0.5;
-
-                    // Suavizado dinámico
-                    window.lastSmoothedX = window.lastSmoothedX !== undefined ? window.lastSmoothedX * 0.40 + screenX * 0.60 : screenX;
-                    window.lastSmoothedY = window.lastSmoothedY !== undefined ? window.lastSmoothedY * 0.40 + screenY * 0.60 : screenY;
-
+                    // Muro de contención para que no se salga de la imagen
                     let finalX = Math.max(0, Math.min(1, window.lastSmoothedX));
                     let finalY = Math.max(0, Math.min(1, window.lastSmoothedY));
 
@@ -1586,7 +1577,6 @@
 
         function finalizarParticipacion() {
             isStimulusActive = false;
-            document.body.classList.remove('modo-laboratorio');
             if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
             if (calibLoopId) { cancelAnimationFrame(calibLoopId); calibLoopId = null; }
             try {
