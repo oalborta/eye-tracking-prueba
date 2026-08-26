@@ -6,8 +6,9 @@
     <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
-    <!-- WEBGAZER JS INTEGRADO -->
-    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    
+    <!-- WEBGAZER JS INTEGRADO (CONGELADO EN VERSIÓN ESTABLE PARA EVITAR CRASHEOS DEL SERVIDOR OFICIAL) -->
+    <script src="https://cdn.jsdelivr.net/npm/webgazer@3.3.0/dist/webgazer.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -129,7 +130,7 @@
 
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
 
-        /* PUNTO DE CALIBRACIÓN WEBGAZER */
+        /* PUNTO DE CALIBRACIÓN WEBGAZER (TIME-TRIGGERED) */
         #punto-calibracion {
             width: 38px; height: 38px; border-radius: 50%; position: absolute;
             z-index: 999999; transform: translate(-50%, -50%);
@@ -138,8 +139,8 @@
             font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
             cursor: pointer;
         }
-        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); pointer-events: none; }
-        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; pointer-events: auto; }
+        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); }
+        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; }
 
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
@@ -166,7 +167,6 @@
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
-        /* Modales */
         #p-pregunta { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; }
         #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
         #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
@@ -387,7 +387,6 @@
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
         
-        <!-- PANTALLA GRIS DE CALIBRACIÓN -->
         <div id="contenedor-calibracion" class="pantalla-participante" style="display:none;">
             <div id="punto-calibracion" class="rojo"></div>
         </div>
@@ -442,8 +441,8 @@
                         <strong style="color:var(--accent)">
                         1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
-                        3. Espera a que se ponga <span style="color:#10b981;">VERDE</span> y haz clic.</strong><br>
-                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto verde para enseñarle a la IA a leerte)</span>
+                        3. Espera a que se ponga VERDE y haz CLIC EXACTAMENTE SOBRE ÉL.</strong><br>
+                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto verde para entrenar a la IA correctamente)</span>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -470,7 +469,6 @@
             </div>
         </div>
         
-        <!-- PANTALLA INTERVALO REALEYE (Fondo Gris, Conteo y Cruz) -->
         <div id="p-intervalo" class="pantalla-participante" style="display:none;">
             <div id="countdown-text">3</div>
             <div id="cruz-fijacion" class="cruz" style="display:none;"></div>
@@ -486,6 +484,7 @@
         </div>
     </div>
 
+    <!-- EL MOTOR WEBGAZER: REESCRITURA DE ARRANQUE SEGURO -->
     <script type="text/javascript">
         let estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -1191,29 +1190,41 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER CON ARRANQUE PURO (Cero encadenamientos)
-        window.participanteAceptar = async () => {
+        // INICIAR WEBGAZER CON ARRANQUE PURO (Cero encadenamientos, Cero promesas rotas)
+        window.participanteAceptar = function() {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
             btn.disabled = true;
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // 1. Iniciamos WebGazer sin pasarle configuraciones que puedan crashear la versión CDN
-                await webgazer.begin();
+                // 1. Limpiamos cualquier caché corrupto en el navegador (Evita t is not a function)
+                window.localStorage.removeItem('webgazerGlobalData');
+                window.localStorage.removeItem('webgazerGlobalSettings');
 
-                // 2. Ocultamos los componentes feos de WebGazer por separado
-                webgazer.showVideoPreview(false);
-                webgazer.showPredictionPoints(false);
+                // 2. Setear un listener preventivo. Esencial para que el core de WebGazer no colapse al no hallarlo
+                webgazer.setGazeListener(function(data, elapsedTime) {});
+                
+                // 3. Inicializar sin await para no romper el flujo síncrono del CDN
+                webgazer.begin().then(function() {
+                    // Ocultamos la UI propia de WebGazer
+                    webgazer.showVideoPreview(false);
+                    webgazer.showPredictionPoints(false);
 
-                // 3. Radar de estado (Polling de Listo)
-                let waitInterval = setInterval(() => {
-                    if (webgazer.isReady()) {
-                        clearInterval(waitInterval);
-                        webgazer.clearData(); // Limpiamos caché de calibraciones previas
-                        iniciarCalibracionPasoAPaso();
-                    }
-                }, 200);
+                    // Radar silencioso que espera a que la cámara entregue frames reales
+                    let checkReady = setInterval(function() {
+                        if (webgazer.isReady()) {
+                            clearInterval(checkReady);
+                            webgazer.clearData(); // Esteriliza el modelo de IA antes de empezar
+                            iniciarCalibracionPasoAPaso();
+                        }
+                    }, 200);
+                }).catch(function(e) {
+                    alert('Error en cámara: ' + e);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-camera"></i> Reintentar';
+                    document.body.classList.remove('modo-laboratorio');
+                });
 
             } catch (e) {
                 alert('No se pudo arrancar WebGazer. Detalle: ' + e.message);
@@ -1237,7 +1248,7 @@
             mostrarPuntoCalibracion();
         }
 
-        // CALIBRACIÓN TIME-TRIGGERED (La más segura para entrenar IA desde cero)
+        // CALIBRACIÓN TIME-TRIGGERED (Asegura el aprendizaje de WebGazer)
         function mostrarPuntoCalibracion() {
             const punto = document.getElementById('punto-calibracion');
 
@@ -1257,7 +1268,7 @@
             
             isCalibrating = true;
 
-            // Espera 1.2 segundos para obligar al usuario a mirar el punto y congelar el ojo
+            // Espera de 1.2 segundos para forzar al usuario a mirar el punto y acomodar el ojo
             setTimeout(() => {
                 if (isCalibrating) {
                     punto.className = 'verde';
@@ -1265,7 +1276,7 @@
                 }
             }, 1200);
 
-            // Clic Inmune (WebGazer escucha este clic automáticamente por debajo)
+            // Clic Inmune
             punto.onclick = (e) => {
                 e.preventDefault();
                 
@@ -1281,7 +1292,7 @@
                 
                 pasoCalibracionActual++;
                 
-                // Pequeña pausa para que WebGazer asimile el clic
+                // Pequeña pausa para que WebGazer procese el clic antes del siguiente punto
                 setTimeout(mostrarPuntoCalibracion, 300);
             };
         }
@@ -1374,7 +1385,7 @@
 
                 isStimulusActive = true; 
 
-                // POLLING DIRECTO (Sin inyectar Listeners)
+                // POLLING DIRECTO DE WEBGAZER (Extrae datos sin romper listeners)
                 pollingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
                     
