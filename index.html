@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     
-    <!-- WEBGAZER JS INTEGRADO (CONGELADO EN VERSIÓN ESTABLE PARA EVITAR CRASHEOS DEL SERVIDOR OFICIAL) -->
+    <!-- WEBGAZER JS INTEGRADO (Versión Estable 3.3.0) -->
     <script src="https://cdn.jsdelivr.net/npm/webgazer@3.3.0/dist/webgazer.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600;800;900&display=swap" rel="stylesheet">
@@ -130,7 +130,7 @@
 
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
 
-        /* PUNTO DE CALIBRACIÓN WEBGAZER (TIME-TRIGGERED) */
+        /* PUNTO DE CALIBRACIÓN WEBGAZER */
         #punto-calibracion {
             width: 38px; height: 38px; border-radius: 50%; position: absolute;
             z-index: 999999; transform: translate(-50%, -50%);
@@ -167,6 +167,7 @@
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
+        /* Modales */
         #p-pregunta { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; }
         #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
         #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
@@ -338,11 +339,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -387,6 +388,7 @@
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
         
+        <!-- PANTALLA GRIS DE CALIBRACIÓN -->
         <div id="contenedor-calibracion" class="pantalla-participante" style="display:none;">
             <div id="punto-calibracion" class="rojo"></div>
         </div>
@@ -469,6 +471,7 @@
             </div>
         </div>
         
+        <!-- PANTALLA INTERVALO REALEYE (Fondo Gris, Conteo y Cruz) -->
         <div id="p-intervalo" class="pantalla-participante" style="display:none;">
             <div id="countdown-text">3</div>
             <div id="cruz-fijacion" class="cruz" style="display:none;"></div>
@@ -484,22 +487,29 @@
         </div>
     </div>
 
-    <!-- EL MOTOR WEBGAZER: REESCRITURA DE ARRANQUE SEGURO -->
+    <!-- EL MOTOR WEBGAZER: REPARADO CON FUNCIONALIDAD COMPLETA -->
     <script type="text/javascript">
-        let estudioParticipanteObj = null; 
+        // Variables Globales necesarias para que el Listener interno funcione sin crashear
+        window.estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-        let estudioActualId = null;
-        let materialActualIndex = 0;
+        window.estudioActualId = null;
+        window.materialActualIndex = 0;
 
-        let datosGazeActuales = [];
-        let tiempoInicioEstimulo = 0;
-        let estimulosOrdenadosActuales = [];
-        let datosDemograficosTemp = {};
-        let resultadosParticipanteGaze = {};
+        window.datosGazeActuales = [];
+        window.tiempoInicioEstimulo = 0;
+        window.estimulosOrdenadosActuales = [];
+        window.datosDemograficosTemp = {};
+        window.resultadosParticipanteGaze = {};
         
-        let timeoutEstimulo = null;
-        let pollingInterval = null; 
-        let isCalibrating = false;
+        window.timeoutEstimulo = null;
+        window.isStimulusActive = false;
+        
+        // Variables de validación Gaze-Triggered
+        window.ultimoFrameOjos = 0;
+        
+        // Pre-cálculo para evitar sobrecargar el Listener a 30fps
+        window.currentImgRect = null;
+        window.currentImgParams = null;
 
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
@@ -550,7 +560,7 @@
             if (estudioParam) {
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('participant-section').style.display = 'block';
-                estudioActualId = estudioParam;
+                window.estudioActualId = estudioParam;
                 mostrarPantalla('p-demografia');
             } else {
                 actualizarDashboard();
@@ -575,9 +585,9 @@
         };
 
         window.simularPrueba = (id) => {
-            estudioActualId = id;
-            resultadosParticipanteGaze = {}; 
-            datosDemograficosTemp = {};
+            window.estudioActualId = id;
+            window.resultadosParticipanteGaze = {}; 
+            window.datosDemograficosTemp = {};
             
             document.getElementById('admin-section').style.display = 'none';
             document.getElementById('participant-section').style.display = 'block';
@@ -598,12 +608,12 @@
         window.limpiarResultados = () => {
             if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                const idx = dbEstudios.findIndex(e => e.id === estudioActualId);
+                const idx = dbEstudios.findIndex(e => e.id === window.estudioActualId);
                 if(idx !== -1) {
                     dbEstudios[idx].participantes = [];
                     localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
                     window.estudios = dbEstudios;
-                    verResultados(estudioActualId);
+                    verResultados(window.estudioActualId);
                     mostrarToast('Todos los datos han sido borrados', 'info');
                 }
             }
@@ -612,12 +622,12 @@
         window.borrarUnParticipante = (partId) => {
             if(confirm('¿Eliminar datos de este participante individual?')) {
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                const idx = dbEstudios.findIndex(e => e.id === estudioActualId);
+                const idx = dbEstudios.findIndex(e => e.id === window.estudioActualId);
                 if(idx !== -1) {
                     dbEstudios[idx].participantes = dbEstudios[idx].participantes.filter(p => p.id !== partId);
                     localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
                     window.estudios = dbEstudios;
-                    verResultados(estudioActualId);
+                    verResultados(window.estudioActualId);
                     mostrarToast('Participante eliminado', 'success');
                 }
             }
@@ -634,12 +644,12 @@
             window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
             const tbody = document.getElementById('tabla-estudios');
             tbody.innerHTML = '';
-            document.getElementById('stat-estudios').textContent = estudios.length;
+            document.getElementById('stat-estudios').textContent = window.estudios.length;
             
-            let totalPart = estudios.reduce((acc, e) => acc + (e.participantes ? e.participantes.length : 0), 0);
+            let totalPart = window.estudios.reduce((acc, e) => acc + (e.participantes ? e.participantes.length : 0), 0);
             document.getElementById('stat-participantes').textContent = totalPart;
 
-            if (estudios.length === 0) {
+            if (window.estudios.length === 0) {
                 document.getElementById('empty-dashboard').style.display = 'block';
                 return;
             }
@@ -647,7 +657,7 @@
 
             const urlBase = window.location.href.split('?')[0];
 
-            estudios.forEach(est => {
+            window.estudios.forEach(est => {
                 const tr = document.createElement('tr');
                 const linkParticipante = `${urlBase}?estudio=${est.id}`;
                 
@@ -679,7 +689,7 @@
             document.getElementById('edit-estudio-id').value = '';
             
             if (idEdicion) {
-                const est = estudios.find(e => e.id === idEdicion);
+                const est = window.estudios.find(e => e.id === idEdicion);
                 if (est) {
                     document.getElementById('form-titulo-modo').textContent = 'Editar Estudio de Eye Tracking';
                     document.getElementById('edit-estudio-id').value = est.id;
@@ -840,12 +850,12 @@
                 }
 
                 if (idEdit) {
-                    const idx = estudios.findIndex(e => e.id === idEdit);
+                    const idx = window.estudios.findIndex(e => e.id === idEdit);
                     if (idx !== -1) {
-                        estudios[idx].nombre = nombre;
-                        estudios[idx].intervalo = intervalo;
-                        estudios[idx].ordenModo = ordenModo;
-                        estudios[idx].estimulos = estimulos;
+                        window.estudios[idx].nombre = nombre;
+                        window.estudios[idx].intervalo = intervalo;
+                        window.estudios[idx].ordenModo = ordenModo;
+                        window.estudios[idx].estimulos = estimulos;
                     }
                 } else {
                     const nuevoEstudio = {
@@ -857,10 +867,10 @@
                         estimulos,
                         participantes: []
                     };
-                    estudios.push(nuevoEstudio);
+                    window.estudios.push(nuevoEstudio);
                 }
 
-                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
                 
                 const btn = document.getElementById('btn-guardar-estudio');
                 const textoOriginal = btn.innerHTML;
@@ -880,16 +890,16 @@
 
         window.eliminarEstudio = (id) => {
             if (confirm('¿Estás seguro de eliminar este estudio?')) {
-                estudios = estudios.filter(e => e.id !== id);
-                localStorage.setItem('et_estudios', JSON.stringify(estudios));
+                window.estudios = window.estudios.filter(e => e.id !== id);
+                localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
                 actualizarDashboard();
             }
         };
 
         window.verResultados = (id) => {
             window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-            estudioActualId = id;
-            const est = estudios.find(e => e.id === id);
+            window.estudioActualId = id;
+            const est = window.estudios.find(e => e.id === id);
             if (!est) return;
 
             document.getElementById('results-titulo').textContent = est.nombre;
@@ -985,7 +995,7 @@
         }
 
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
-            const estudio = estudios.find(e => e.id === estudioId);
+            const estudio = window.estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
             wrap.innerHTML = '';
 
@@ -1123,16 +1133,16 @@
 
         window.actualizarSensibilidadHeatmap = () => {
             const activeTab = document.querySelector('#tabs-materiales .tab-btn.active');
-            if (activeTab && estudioActualId) {
+            if (activeTab && window.estudioActualId) {
                 const index = Array.from(activeTab.parentNode.children).indexOf(activeTab);
-                renderizarMapaCalor(estudioActualId, index, document.getElementById('filtro-genero').value, document.getElementById('filtro-edad').value);
+                renderizarMapaCalor(window.estudioActualId, index, document.getElementById('filtro-genero').value, document.getElementById('filtro-edad').value);
             }
         };
 
         window.exportarCSV = () => {
-            if (!estudioActualId) return;
+            if (!window.estudioActualId) return;
             window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-            const estudio = estudios.find(e => e.id === estudioActualId);
+            const estudio = window.estudios.find(e => e.id === window.estudioActualId);
             if (!estudio || !estudio.participantes || estudio.participantes.length === 0) {
                 alert('No hay datos de participantes para exportar.');
                 return;
@@ -1186,36 +1196,75 @@
                 return;
             }
 
-            datosDemograficosTemp = { edadRango, genero, ocupacion };
+            window.datosDemograficosTemp = { edadRango, genero, ocupacion };
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER CON ARRANQUE PURO (Cero encadenamientos, Cero promesas rotas)
-        window.participanteAceptar = function() {
+        // INICIAR WEBGAZER CON LISTENER PERPETUO PARA EVITAR "Todavía no hay datos"
+        window.participanteAceptar = async () => {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
             btn.disabled = true;
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // 1. Limpiamos cualquier caché corrupto en el navegador (Evita t is not a function)
+                // Purgamos la memoria de calibraciones viejas para arrancar limpio
                 window.localStorage.removeItem('webgazerGlobalData');
                 window.localStorage.removeItem('webgazerGlobalSettings');
 
-                // 2. Setear un listener preventivo. Esencial para que el core de WebGazer no colapse al no hallarlo
-                webgazer.setGazeListener(function(data, elapsedTime) {});
-                
-                // 3. Inicializar sin await para no romper el flujo síncrono del CDN
-                webgazer.begin().then(function() {
-                    // Ocultamos la UI propia de WebGazer
+                // ESTE ES EL SECRETO: Inicializamos WebGazer con el Escuchador Oficial desde el segundo cero
+                // Esto garantiza que el motor interno no se apague y mantenga el flujo de datos activo
+                webgazer.setRegression('ridge').setGazeListener(function(data, elapsedTime) {
+                    if (data == null) {
+                        window.ultimoFrameOjos = 0; // Ojos perdidos
+                        return;
+                    }
+                    
+                    // Actualiza la marca de tiempo de que los ojos están siendo leídos
+                    window.ultimoFrameOjos = Date.now();
+
+                    // Si el anuncio está en pantalla, guardamos las coordenadas
+                    if (window.isStimulusActive) {
+                        const imgEl = document.getElementById('estimulo-participante');
+                        if(!window.currentImgRect || !window.currentImgParams) return;
+                        
+                        let rect = window.currentImgRect;
+                        let drawW = rect.width;
+                        let drawH = rect.height;
+                        let offX = 0;
+                        let offY = 0;
+
+                        if (window.currentImgParams.imgRatio > window.currentImgParams.contRatio) {
+                            drawH = rect.width / window.currentImgParams.imgRatio;
+                            offY = (rect.height - drawH) / 2;
+                        } else {
+                            drawW = rect.height * window.currentImgParams.imgRatio;
+                            offX = (rect.width - drawW) / 2;
+                        }
+
+                        // Mapeo absoluto
+                        let normX = (data.x - rect.left - offX) / drawW;
+                        let normY = (data.y - rect.top - offY) / drawH;
+
+                        // Muro de contención (Solo registrar puntos DENTRO de la foto)
+                        if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
+                            window.datosGazeActuales.push({
+                                x: normX,
+                                y: normY,
+                                time: Date.now() - window.tiempoInicioEstimulo,
+                                intensity: 1
+                            });
+                        }
+                    }
+                }).begin().then(function() {
+                    // Configuración visual oculta
                     webgazer.showVideoPreview(false);
                     webgazer.showPredictionPoints(false);
 
-                    // Radar silencioso que espera a que la cámara entregue frames reales
+                    // Esperamos a que WebGazer esté escaneando la cara de verdad
                     let checkReady = setInterval(function() {
                         if (webgazer.isReady()) {
                             clearInterval(checkReady);
-                            webgazer.clearData(); // Esteriliza el modelo de IA antes de empezar
                             iniciarCalibracionPasoAPaso();
                         }
                     }, 200);
@@ -1248,7 +1297,7 @@
             mostrarPuntoCalibracion();
         }
 
-        // CALIBRACIÓN TIME-TRIGGERED (Asegura el aprendizaje de WebGazer)
+        // CALIBRACIÓN GAZE-TRIGGERED DE ALTA PRECISIÓN (Comprueba que te está viendo)
         function mostrarPuntoCalibracion() {
             const punto = document.getElementById('punto-calibracion');
 
@@ -1266,58 +1315,68 @@
             punto.className = 'rojo';
             punto.innerHTML = '';
             
-            isCalibrating = true;
-
-            // Espera de 1.2 segundos para forzar al usuario a mirar el punto y acomodar el ojo
-            setTimeout(() => {
-                if (isCalibrating) {
-                    punto.className = 'verde';
-                    punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
+            let tiempoMirando = 0;
+            
+            // Verifica que WebGazer esté actualizando la variable (significa que ve tus ojos)
+            let calibInt = setInterval(() => {
+                let msDesdeUltimoFrame = Date.now() - (window.ultimoFrameOjos || 0);
+                
+                // Si ha visto tus ojos en los últimos 200ms
+                if (msDesdeUltimoFrame < 200) {
+                    tiempoMirando += 100;
+                    // Tienes que mantener la mirada fija (o la cámara detectándote) por 1 segundo
+                    if (tiempoMirando >= 1000) {
+                        clearInterval(calibInt);
+                        punto.className = 'verde';
+                        punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
+                    }
+                } else {
+                    // Si parpadeas largo o te sales, se reinicia el contador de concentración
+                    tiempoMirando = 0; 
                 }
-            }, 1200);
+            }, 100);
 
-            // Clic Inmune
+            // Clic Entrenador
             punto.onclick = (e) => {
                 e.preventDefault();
                 
                 if (punto.className !== 'verde') {
-                    mostrarToast('Fija la mirada en el punto rojo hasta que esté VERDE para hacer clic', 'warn');
+                    mostrarToast('Espera que el punto se ponga VERDE para asegurar que la cámara ve tus ojos', 'warn');
                     return; 
                 }
                 
-                isCalibrating = false;
+                clearInterval(calibInt);
                 punto.className = 'rojo';
                 punto.innerHTML = '';
                 punto.style.display = 'none';
                 
                 pasoCalibracionActual++;
                 
-                // Pequeña pausa para que WebGazer procese el clic antes del siguiente punto
+                // WebGazer captura el clic internamente y aprende de él. Pequeña pausa para procesar.
                 setTimeout(mostrarPuntoCalibracion, 300);
             };
         }
 
         function iniciarSecuenciaEstimulos() {
             try {
-                let localEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                estudioParticipanteObj = localEstudios.find(e => e.id === estudioActualId);
+                window.estudioParticipanteObj = window.estudios.find(e => e.id === window.estudioActualId);
                 
-                if (!estudioParticipanteObj || !estudioParticipanteObj.estimulos || estudioParticipanteObj.estimulos.length === 0) {
+                if (!window.estudioParticipanteObj || !window.estudioParticipanteObj.estimulos || window.estudioParticipanteObj.estimulos.length === 0) {
                     alert('Error crítico: Datos del estudio no localizados.');
                     volverAlDashboardDesdePrueba();
                     return;
                 }
 
-                let arr = [...estudioParticipanteObj.estimulos];
-                if (estudioParticipanteObj.ordenModo === 'fijo-primero' && arr.length > 1) {
-                    estimulosOrdenadosActuales = [arr[0], ...arr.slice(1).sort(() => Math.random() - 0.5)];
-                } else if (estudioParticipanteObj.ordenModo === 'aleatorio') {
-                    estimulosOrdenadosActuales = arr.sort(() => Math.random() - 0.5);
+                let arr = [...window.estudioParticipanteObj.estimulos];
+                if (window.estudioParticipanteObj.ordenModo === 'fijo-primero' && arr.length > 1) {
+                    window.estimulosOrdenadosActuales = [arr[0], ...arr.slice(1).sort(() => Math.random() - 0.5)];
+                } else if (window.estudioParticipanteObj.ordenModo === 'aleatorio') {
+                    window.estimulosOrdenadosActuales = arr.sort(() => Math.random() - 0.5);
                 } else {
-                    estimulosOrdenadosActuales = arr;
+                    window.estimulosOrdenadosActuales = arr;
                 }
 
-                materialActualIndex = 0;
+                window.materialActualIndex = 0;
                 mostrarPreguntaMaterial();
             } catch(e) {
                 alert("Error al cargar la secuencia: " + e.message);
@@ -1327,13 +1386,13 @@
 
         window.mostrarPreguntaMaterial = () => {
             try {
-                const mat = estimulosOrdenadosActuales[materialActualIndex];
+                const mat = window.estimulosOrdenadosActuales[window.materialActualIndex];
                 if (!mat) {
                     finalizarParticipacion();
                     return;
                 }
                 
-                document.getElementById('label-num-material').textContent = `Material ${materialActualIndex + 1} de ${estimulosOrdenadosActuales.length}`;
+                document.getElementById('label-num-material').textContent = `Material ${window.materialActualIndex + 1} de ${window.estimulosOrdenadosActuales.length}`;
                 document.getElementById('texto-pregunta-material').textContent = mat.pregunta || 'Observa la imagen';
                 mostrarPantalla('p-pregunta');
             } catch (error) {
@@ -1372,67 +1431,36 @@
         function lanzarSiguienteEstimuloActual() {
             try {
                 mostrarPantalla('estimulo-participante');
-                const mat = estimulosOrdenadosActuales[materialActualIndex];
+                const mat = window.estimulosOrdenadosActuales[window.materialActualIndex];
                 const imgEl = document.getElementById('estimulo-participante');
                 imgEl.src = mat.imagen;
 
-                datosGazeActuales = [];
-                tiempoInicioEstimulo = Date.now();
+                window.datosGazeActuales = [];
+                window.tiempoInicioEstimulo = Date.now();
                 
                 let duracionMs = Number(mat.duracion);
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
-                isStimulusActive = true; 
+                // Precálculo de la imagen para que el Listener sea rápido como la luz
+                window.currentImgRect = imgEl.getBoundingClientRect();
+                window.currentImgParams = {
+                    imgRatio: imgEl.naturalWidth / imgEl.naturalHeight,
+                    contRatio: window.currentImgRect.width / window.currentImgRect.height
+                };
 
-                // POLLING DIRECTO DE WEBGAZER (Extrae datos sin romper listeners)
-                pollingInterval = setInterval(() => {
-                    if(!isStimulusActive) return;
+                // Activa la bandera global para que el `setGazeListener` empiece a guardar datos
+                window.isStimulusActive = true; 
+
+                window.timeoutEstimulo = setTimeout(() => {
+                    // Apaga la bandera de recolección
+                    window.isStimulusActive = false; 
                     
-                    let data = webgazer.getCurrentPrediction();
-                    if(data) {
-                        let rect = imgEl.getBoundingClientRect(); 
-                        let imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
-                        let contRatio = rect.width / rect.height;
-                        
-                        let drawW = rect.width;
-                        let drawH = rect.height;
-                        let offX = 0;
-                        let offY = 0;
+                    if (!window.resultadosParticipanteGaze.gazePorMaterial) window.resultadosParticipanteGaze.gazePorMaterial = {};
+                    window.resultadosParticipanteGaze.gazePorMaterial[mat.id] = window.datosGazeActuales;
 
-                        if (imgRatio > contRatio) {
-                            drawH = rect.width / imgRatio;
-                            offY = (rect.height - drawH) / 2;
-                        } else {
-                            drawW = rect.height * imgRatio;
-                            offX = (rect.width - drawW) / 2;
-                        }
-
-                        // Mapeo absoluto por pixeles de pantalla
-                        let normX = (data.x - rect.left - offX) / drawW;
-                        let normY = (data.y - rect.top - offY) / drawH;
-
-                        // Muro de contención (Solo se graba lo que está DENTRO del anuncio)
-                        if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
-                            datosGazeActuales.push({
-                                x: normX,
-                                y: normY,
-                                time: Date.now() - tiempoInicioEstimulo,
-                                intensity: 1
-                            });
-                        }
-                    }
-                }, 30);
-
-                timeoutEstimulo = setTimeout(() => {
-                    clearInterval(pollingInterval);
-                    isStimulusActive = false; 
-                    
-                    if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
-                    resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
-
-                    materialActualIndex++;
-                    if (materialActualIndex < estimulosOrdenadosActuales.length) {
+                    window.materialActualIndex++;
+                    if (window.materialActualIndex < window.estimulosOrdenadosActuales.length) {
                         prepararSiguienteEstimulo();
                     } else {
                         finalizarParticipacion();
@@ -1446,8 +1474,7 @@
         }
 
         function finalizarParticipacion() {
-            isStimulusActive = false;
-            if (pollingInterval) clearInterval(pollingInterval);
+            window.isStimulusActive = false;
             document.body.classList.remove('modo-laboratorio');
             
             try {
@@ -1457,9 +1484,9 @@
 
             mostrarPantalla('p-fin');
 
-            if (estudioParticipanteObj) {
+            if (window.estudioParticipanteObj) {
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                const idx = dbEstudios.findIndex(e => e.id === estudioParticipanteObj.id);
+                const idx = dbEstudios.findIndex(e => e.id === window.estudioParticipanteObj.id);
                 
                 if (idx !== -1) {
                     if (!dbEstudios[idx].participantes) dbEstudios[idx].participantes = [];
@@ -1467,8 +1494,8 @@
                     dbEstudios[idx].participantes.push({
                         id: 'part_' + Math.random().toString(36).substr(2, 9),
                         fecha: Date.now(),
-                        ...datosDemograficosTemp,
-                        gazePorMaterial: resultadosParticipanteGaze.gazePorMaterial || {}
+                        ...window.datosDemograficosTemp,
+                        gazePorMaterial: window.resultadosParticipanteGaze.gazePorMaterial || {}
                     });
 
                     localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
