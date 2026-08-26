@@ -22,7 +22,7 @@
             --accent: #10b981;
             --warn: #f59e0b;
             --danger: #ef4444;
-            --gray-neutral: #808080; 
+            --gray-neutral: #808080;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
@@ -137,6 +137,12 @@
             transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
             font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
             cursor: pointer;
+        }
+        /* Mantenemos el campo invisible para UX, pero forzaremos el aprendizaje al centro matemáticamente */
+        #punto-calibracion::after {
+            content: ''; position: absolute;
+            top: -60px; left: -60px; right: -60px; bottom: -60px;
+            border-radius: 50%; cursor: pointer;
         }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; }
@@ -338,11 +344,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -441,8 +447,8 @@
                         <strong style="color:var(--accent)">
                         1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
-                        3. Espera a que se ponga VERDE y haz CLIC EXACTAMENTE SOBRE ÉL.</strong><br>
-                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto para entrenar a la IA correctamente)</span>
+                        3. Espera a que se ponga VERDE y haz CLIC.</strong><br>
+                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto verde para entrenar a la IA correctamente)</span>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -484,7 +490,7 @@
         </div>
     </div>
 
-    <!-- NÚCLEO DE TRACKING (MEMORIA CURADA + COMPRESIÓN X2) -->
+    <!-- NÚCLEO WEBGAZER RESCATADO: INYECCIÓN MANUAL DE DATOS Y CLAMPEO -->
     <script type="text/javascript">
         window.estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -500,6 +506,9 @@
         window.timeoutEstimulo = null;
         window.pollingInterval = null; 
         window.isCalibrating = false;
+        
+        // LA VARIABLE CLAVE QUE RESCATA LOS DATOS:
+        window.latestGazeData = null;
 
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
@@ -772,8 +781,7 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    // COMPRESIÓN EXTREMA (Evita QuotaExceededError en el LocalStorage)
-                    const maxDim = 800; 
+                    const maxDim = 800; // Super compresión a 800px para no llenar el disco duro
                     if (width > maxDim || height > maxDim) {
                         if (width > height) { height *= maxDim / width; width = maxDim; } 
                         else { width *= maxDim / height; height = maxDim; }
@@ -786,8 +794,7 @@
                     ctx.fillRect(0, 0, width, height);
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // Calidad 50% (Súper ligero, perfecto para eye tracking)
-                    const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.5); 
+                    const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.5); // 50% de calidad, súper ligera
                     actualizarPreviewImagen(card, dataUrlComprimida);
                 };
                 img.src = e.target.result;
@@ -841,9 +848,6 @@
                     return;
                 }
 
-                // Prevención de error por si window.estudios viene nulo
-                window.estudios = window.estudios || [];
-
                 if (idEdit) {
                     const idx = window.estudios.findIndex(e => e.id === idEdit);
                     if (idx !== -1) {
@@ -879,9 +883,8 @@
                 }, 1200);
 
             } catch(e) {
-                // MANEJO DE ERROR DE MEMORIA LLENA
                 if(e.name === 'QuotaExceededError' || e.message.includes('Quota')) {
-                    alert("⚠️ Memoria Llena: Tu navegador alcanzó el límite de 5MB. Borra estudios antiguos en el Dashboard para liberar espacio.");
+                    alert("⚠️ Memoria del navegador LLENA (Límite de 5MB). Borra estudios antiguos en el Dashboard para liberar espacio.");
                 } else {
                     alert("⚠️ Error: " + e.message);
                 }
@@ -1095,7 +1098,7 @@
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            heat.max(Math.max(2, validPoints.length / 30)); 
+                            heat.max(Math.max(2, validPoints.length / 40)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1200,7 +1203,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER CON ARRANQUE PURO Y LIMPIO
+        // INICIAR WEBGAZER JS SEGURO
         window.participanteAceptar = function() {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
@@ -1208,28 +1211,26 @@
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // 1. Limpiamos cualquier caché de una cámara interrumpida
                 window.localStorage.removeItem('webgazerGlobalData');
                 window.localStorage.removeItem('webgazerGlobalSettings');
 
-                // 2. Setear un listener preventivo vacío para evitar que colapse (Crash bypass)
-                webgazer.setGazeListener(function(data, elapsedTime) {});
-                
-                // 3. Inicializar sin promesas encadenadas, para que el navegador respire
-                webgazer.begin().then(function() {
+                // ESTE ES EL ESCUCHADOR GLOBAL SALVADOR QUE PERMITE RECUPERAR LOS DATOS 
+                webgazer.setGazeListener(function(data, elapsedTime) {
+                    if (data == null) return;
+                    // Guardamos la coordenada global en tiempo real para usarla despues
+                    window.latestGazeData = data; 
+                }).begin().then(function() {
                     
-                    // Apagamos los puntitos rojos nativos de WebGazer para que no ensucien tu interfaz
                     try { webgazer.showVideoPreview(false); } catch(e){}
                     try { webgazer.showPredictionPoints(false); } catch(e){}
 
-                    // 4. Polling que verifica cuando WebGazer por fin logró encender la cámara
                     let checkReady = setInterval(function() {
                         if (webgazer.isReady()) {
                             clearInterval(checkReady);
-                            webgazer.clearData(); // Esteriliza la IA
+                            webgazer.clearData(); 
                             iniciarCalibracionPasoAPaso();
                         }
-                    }, 250);
+                    }, 200);
                     
                 }).catch(function(e) {
                     alert('Error en cámara. Revisa los permisos: ' + e);
@@ -1260,7 +1261,6 @@
             mostrarPuntoCalibracion();
         }
 
-        // CALIBRACIÓN TIME-TRIGGERED (La forma correcta de entrenar WebGazer)
         function mostrarPuntoCalibracion() {
             const punto = document.getElementById('punto-calibracion');
 
@@ -1280,7 +1280,6 @@
             
             window.isCalibrating = true;
 
-            // Espera de 1.2 segundos para forzar al usuario a mirar el punto
             setTimeout(() => {
                 if (window.isCalibrating) {
                     punto.className = 'verde';
@@ -1288,7 +1287,7 @@
                 }
             }, 1200);
 
-            // Clic Entrenador
+            // CLIC DE ENTRENAMIENTO FORZADO A LA IA
             punto.onclick = (e) => {
                 e.preventDefault();
                 
@@ -1297,6 +1296,11 @@
                     return; 
                 }
                 
+                // INYECCIÓN MANUAL DEL APRENDIZAJE: Obligamos a WebGazer a memorizar este píxel
+                try {
+                    webgazer.recordScreenPosition(e.clientX, e.clientY, 'click');
+                } catch(err) {}
+
                 window.isCalibrating = false;
                 punto.className = 'rojo';
                 punto.innerHTML = '';
@@ -1304,7 +1308,6 @@
                 
                 pasoCalibracionActual++;
                 
-                // Pausa para que WebGazer asimile la relación ojo-pantalla
                 setTimeout(mostrarPuntoCalibracion, 300);
             };
         }
@@ -1397,43 +1400,44 @@
 
                 window.isStimulusActive = true; 
 
-                // POLLING DIRECTO DE WEBGAZER
+                // LOOP DE RECOLECCIÓN (SEGURO Y SIN ELIMINAR DATOS)
                 window.pollingInterval = setInterval(() => {
-                    if(!window.isStimulusActive) return;
+                    // Verificamos que el Global Listener nos haya conseguido un dato fresco
+                    if(!window.isStimulusActive || !window.latestGazeData) return;
                     
-                    let data = webgazer.getCurrentPrediction();
-                    if(data) {
-                        let rect = imgEl.getBoundingClientRect(); 
-                        let imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
-                        let contRatio = rect.width / rect.height;
-                        
-                        let drawW = rect.width;
-                        let drawH = rect.height;
-                        let offX = 0;
-                        let offY = 0;
+                    let data = window.latestGazeData;
+                    
+                    let rect = imgEl.getBoundingClientRect(); 
+                    let imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+                    let contRatio = rect.width / rect.height;
+                    
+                    let drawW = rect.width;
+                    let drawH = rect.height;
+                    let offX = 0;
+                    let offY = 0;
 
-                        if (imgRatio > contRatio) {
-                            drawH = rect.width / imgRatio;
-                            offY = (rect.height - drawH) / 2;
-                        } else {
-                            drawW = rect.height * imgRatio;
-                            offX = (rect.width - drawW) / 2;
-                        }
-
-                        // Mapeo absoluto por pixeles de pantalla
-                        let normX = (data.x - rect.left - offX) / drawW;
-                        let normY = (data.y - rect.top - offY) / drawH;
-
-                        // Solo registrar si el ojo mira DENTRO del anuncio
-                        if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
-                            window.datosGazeActuales.push({
-                                x: normX,
-                                y: normY,
-                                time: Date.now() - window.tiempoInicioEstimulo,
-                                intensity: 1
-                            });
-                        }
+                    if (imgRatio > contRatio) {
+                        drawH = rect.width / imgRatio;
+                        offY = (rect.height - drawH) / 2;
+                    } else {
+                        drawW = rect.height * imgRatio;
+                        offX = (rect.width - drawW) / 2;
                     }
+
+                    let normX = (data.x - rect.left - offX) / drawW;
+                    let normY = (data.y - rect.top - offY) / drawH;
+
+                    // CLAMPEO DE SEGURIDAD (Nunca más borrara tus datos si te sales un poco del marco)
+                    let finalX = Math.max(0, Math.min(1, normX));
+                    let finalY = Math.max(0, Math.min(1, normY));
+
+                    window.datosGazeActuales.push({
+                        x: finalX,
+                        y: finalY,
+                        time: Date.now() - window.tiempoInicioEstimulo,
+                        intensity: 1
+                    });
+                    
                 }, 30);
 
                 window.timeoutEstimulo = setTimeout(() => {
