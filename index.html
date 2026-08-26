@@ -131,15 +131,15 @@
 
         /* PUNTO DE CALIBRACIÓN WEBGAZER */
         #punto-calibracion {
-            width: 36px; height: 36px; border-radius: 50%; position: absolute;
+            width: 38px; height: 38px; border-radius: 50%; position: absolute;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
             transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
             font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
-            cursor: pointer; pointer-events: none; /* Desactivado hasta que esté verde */
+            cursor: pointer;
         }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); pointer-events: none; }
-        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.2); border: 2px solid white; pointer-events: auto; }
+        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; pointer-events: auto; }
 
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
@@ -338,11 +338,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -442,8 +442,8 @@
                         <strong style="color:var(--accent)">
                         1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
-                        3. Espera a que se ponga VERDE y haz CLIC EXACTAMENTE SOBRE ÉL.</strong><br>
-                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto para entrenar a la IA correctamente)</span>
+                        3. Espera a que se ponga <span style="color:#10b981;">VERDE</span> y haz clic.</strong><br>
+                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto verde para enseñarle a la IA a leerte)</span>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -486,7 +486,6 @@
         </div>
     </div>
 
-    <!-- EL MOTOR WEBGAZER CORREGIDO SIN PROMESAS ROTAS -->
     <script type="text/javascript">
         let estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -501,11 +500,7 @@
         
         let timeoutEstimulo = null;
         let pollingInterval = null; 
-        
-        // Control de Fijación Gaze-Triggered
         let isCalibrating = false;
-        let calibLoopId = null;
-        let calibBuffer = [];
 
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
@@ -1091,7 +1086,7 @@
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            heat.max(Math.max(2, validPoints.length / 40)); 
+                            heat.max(Math.max(2, validPoints.length / 30)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1196,37 +1191,31 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER JS SEGURO LINEA POR LINEA
-        window.participanteAceptar = function() {
+        // INICIAR WEBGAZER CON ARRANQUE PURO (Cero encadenamientos)
+        window.participanteAceptar = async () => {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
             btn.disabled = true;
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // Pasamos el listener preventivo. Fundamental para que WebGazer no crashee en versiones minify.
-                webgazer.setGazeListener(function(data, elapsedTime) {});
-                
-                // Iniciar motor 
-                webgazer.begin();
+                // 1. Iniciamos WebGazer sin pasarle configuraciones que puedan crashear la versión CDN
+                await webgazer.begin();
 
-                // Usamos un radar silencioso para saber cuando WebGazer ya conectó todo por dentro
-                let checkReady = setInterval(() => {
+                // 2. Ocultamos los componentes feos de WebGazer por separado
+                webgazer.showVideoPreview(false);
+                webgazer.showPredictionPoints(false);
+
+                // 3. Radar de estado (Polling de Listo)
+                let waitInterval = setInterval(() => {
                     if (webgazer.isReady()) {
-                        clearInterval(checkReady);
-                        
-                        try {
-                            webgazer.showVideoPreview(false);
-                            webgazer.showPredictionPoints(false);
-                            webgazer.clearData();
-                        } catch(e) {} // Ignora si la librería oculta estas funciones
-                        
+                        clearInterval(waitInterval);
+                        webgazer.clearData(); // Limpiamos caché de calibraciones previas
                         iniciarCalibracionPasoAPaso();
                     }
                 }, 200);
 
             } catch (e) {
-                console.error("Fallo de arranque de cámara: ", e);
                 alert('No se pudo arrancar WebGazer. Detalle: ' + e.message);
                 document.body.classList.remove('modo-laboratorio');
                 btn.disabled = false;
@@ -1248,7 +1237,7 @@
             mostrarPuntoCalibracion();
         }
 
-        // CALIBRACIÓN GAZE-TRIGGERED (CON VARIANZA DE WEBGAZER)
+        // CALIBRACIÓN TIME-TRIGGERED (La más segura para entrenar IA desde cero)
         function mostrarPuntoCalibracion() {
             const punto = document.getElementById('punto-calibracion');
 
@@ -1266,46 +1255,17 @@
             punto.className = 'rojo';
             punto.innerHTML = '';
             
-            calibBuffer = [];
             isCalibrating = true;
 
-            // Lee la estabilidad del ojo en crudo desde WebGazer
-            function verificarFijacion() {
-                if (!isCalibrating) return;
-                
-                let pred = webgazer.getCurrentPrediction();
-                if (pred) {
-                    calibBuffer.push(pred);
-                    
-                    if (calibBuffer.length > 15) calibBuffer.shift(); 
-                    
-                    if (calibBuffer.length === 15) {
-                        let xs = calibBuffer.map(p => p.x);
-                        let ys = calibBuffer.map(p => p.y);
-                        
-                        let dx = Math.max(...xs) - Math.min(...xs);
-                        let dy = Math.max(...ys) - Math.min(...ys);
-                        
-                        // Si WebGazer detecta que la mirada paró de moverse en la pantalla
-                        if (dx < 40 && dy < 40) {
-                            if (punto.className !== 'verde') {
-                                punto.className = 'verde';
-                                punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
-                            }
-                        } else {
-                            if (punto.className !== 'rojo') {
-                                punto.className = 'rojo';
-                                punto.innerHTML = '';
-                            }
-                        }
-                    }
+            // Espera 1.2 segundos para obligar al usuario a mirar el punto y congelar el ojo
+            setTimeout(() => {
+                if (isCalibrating) {
+                    punto.className = 'verde';
+                    punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
                 }
-                calibLoopId = requestAnimationFrame(verificarFijacion);
-            }
-            
-            calibLoopId = requestAnimationFrame(verificarFijacion);
+            }, 1200);
 
-            // Clic Inmune 
+            // Clic Inmune (WebGazer escucha este clic automáticamente por debajo)
             punto.onclick = (e) => {
                 e.preventDefault();
                 
@@ -1315,15 +1275,14 @@
                 }
                 
                 isCalibrating = false;
-                cancelAnimationFrame(calibLoopId);
-
                 punto.className = 'rojo';
                 punto.innerHTML = '';
                 punto.style.display = 'none';
                 
                 pasoCalibracionActual++;
                 
-                setTimeout(mostrarPuntoCalibracion, 250);
+                // Pequeña pausa para que WebGazer asimile el clic
+                setTimeout(mostrarPuntoCalibracion, 300);
             };
         }
 
@@ -1372,7 +1331,6 @@
             }
         };
 
-        // LA MEJORA REALEYE: Preparador de estímulo (Conteo y Cruz)
         window.prepararSiguienteEstimulo = () => {
             mostrarPantalla('p-intervalo');
             const countEl = document.getElementById('countdown-text');
@@ -1391,7 +1349,7 @@
                 } else {
                     clearInterval(intervaloConteo);
                     countEl.style.display = 'none';
-                    cruzEl.style.display = 'block'; // Cruz de Fijación Cero
+                    cruzEl.style.display = 'block'; 
                     
                     setTimeout(() => {
                         lanzarSiguienteEstimuloActual();
@@ -1416,7 +1374,7 @@
 
                 isStimulusActive = true; 
 
-                // POLLING DE ALTA VELOCIDAD: Recupera y limpia datos reales de pantalla
+                // POLLING DIRECTO (Sin inyectar Listeners)
                 pollingInterval = setInterval(() => {
                     if(!isStimulusActive) return;
                     
@@ -1439,11 +1397,11 @@
                             offX = (rect.width - drawW) / 2;
                         }
 
-                        // Mapeo Absoluto (WebGazer entrega pixeles nativos de pantalla)
+                        // Mapeo absoluto por pixeles de pantalla
                         let normX = (data.x - rect.left - offX) / drawW;
                         let normY = (data.y - rect.top - offY) / drawH;
 
-                        // Muro de contención para mantener el mapa puro
+                        // Muro de contención (Solo se graba lo que está DENTRO del anuncio)
                         if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
                             datosGazeActuales.push({
                                 x: normX,
