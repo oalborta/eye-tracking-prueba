@@ -131,21 +131,15 @@
 
         /* PUNTO DE CALIBRACIÓN WEBGAZER */
         #punto-calibracion {
-            width: 38px; height: 38px; border-radius: 50%; position: absolute;
+            width: 36px; height: 36px; border-radius: 50%; position: absolute;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
             transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
             font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
-            cursor: pointer;
+            cursor: pointer; pointer-events: none; /* Desactivado hasta que esté verde */
         }
-        /* El escudo invisible de 150px para clic rápido */
-        #punto-calibracion::after {
-            content: ''; position: absolute;
-            top: -60px; left: -60px; right: -60px; bottom: -60px;
-            border-radius: 50%; cursor: pointer;
-        }
-        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); }
-        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; }
+        #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); pointer-events: none; }
+        #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.2); border: 2px solid white; pointer-events: auto; }
 
         .heatmap-container { position: relative; display: inline-block; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); max-width: 100%; line-height: 0; }
         .heatmap-container img { display: block; max-width: 100%; height: auto; }
@@ -344,11 +338,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -361,7 +355,7 @@
                     <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
-                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos puros para este material.</p>
+                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
                     </div>
                 </div>
 
@@ -492,7 +486,7 @@
         </div>
     </div>
 
-    <!-- EL MOTOR WEBGAZER: REPARADO CON HIGH-SPEED POLLING -->
+    <!-- EL MOTOR WEBGAZER CORREGIDO SIN PROMESAS ROTAS -->
     <script type="text/javascript">
         let estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -506,9 +500,9 @@
         let resultadosParticipanteGaze = {};
         
         let timeoutEstimulo = null;
-        let pollingInterval = null; // High-Speed Polling interval
+        let pollingInterval = null; 
         
-        // Control de Fijación "Varianza WebGazer"
+        // Control de Fijación Gaze-Triggered
         let isCalibrating = false;
         let calibLoopId = null;
         let calibBuffer = [];
@@ -1097,7 +1091,7 @@
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            heat.max(Math.max(2, validPoints.length / 30)); 
+                            heat.max(Math.max(2, validPoints.length / 40)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1202,35 +1196,42 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER CON POLLING PREVENTIVO
-        window.participanteAceptar = async () => {
-            document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando WebGazer...';
-            document.getElementById('btn-iniciar-camara').disabled = true;
+        // INICIAR WEBGAZER JS SEGURO LINEA POR LINEA
+        window.participanteAceptar = function() {
+            const btn = document.getElementById('btn-iniciar-camara');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
+            btn.disabled = true;
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // Inicia WebGazer puro
-                await webgazer.setRegression('ridge').begin();
+                // Pasamos el listener preventivo. Fundamental para que WebGazer no crashee en versiones minify.
+                webgazer.setGazeListener(function(data, elapsedTime) {});
                 
-                webgazer.showVideoPreview(false);
-                webgazer.showPredictionPoints(false);
-                webgazer.clearData();
+                // Iniciar motor 
+                webgazer.begin();
+
+                // Usamos un radar silencioso para saber cuando WebGazer ya conectó todo por dentro
+                let checkReady = setInterval(() => {
+                    if (webgazer.isReady()) {
+                        clearInterval(checkReady);
+                        
+                        try {
+                            webgazer.showVideoPreview(false);
+                            webgazer.showPredictionPoints(false);
+                            webgazer.clearData();
+                        } catch(e) {} // Ignora si la librería oculta estas funciones
+                        
+                        iniciarCalibracionPasoAPaso();
+                    }
+                }, 200);
 
             } catch (e) {
-                alert('No se pudo iniciar la cámara. Revisa los permisos de tu navegador.');
+                console.error("Fallo de arranque de cámara: ", e);
+                alert('No se pudo arrancar WebGazer. Detalle: ' + e.message);
                 document.body.classList.remove('modo-laboratorio');
-                document.getElementById('btn-iniciar-camara').disabled = false;
-                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar';
-                return;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-camera"></i> Reintentar';
             }
-
-            // Polling inteligente para esperar a que WebGazer esté escaneando la cara de verdad
-            let checkReady = setInterval(() => {
-                if (webgazer.isReady()) {
-                    clearInterval(checkReady);
-                    iniciarCalibracionPasoAPaso();
-                }
-            }, 100);
         };
 
         const puntosCalibracion = [
@@ -1285,7 +1286,7 @@
                         let dx = Math.max(...xs) - Math.min(...xs);
                         let dy = Math.max(...ys) - Math.min(...ys);
                         
-                        // Si WebGazer detecta que la pupila paró de moverse (Tolerancia relajada a 40 pixeles para evitar bloqueos)
+                        // Si WebGazer detecta que la mirada paró de moverse en la pantalla
                         if (dx < 40 && dy < 40) {
                             if (punto.className !== 'verde') {
                                 punto.className = 'verde';
@@ -1309,7 +1310,7 @@
                 e.preventDefault();
                 
                 if (punto.className !== 'verde') {
-                    mostrarToast('Fija la mirada en el punto hasta que esté VERDE para calibrar', 'warn');
+                    mostrarToast('Fija la mirada en el punto rojo hasta que esté VERDE para hacer clic', 'warn');
                     return; 
                 }
                 
@@ -1371,6 +1372,7 @@
             }
         };
 
+        // LA MEJORA REALEYE: Preparador de estímulo (Conteo y Cruz)
         window.prepararSiguienteEstimulo = () => {
             mostrarPantalla('p-intervalo');
             const countEl = document.getElementById('countdown-text');
@@ -1389,7 +1391,7 @@
                 } else {
                     clearInterval(intervaloConteo);
                     countEl.style.display = 'none';
-                    cruzEl.style.display = 'block'; 
+                    cruzEl.style.display = 'block'; // Cruz de Fijación Cero
                     
                     setTimeout(() => {
                         lanzarSiguienteEstimuloActual();
