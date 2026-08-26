@@ -338,11 +338,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -355,7 +355,7 @@
                     <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
-                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos puros para este material.</p>
+                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
                     </div>
                 </div>
 
@@ -486,7 +486,7 @@
         </div>
     </div>
 
-    <!-- EL MOTOR WEBGAZER CORREGIDO -->
+    <!-- EL MOTOR WEBGAZER -->
     <script type="text/javascript">
         let estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -501,7 +501,6 @@
         
         let timeoutEstimulo = null;
         
-        // Función general de visualización
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
             pantallas.forEach(p => { 
@@ -1191,33 +1190,30 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER JS CON PROTECCIÓN DE CRASH
+        // INICIAR WEBGAZER SEGURO
         window.participanteAceptar = async () => {
             document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando WebGazer...';
             document.getElementById('btn-iniciar-camara').disabled = true;
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // Dummy listener preventivo (algunas versiones de WebGazer crashean si inician sin uno)
-                webgazer.setGazeListener(() => {}); 
+                // Pasamos el listener obligatorio desde el inicio para que no crashee
+                webgazer.setGazeListener(function(data, elapsedTime) {}).begin();
                 
-                // Inicialización segura sin forzar trackers que puedan faltar en el CDN
-                await webgazer.setRegression('ridge').begin();
-                              
-                webgazer.showVideoPreview(false);
-                webgazer.showPredictionPoints(false);
+                webgazer.showVideoPreview(false).showPredictionPoints(false);
                 webgazer.clearData();
 
             } catch (e) {
-                console.error("Error WebGazer:", e);
-                alert('Error al iniciar WebGazer: ' + (e.message || 'Cámara bloqueada o en uso.'));
+                alert('Error al iniciar WebGazer. Tu cámara puede estar bloqueada.');
                 document.body.classList.remove('modo-laboratorio');
-                document.getElementById('btn-iniciar-camara').disabled = false;
-                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar encender cámara';
+                location.reload();
                 return;
             }
 
-            iniciarCalibracionPasoAPaso();
+            // Damos tiempo a WebGazer para que encienda la cámara en segundo plano
+            setTimeout(() => {
+                iniciarCalibracionPasoAPaso();
+            }, 1000);
         };
 
         const puntosCalibracion = [
@@ -1250,12 +1246,11 @@
             
             punto.className = 'rojo';
             
-            // WEBGAZER TIME-TRIGGERED (Espera 1.2s para forzar al usuario a mirar el punto)
+            // WEBGAZER TIME-TRIGGERED (Espera 1.2s para forzar al usuario a mirar el punto y acomodar el ojo)
             setTimeout(() => {
                 punto.className = 'verde';
             }, 1200);
 
-            // Al hacer clic, WebGazer graba internamente el punto de la pantalla (ya que está escuchando clicks de mouse globalmente)
             punto.onclick = (e) => {
                 e.preventDefault();
                 
@@ -1317,7 +1312,6 @@
             }
         };
 
-        // LA MEJORA REALEYE: Preparador de estímulo (Conteo y Cruz)
         window.prepararSiguienteEstimulo = () => {
             mostrarPantalla('p-intervalo');
             const countEl = document.getElementById('countdown-text');
@@ -1336,7 +1330,7 @@
                 } else {
                     clearInterval(intervaloConteo);
                     countEl.style.display = 'none';
-                    cruzEl.style.display = 'block'; // Cruz de Fijación Cero
+                    cruzEl.style.display = 'block'; 
                     
                     setTimeout(() => {
                         lanzarSiguienteEstimuloActual();
@@ -1359,12 +1353,10 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
-                // ACTIVAMOS EL TRACKING DE WEBGAZER PARA EL ESTIMULO
+                // ACTIVAMOS EL TRACKING REAL DE WEBGAZER
                 webgazer.setGazeListener((data, clock) => {
                     if (data == null) return;
 
-                    // WebGazer devuelve pixeles de pantalla (data.x, data.y)
-                    // Calculamos matemáticamente la posición respecto a la imagen (object-fit: contain)
                     let rect = imgEl.getBoundingClientRect(); 
                     let imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
                     let contRatio = rect.width / rect.height;
@@ -1375,20 +1367,18 @@
                     let offY = 0;
 
                     if (imgRatio > contRatio) {
-                        // Barras negras arriba y abajo
                         drawH = rect.width / imgRatio;
                         offY = (rect.height - drawH) / 2;
                     } else {
-                        // Barras negras a los lados
                         drawW = rect.height * imgRatio;
                         offX = (rect.width - drawW) / 2;
                     }
 
-                    // Porcentaje exacto sobre la imagen real
+                    // Calculo de píxeles absolutos
                     let normX = (data.x - rect.left - offX) / drawW;
                     let normY = (data.y - rect.top - offY) / drawH;
 
-                    // Muro de contención (Solo registrar si mira DENTRO de la foto, no a los bordes negros)
+                    // Muro de contención
                     if (normX >= -0.1 && normX <= 1.1 && normY >= -0.1 && normY <= 1.1) {
                         datosGazeActuales.push({
                             x: normX,
@@ -1400,8 +1390,8 @@
                 });
 
                 timeoutEstimulo = setTimeout(() => {
-                    // Limpiamos el Listener de WebGazer para que no consuma recursos
-                    webgazer.clearGazeListener();
+                    // Limpiamos el Listener para pausar a WebGazer en el cambio de imagen
+                    webgazer.setGazeListener(() => {}); 
                     
                     if (!resultadosParticipanteGaze.gazePorMaterial) resultadosParticipanteGaze.gazePorMaterial = {};
                     resultadosParticipanteGaze.gazePorMaterial[mat.id] = datosGazeActuales;
