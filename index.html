@@ -22,7 +22,7 @@
             --accent: #10b981;
             --warn: #f59e0b;
             --danger: #ef4444;
-            --gray-neutral: #808080;
+            --gray-neutral: #808080; /* Gris Biométrico RealEye */
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
@@ -130,14 +130,13 @@
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
 
         /* PUNTO DE CALIBRACIÓN WEBGAZER */
-        /* Para entrenar a WebGazer, el clic DEBE SER en el punto, por eso quitamos el campo invisible gigante */
         #punto-calibracion {
             width: 36px; height: 36px; border-radius: 50%; position: absolute;
             z-index: 999999; transform: translate(-50%, -50%);
             display: none; justify-content: center; align-items: center; 
             transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
             font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
-            cursor: pointer; pointer-events: none; /* Se desactiva hasta que esté verde */
+            cursor: pointer; pointer-events: none;
         }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); pointer-events: none; }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.2); border: 2px solid white; pointer-events: auto; }
@@ -356,7 +355,7 @@
                     <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
-                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
+                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos puros para este material.</p>
                     </div>
                 </div>
 
@@ -487,7 +486,7 @@
         </div>
     </div>
 
-    <!-- EL MOTOR WEBGAZER -->
+    <!-- EL MOTOR WEBGAZER CORREGIDO -->
     <script type="text/javascript">
         let estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -1087,7 +1086,7 @@
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            heat.max(Math.max(2, validPoints.length / 30)); 
+                            heat.max(Math.max(2, validPoints.length / 40)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1192,29 +1191,29 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER JS 
+        // INICIAR WEBGAZER JS CON PROTECCIÓN DE CRASH
         window.participanteAceptar = async () => {
             document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando WebGazer...';
             document.getElementById('btn-iniciar-camara').disabled = true;
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // Inicia WebGazer con regresión Ridge estándar
-                await webgazer.setRegression('ridge')
-                              .setTracker('TFFAC')
-                              .begin();
-                              
-                // Oculta el video y los puntos de predicción de WebGazer para usar nuestra propia UI
-                webgazer.showVideoPreview(false)
-                        .showPredictionPoints(false);
+                // Dummy listener preventivo (algunas versiones de WebGazer crashean si inician sin uno)
+                webgazer.setGazeListener(() => {}); 
                 
-                // Limpia cualquier calibración de usuarios anteriores
+                // Inicialización segura sin forzar trackers que puedan faltar en el CDN
+                await webgazer.setRegression('ridge').begin();
+                              
+                webgazer.showVideoPreview(false);
+                webgazer.showPredictionPoints(false);
                 webgazer.clearData();
 
             } catch (e) {
-                alert('No se pudo iniciar WebGazer o no hay cámara disponible.');
+                console.error("Error WebGazer:", e);
+                alert('Error al iniciar WebGazer: ' + (e.message || 'Cámara bloqueada o en uso.'));
                 document.body.classList.remove('modo-laboratorio');
-                location.reload();
+                document.getElementById('btn-iniciar-camara').disabled = false;
+                document.getElementById('btn-iniciar-camara').innerHTML = '<i class="fas fa-camera"></i> Reintentar encender cámara';
                 return;
             }
 
