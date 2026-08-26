@@ -6,7 +6,6 @@
     <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
-    
     <!-- WEBGAZER JS INTEGRADO (Versión Estable 3.3.0) -->
     <script src="https://cdn.jsdelivr.net/npm/webgazer@3.3.0/dist/webgazer.min.js"></script>
     
@@ -23,7 +22,7 @@
             --accent: #10b981;
             --warn: #f59e0b;
             --danger: #ef4444;
-            --gray-neutral: #808080; /* Gris Biométrico RealEye */
+            --gray-neutral: #808080; 
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
@@ -339,11 +338,11 @@
                         <div style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
                         
@@ -388,7 +387,6 @@
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
         
-        <!-- PANTALLA GRIS DE CALIBRACIÓN -->
         <div id="contenedor-calibracion" class="pantalla-participante" style="display:none;">
             <div id="punto-calibracion" class="rojo"></div>
         </div>
@@ -444,7 +442,7 @@
                         1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
                         3. Espera a que se ponga VERDE y haz CLIC EXACTAMENTE SOBRE ÉL.</strong><br>
-                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto verde para entrenar a la IA correctamente)</span>
+                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto para entrenar a la IA correctamente)</span>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -456,7 +454,7 @@
         <div id="p-carga" class="pantalla-participante" style="display:none; background: var(--gray-neutral);">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid #ccc; border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando WebGazer IA...</p>
+                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando IA WebGazer...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -471,7 +469,6 @@
             </div>
         </div>
         
-        <!-- PANTALLA INTERVALO REALEYE (Fondo Gris, Conteo y Cruz) -->
         <div id="p-intervalo" class="pantalla-participante" style="display:none;">
             <div id="countdown-text">3</div>
             <div id="cruz-fijacion" class="cruz" style="display:none;"></div>
@@ -487,9 +484,8 @@
         </div>
     </div>
 
-    <!-- EL MOTOR WEBGAZER: REPARADO CON FUNCIONALIDAD COMPLETA -->
+    <!-- NÚCLEO DE TRACKING (MEMORIA CURADA + COMPRESIÓN X2) -->
     <script type="text/javascript">
-        // Variables Globales necesarias para que el Listener interno funcione sin crashear
         window.estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
         window.estudioActualId = null;
@@ -502,14 +498,8 @@
         window.resultadosParticipanteGaze = {};
         
         window.timeoutEstimulo = null;
-        window.isStimulusActive = false;
-        
-        // Variables de validación Gaze-Triggered
-        window.ultimoFrameOjos = 0;
-        
-        // Pre-cálculo para evitar sobrecargar el Listener a 30fps
-        window.currentImgRect = null;
-        window.currentImgParams = null;
+        window.pollingInterval = null; 
+        window.isCalibrating = false;
 
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
@@ -782,7 +772,8 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    const maxDim = 1200;
+                    // COMPRESIÓN EXTREMA (Evita QuotaExceededError en el LocalStorage)
+                    const maxDim = 800; 
                     if (width > maxDim || height > maxDim) {
                         if (width > height) { height *= maxDim / width; width = maxDim; } 
                         else { width *= maxDim / height; height = maxDim; }
@@ -795,7 +786,8 @@
                     ctx.fillRect(0, 0, width, height);
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.8);
+                    // Calidad 50% (Súper ligero, perfecto para eye tracking)
+                    const dataUrlComprimida = canvas.toDataURL('image/jpeg', 0.5); 
                     actualizarPreviewImagen(card, dataUrlComprimida);
                 };
                 img.src = e.target.result;
@@ -849,6 +841,9 @@
                     return;
                 }
 
+                // Prevención de error por si window.estudios viene nulo
+                window.estudios = window.estudios || [];
+
                 if (idEdit) {
                     const idx = window.estudios.findIndex(e => e.id === idEdit);
                     if (idx !== -1) {
@@ -884,7 +879,12 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error: Ocurrió un error al intentar guardar.");
+                // MANEJO DE ERROR DE MEMORIA LLENA
+                if(e.name === 'QuotaExceededError' || e.message.includes('Quota')) {
+                    alert("⚠️ Memoria Llena: Tu navegador alcanzó el límite de 5MB. Borra estudios antiguos en el Dashboard para liberar espacio.");
+                } else {
+                    alert("⚠️ Error: " + e.message);
+                }
             }
         };
 
@@ -1200,76 +1200,39 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER CON LISTENER PERPETUO PARA EVITAR "Todavía no hay datos"
-        window.participanteAceptar = async () => {
+        // INICIAR WEBGAZER CON ARRANQUE PURO Y LIMPIO
+        window.participanteAceptar = function() {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
             btn.disabled = true;
             document.body.classList.add('modo-laboratorio');
 
             try {
-                // Purgamos la memoria de calibraciones viejas para arrancar limpio
+                // 1. Limpiamos cualquier caché de una cámara interrumpida
                 window.localStorage.removeItem('webgazerGlobalData');
                 window.localStorage.removeItem('webgazerGlobalSettings');
 
-                // ESTE ES EL SECRETO: Inicializamos WebGazer con el Escuchador Oficial desde el segundo cero
-                // Esto garantiza que el motor interno no se apague y mantenga el flujo de datos activo
-                webgazer.setRegression('ridge').setGazeListener(function(data, elapsedTime) {
-                    if (data == null) {
-                        window.ultimoFrameOjos = 0; // Ojos perdidos
-                        return;
-                    }
+                // 2. Setear un listener preventivo vacío para evitar que colapse (Crash bypass)
+                webgazer.setGazeListener(function(data, elapsedTime) {});
+                
+                // 3. Inicializar sin promesas encadenadas, para que el navegador respire
+                webgazer.begin().then(function() {
                     
-                    // Actualiza la marca de tiempo de que los ojos están siendo leídos
-                    window.ultimoFrameOjos = Date.now();
+                    // Apagamos los puntitos rojos nativos de WebGazer para que no ensucien tu interfaz
+                    try { webgazer.showVideoPreview(false); } catch(e){}
+                    try { webgazer.showPredictionPoints(false); } catch(e){}
 
-                    // Si el anuncio está en pantalla, guardamos las coordenadas
-                    if (window.isStimulusActive) {
-                        const imgEl = document.getElementById('estimulo-participante');
-                        if(!window.currentImgRect || !window.currentImgParams) return;
-                        
-                        let rect = window.currentImgRect;
-                        let drawW = rect.width;
-                        let drawH = rect.height;
-                        let offX = 0;
-                        let offY = 0;
-
-                        if (window.currentImgParams.imgRatio > window.currentImgParams.contRatio) {
-                            drawH = rect.width / window.currentImgParams.imgRatio;
-                            offY = (rect.height - drawH) / 2;
-                        } else {
-                            drawW = rect.height * window.currentImgParams.imgRatio;
-                            offX = (rect.width - drawW) / 2;
-                        }
-
-                        // Mapeo absoluto
-                        let normX = (data.x - rect.left - offX) / drawW;
-                        let normY = (data.y - rect.top - offY) / drawH;
-
-                        // Muro de contención (Solo registrar puntos DENTRO de la foto)
-                        if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
-                            window.datosGazeActuales.push({
-                                x: normX,
-                                y: normY,
-                                time: Date.now() - window.tiempoInicioEstimulo,
-                                intensity: 1
-                            });
-                        }
-                    }
-                }).begin().then(function() {
-                    // Configuración visual oculta
-                    webgazer.showVideoPreview(false);
-                    webgazer.showPredictionPoints(false);
-
-                    // Esperamos a que WebGazer esté escaneando la cara de verdad
+                    // 4. Polling que verifica cuando WebGazer por fin logró encender la cámara
                     let checkReady = setInterval(function() {
                         if (webgazer.isReady()) {
                             clearInterval(checkReady);
+                            webgazer.clearData(); // Esteriliza la IA
                             iniciarCalibracionPasoAPaso();
                         }
-                    }, 200);
+                    }, 250);
+                    
                 }).catch(function(e) {
-                    alert('Error en cámara: ' + e);
+                    alert('Error en cámara. Revisa los permisos: ' + e);
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-camera"></i> Reintentar';
                     document.body.classList.remove('modo-laboratorio');
@@ -1297,7 +1260,7 @@
             mostrarPuntoCalibracion();
         }
 
-        // CALIBRACIÓN GAZE-TRIGGERED DE ALTA PRECISIÓN (Comprueba que te está viendo)
+        // CALIBRACIÓN TIME-TRIGGERED (La forma correcta de entrenar WebGazer)
         function mostrarPuntoCalibracion() {
             const punto = document.getElementById('punto-calibracion');
 
@@ -1315,51 +1278,41 @@
             punto.className = 'rojo';
             punto.innerHTML = '';
             
-            let tiempoMirando = 0;
-            
-            // Verifica que WebGazer esté actualizando la variable (significa que ve tus ojos)
-            let calibInt = setInterval(() => {
-                let msDesdeUltimoFrame = Date.now() - (window.ultimoFrameOjos || 0);
-                
-                // Si ha visto tus ojos en los últimos 200ms
-                if (msDesdeUltimoFrame < 200) {
-                    tiempoMirando += 100;
-                    // Tienes que mantener la mirada fija (o la cámara detectándote) por 1 segundo
-                    if (tiempoMirando >= 1000) {
-                        clearInterval(calibInt);
-                        punto.className = 'verde';
-                        punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
-                    }
-                } else {
-                    // Si parpadeas largo o te sales, se reinicia el contador de concentración
-                    tiempoMirando = 0; 
+            window.isCalibrating = true;
+
+            // Espera de 1.2 segundos para forzar al usuario a mirar el punto
+            setTimeout(() => {
+                if (window.isCalibrating) {
+                    punto.className = 'verde';
+                    punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
                 }
-            }, 100);
+            }, 1200);
 
             // Clic Entrenador
             punto.onclick = (e) => {
                 e.preventDefault();
                 
                 if (punto.className !== 'verde') {
-                    mostrarToast('Espera que el punto se ponga VERDE para asegurar que la cámara ve tus ojos', 'warn');
+                    mostrarToast('Fija la mirada en el punto rojo hasta que esté VERDE para hacer clic', 'warn');
                     return; 
                 }
                 
-                clearInterval(calibInt);
+                window.isCalibrating = false;
                 punto.className = 'rojo';
                 punto.innerHTML = '';
                 punto.style.display = 'none';
                 
                 pasoCalibracionActual++;
                 
-                // WebGazer captura el clic internamente y aprende de él. Pequeña pausa para procesar.
+                // Pausa para que WebGazer asimile la relación ojo-pantalla
                 setTimeout(mostrarPuntoCalibracion, 300);
             };
         }
 
         function iniciarSecuenciaEstimulos() {
             try {
-                window.estudioParticipanteObj = window.estudios.find(e => e.id === window.estudioActualId);
+                let localEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+                window.estudioParticipanteObj = localEstudios.find(e => e.id === window.estudioActualId);
                 
                 if (!window.estudioParticipanteObj || !window.estudioParticipanteObj.estimulos || window.estudioParticipanteObj.estimulos.length === 0) {
                     alert('Error crítico: Datos del estudio no localizados.');
@@ -1442,18 +1395,49 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
-                // Precálculo de la imagen para que el Listener sea rápido como la luz
-                window.currentImgRect = imgEl.getBoundingClientRect();
-                window.currentImgParams = {
-                    imgRatio: imgEl.naturalWidth / imgEl.naturalHeight,
-                    contRatio: window.currentImgRect.width / window.currentImgRect.height
-                };
-
-                // Activa la bandera global para que el `setGazeListener` empiece a guardar datos
                 window.isStimulusActive = true; 
 
+                // POLLING DIRECTO DE WEBGAZER
+                window.pollingInterval = setInterval(() => {
+                    if(!window.isStimulusActive) return;
+                    
+                    let data = webgazer.getCurrentPrediction();
+                    if(data) {
+                        let rect = imgEl.getBoundingClientRect(); 
+                        let imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+                        let contRatio = rect.width / rect.height;
+                        
+                        let drawW = rect.width;
+                        let drawH = rect.height;
+                        let offX = 0;
+                        let offY = 0;
+
+                        if (imgRatio > contRatio) {
+                            drawH = rect.width / imgRatio;
+                            offY = (rect.height - drawH) / 2;
+                        } else {
+                            drawW = rect.height * imgRatio;
+                            offX = (rect.width - drawW) / 2;
+                        }
+
+                        // Mapeo absoluto por pixeles de pantalla
+                        let normX = (data.x - rect.left - offX) / drawW;
+                        let normY = (data.y - rect.top - offY) / drawH;
+
+                        // Solo registrar si el ojo mira DENTRO del anuncio
+                        if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
+                            window.datosGazeActuales.push({
+                                x: normX,
+                                y: normY,
+                                time: Date.now() - window.tiempoInicioEstimulo,
+                                intensity: 1
+                            });
+                        }
+                    }
+                }, 30);
+
                 window.timeoutEstimulo = setTimeout(() => {
-                    // Apaga la bandera de recolección
+                    clearInterval(window.pollingInterval);
                     window.isStimulusActive = false; 
                     
                     if (!window.resultadosParticipanteGaze.gazePorMaterial) window.resultadosParticipanteGaze.gazePorMaterial = {};
@@ -1475,6 +1459,7 @@
 
         function finalizarParticipacion() {
             window.isStimulusActive = false;
+            if (window.pollingInterval) clearInterval(window.pollingInterval);
             document.body.classList.remove('modo-laboratorio');
             
             try {
