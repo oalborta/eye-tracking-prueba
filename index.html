@@ -213,37 +213,28 @@
         <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
-    <!-- PORTAL PRINCIPAL (NUEVO) -->
+    <!-- 🌟 EL NUEVO PORTAL ADMINISTRADOR (LANDING PAGE SAAS) -->
     <div id="view-landing" class="view" style="min-height: 80vh; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
         <div style="font-size:4.5rem; font-weight:900; margin-bottom:1rem; letter-spacing:-1.5px; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
-        <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6;">Plataforma de Neuromarketing y Biometría Visual en navegador. Analiza la atención de tus usuarios con Inteligencia Artificial.</p>
+        <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
+            Plataforma B2B de Neuromarketing y Biometría Visual. <br>Analiza la atención de tus usuarios con Inteligencia Artificial.
+        </p>
         
-        <div style="display:flex; gap:2rem; flex-wrap:wrap; justify-content:center;">
-            <!-- Tarjeta Investigador -->
-            <div class="card" style="width: 320px; text-align:left; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-                <div style="font-size:2rem; color:#3b82f6;"><i class="fas fa-user-shield"></i></div>
+        <div style="display:flex; justify-content:center;">
+            <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+                <div style="font-size:2.5rem; color:#3b82f6;"><i class="fas fa-laptop-code"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Investigador</h3>
-                <p style="color:var(--muted); font-size:0.9rem; flex:1; line-height: 1.5;">Crea estudios, gestiona materiales visuales y analiza los mapas de calor de tus campañas publicitarias.</p>
-                <button class="btn btn-primary" style="width:100%; background:#3b82f6; border-radius: 8px; padding: 0.8rem;" onclick="iniciarAdmin()">Ir al Dashboard <i class="fas fa-arrow-right"></i></button>
-            </div>
-            
-            <!-- Tarjeta Participante -->
-            <div class="card" style="width: 320px; text-align:left; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.6); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-                <div style="font-size:2rem; color:var(--accent);"><i class="fas fa-eye"></i></div>
-                <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Participante</h3>
-                <p style="color:var(--muted); font-size:0.9rem; flex:1; line-height: 1.5;">¿Te invitaron a evaluar un anuncio? Ingresa el ID del estudio que te proporcionaron para comenzar.</p>
-                <div style="display:flex; gap:0.5rem;">
-                    <input type="text" id="input-codigo-estudio" class="form-input" placeholder="Ej: est_1a2b3c" style="flex:1; border-radius: 8px;">
-                    <button class="btn btn-primary" style="border-radius: 8px; padding: 0 1rem;" onclick="accederEstudioManual()"><i class="fas fa-play"></i></button>
-                </div>
+                <p style="color:var(--muted); font-size:0.9rem; line-height: 1.5; margin-bottom: 0.5rem;">Crea estudios de mercado, sube tus banners y analiza los mapas de calor para optimizar tus conversiones.</p>
+                <button class="btn btn-primary" style="width:100%; background:#3b82f6; border-radius: 8px; padding: 0.8rem; font-size: 1rem;" onclick="iniciarAdmin()">Ingresar al Sistema <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
             </div>
         </div>
     </div>
 
+    <!-- EL PANEL DE ADMINISTRACIÓN -->
     <div id="admin-section" style="display:none;">
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
-            <div id="view-dashboard" class="view">
+            <div id="view-dashboard" class="view active">
                 <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     <div class="stat-card green">
                         <div class="stat-number" id="stat-estudios">0</div>
@@ -456,13 +447,40 @@
         </main>
     </div>
 
-    <!-- SECCIÓN PARTICIPANTE (El núcleo intacto) -->
+    <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
+
+        <!-- 🌟 NUEVA PANTALLA DE BIENVENIDA PARA EL PARTICIPANTE -->
+        <div id="p-bienvenida" class="pantalla-participante" style="background: var(--bg); display:flex;">
+            <div style="max-width:500px; text-align:center;">
+                <div style="font-size:3rem; font-weight:900; margin-bottom:0.5rem; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
+                <p style="color:var(--accent); font-weight:600; font-size:0.9rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:2rem;">Portal del Participante</p>
+                
+                <div class="card" style="text-align:left; background: rgba(18, 18, 28, 0.8);">
+                    <h3 style="font-weight:800; font-size:1.2rem; margin-bottom:1rem; color:white;">¡Hola! Has sido invitado a un estudio visual.</h3>
+                    <p style="line-height:1.6; color:#bbb; font-size:0.95rem; margin-bottom:1.5rem;">
+                        Tu opinión es muy importante. En este estudio evaluaremos qué elementos visuales atraen más tu atención al ver ciertas imágenes.
+                    </p>
+                    <div style="background: rgba(16,185,129,0.05); border-left: 3px solid var(--accent); padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
+                        <strong style="color:white; display:block; margin-bottom:0.5rem;">¿Qué vas a hacer?</strong>
+                        <ul style="color:#aaa; font-size:0.85rem; list-style:disc; margin-left: 1rem; line-height:1.5;">
+                            <li>Completar unos datos demográficos rápidos.</li>
+                            <li>Calibrar la cámara mirando un punto en la pantalla.</li>
+                            <li>Observar unas imágenes por unos pocos segundos.</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%; justify-content:center; padding: 0.85rem; font-size: 1rem;" onclick="mostrarPantalla('p-demografia')">
+                        Comenzar Estudio <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <div id="contenedor-calibracion" class="pantalla-participante" style="display:none;">
             <div id="punto-calibracion" class="rojo"></div>
         </div>
 
-        <div id="p-demografia" class="pantalla-participante" style="background: var(--bg);">
+        <div id="p-demografia" class="pantalla-participante" style="background: var(--bg); display:none;">
             <div style="max-width:450px; text-align:center;">
                 <div style="font-size:2.5rem; font-weight:900; margin-bottom:1rem; color:white;">Eye<span style="color:var(--accent)">Track</span></div>
                 <div class="card" style="text-align:left;">
@@ -525,7 +543,7 @@
         <div id="p-carga" class="pantalla-participante" style="display:none; background: var(--gray-neutral);">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid #ccc; border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando IA WebGazer...</p>
+                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando WebGazer IA...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -551,11 +569,11 @@
             <div style="font-size:4rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:2rem; color:white;">¡Estudio completado!</h2>
             <p style="color:#bbb; max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
-            <button class="btn btn-primary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Volver al Dashboard</button>
+            <button class="btn btn-primary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Finalizar y Salir</button>
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT -->
+    <!-- EL MOTOR JAVASCRIPT: Tracking intacto + Playback Evolutivo Sincronizado + Landing Logic -->
     <script type="text/javascript">
         window.estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -580,7 +598,6 @@
         window.playbackRaf = null;
         window.lastFrameTime = 0;
 
-        // PLUGIN CHART.JS: Línea Vertical
         const verticalLinePlugin = {
             id: 'verticalLine',
             afterDraw: (chart) => {
@@ -601,7 +618,7 @@
                 ctx.moveTo(xPosition, yAxis.top);
                 ctx.lineTo(xPosition, yAxis.bottom);
                 ctx.lineWidth = 2;
-                ctx.strokeStyle = '#ef4444';
+                ctx.strokeStyle = '#ef4444'; 
                 ctx.setLineDash([5, 5]); 
                 ctx.stroke();
                 ctx.restore();
@@ -609,8 +626,9 @@
         };
         Chart.register(verticalLinePlugin);
 
+        // NUEVA FUNCIÓN DE PANTALLAS QUE INCLUYE LA PANTALLA DE BIENVENIDA
         function mostrarPantalla(idActiva) {
-            const pantallas = ['p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
+            const pantallas = ['p-bienvenida', 'p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
             pantallas.forEach(p => { 
                 const el = document.getElementById(p);
                 if(el) el.style.display = 'none'; 
@@ -627,8 +645,9 @@
                 const activo = document.getElementById(idActiva);
                 if(activo) activo.style.display = 'flex';
                 
+                // Si el participante ya está configurando y NO está en bienvenida o fin, puede abortar
                 const urlParams = new URLSearchParams(window.location.search);
-                if (!urlParams.get('estudio') && idActiva === 'p-pregunta') {
+                if (urlParams.get('estudio') && !['p-bienvenida', 'p-fin'].includes(idActiva)) {
                     btnAbortar.style.display = 'flex';
                 }
             }
@@ -647,22 +666,28 @@
             try { webgazer.end(); } catch(e){}
         });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const estudioParam = urlParams.get('estudio');
-
-        // UX DE ARRANQUE (LANDING PAGE)
+        // LÓGICA DE ARRANQUE (LANDING PAGE VS PARTICIPANTE)
         window.onload = () => {
             if (window.location.protocol === 'file:') {
                 alert('🚨 BLOQUEO DE SEGURIDAD DETECTADO:\n\nEstás abriendo el archivo localmente (file:///). Por seguridad, la cámara web fallará.\n\nSube este archivo a Netlify Drop o usa "Live Server" para que funcione correctamente.');
             }
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const estudioParam = urlParams.get('estudio');
+
             if (estudioParam) {
+                // MODO PARTICIPANTE
                 document.getElementById('admin-nav').style.display = 'none';
                 document.getElementById('admin-section').style.display = 'none';
+                document.getElementById('view-landing').style.display = 'none';
+                
                 document.getElementById('participant-section').style.display = 'block';
                 window.estudioActualId = estudioParam;
-                mostrarPantalla('p-demografia');
+                
+                // Aterriza en la nueva pantalla de bienvenida amistosa
+                mostrarPantalla('p-bienvenida');
             } else {
+                // MODO ADMINISTRADOR - Landing Page
                 document.getElementById('admin-nav').style.display = 'none';
                 window.navegarA('landing');
             }
@@ -705,13 +730,13 @@
                     inicializarFormularioEstudio(idEdicion);
                 } else if (vista === 'results') {
                     document.getElementById('view-results').classList.add('active');
-                    // Parche silencioso: Forzar carga fresca de BD al entrar a resultados
                     window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
                 }
             }
         };
 
         window.simularPrueba = (id) => {
+            // El simulador actúa como un participante real
             window.location.href = window.location.href.split('?')[0] + '?estudio=' + id;
         };
 
@@ -1060,7 +1085,7 @@
                 btn.onclick = () => {
                     document.querySelectorAll('#tabs-materiales .tab-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    // Reset UX inteligente al cambiar de pestaña
+                    // Reset UX al cambiar de material para evitar lienzos en blanco confusos
                     window.cambiarModoVisualizacion('calor');
                 };
                 tabsContainer.appendChild(btn);
@@ -1140,6 +1165,7 @@
             return fijaciones;
         }
 
+        // CONTROLADORES DE PLAYBACK
         window.togglePlayback = () => {
             window.isPlaying = !window.isPlaying;
             const btn = document.getElementById('btn-playpause');
@@ -1190,6 +1216,7 @@
             }
         }
 
+        // EVOLUCIÓN TÉRMICA (MAPA DE CALOR ACUMULATIVO)
         window.actualizarFramePlayback = (porcentaje) => {
             if(!window.playbackData || window.playbackData.length === 0) return;
             
@@ -1225,10 +1252,7 @@
         };
 
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
-            // Parche de seguridad para que la base de datos siempre esté fresca al pintar
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
             const estudio = window.estudios.find(e => e.id === estudioId);
-            
             const wrap = document.getElementById('heatmap-wrap');
             wrap.innerHTML = '';
             
