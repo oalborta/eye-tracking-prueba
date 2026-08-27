@@ -213,7 +213,7 @@
         <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
-    <!-- 🌟 EL NUEVO PORTAL ADMINISTRADOR (LANDING PAGE SAAS) -->
+    <!-- EL PORTAL ADMINISTRADOR (LANDING PAGE) -->
     <div id="view-landing" class="view" style="min-height: 80vh; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
         <div style="font-size:4.5rem; font-weight:900; margin-bottom:1rem; letter-spacing:-1.5px; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
         <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
@@ -272,7 +272,6 @@
                 </div>
             </div>
 
-            <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -381,7 +380,6 @@
                             </div>
                         </div>
 
-                        <!-- BOTONES DE MODO -->
                         <div class="toggle-group" style="margin-left: auto;">
                             <button id="btn-modo-calor" class="toggle-btn active" onclick="cambiarModoVisualizacion('calor')">🔥 Calor</button>
                             <button id="btn-modo-foco" class="toggle-btn" onclick="cambiarModoVisualizacion('foco')">🔦 Foco</button>
@@ -397,7 +395,6 @@
                     </div>
                 </div>
 
-                <!-- GRÁFICA DE LÍNEA DE TIEMPO (ESCALA 140PX) -->
                 <div class="card" style="margin-bottom: 2rem;" id="panel-grafica">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
@@ -408,7 +405,6 @@
                         <canvas id="timelineChart"></canvas>
                     </div>
 
-                    <!-- CONTROLADOR DE PLAYBACK -->
                     <div id="playback-controls" style="display: none; gap: 1rem; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
                         <button id="btn-playpause" onclick="togglePlayback()" class="btn btn-primary" style="width: 45px; height: 45px; padding: 0; border-radius: 50%; justify-content: center; background: #ef4444;"><i class="fas fa-play" style="margin-left: 3px;"></i></button>
                         <div style="flex:1; display:flex; flex-direction:column;">
@@ -450,7 +446,7 @@
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
 
-        <!-- 🌟 NUEVA PANTALLA DE BIENVENIDA PARA EL PARTICIPANTE -->
+        <!-- PANTALLA DE BIENVENIDA -->
         <div id="p-bienvenida" class="pantalla-participante" style="background: var(--bg); display:flex;">
             <div style="max-width:500px; text-align:center;">
                 <div style="font-size:3rem; font-weight:900; margin-bottom:0.5rem; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
@@ -459,14 +455,14 @@
                 <div class="card" style="text-align:left; background: rgba(18, 18, 28, 0.8);">
                     <h3 style="font-weight:800; font-size:1.2rem; margin-bottom:1rem; color:white;">¡Hola! Has sido invitado a un estudio visual.</h3>
                     <p style="line-height:1.6; color:#bbb; font-size:0.95rem; margin-bottom:1.5rem;">
-                        Tu opinión es muy importante. En este estudio evaluaremos qué elementos visuales atraen más tu atención al ver ciertas imágenes.
+                        Tu opinión es importante. Evaluaremos qué elementos visuales atraen más tu atención.
                     </p>
                     <div style="background: rgba(16,185,129,0.05); border-left: 3px solid var(--accent); padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
                         <strong style="color:white; display:block; margin-bottom:0.5rem;">¿Qué vas a hacer?</strong>
                         <ul style="color:#aaa; font-size:0.85rem; list-style:disc; margin-left: 1rem; line-height:1.5;">
-                            <li>Completar unos datos demográficos rápidos.</li>
-                            <li>Calibrar la cámara mirando un punto en la pantalla.</li>
-                            <li>Observar unas imágenes por unos pocos segundos.</li>
+                            <li>Completar datos demográficos.</li>
+                            <li>Calibrar la cámara mirando un punto.</li>
+                            <li>Observar imágenes por pocos segundos.</li>
                         </ul>
                     </div>
                     <button class="btn btn-primary" style="width:100%; justify-content:center; padding: 0.85rem; font-size: 1rem;" onclick="mostrarPantalla('p-demografia')">
@@ -573,7 +569,7 @@
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT: Tracking intacto + Playback Evolutivo Sincronizado + Landing Logic -->
+    <!-- EL MOTOR JAVASCRIPT CORREGIDO Y BLINDADO -->
     <script type="text/javascript">
         window.estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -589,7 +585,10 @@
         window.timeoutEstimulo = null;
         window.pollingInterval = null; 
         window.isCalibrating = false;
+        
+        // LA VARIABLE CLAVE QUE RESCATA LOS DATOS:
         window.latestGazeData = null;
+        window.ultimoFrameOjos = 0;
         
         window.attentionChart = null;
         window.playbackData = []; 
@@ -626,7 +625,6 @@
         };
         Chart.register(verticalLinePlugin);
 
-        // NUEVA FUNCIÓN DE PANTALLAS QUE INCLUYE LA PANTALLA DE BIENVENIDA
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-bienvenida', 'p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
             pantallas.forEach(p => { 
@@ -645,7 +643,6 @@
                 const activo = document.getElementById(idActiva);
                 if(activo) activo.style.display = 'flex';
                 
-                // Si el participante ya está configurando y NO está en bienvenida o fin, puede abortar
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('estudio') && !['p-bienvenida', 'p-fin'].includes(idActiva)) {
                     btnAbortar.style.display = 'flex';
@@ -666,7 +663,6 @@
             try { webgazer.end(); } catch(e){}
         });
 
-        // LÓGICA DE ARRANQUE (LANDING PAGE VS PARTICIPANTE)
         window.onload = () => {
             if (window.location.protocol === 'file:') {
                 alert('🚨 BLOQUEO DE SEGURIDAD DETECTADO:\n\nEstás abriendo el archivo localmente (file:///). Por seguridad, la cámara web fallará.\n\nSube este archivo a Netlify Drop o usa "Live Server" para que funcione correctamente.');
@@ -676,7 +672,6 @@
             const estudioParam = urlParams.get('estudio');
 
             if (estudioParam) {
-                // MODO PARTICIPANTE
                 document.getElementById('admin-nav').style.display = 'none';
                 document.getElementById('admin-section').style.display = 'none';
                 document.getElementById('view-landing').style.display = 'none';
@@ -684,10 +679,8 @@
                 document.getElementById('participant-section').style.display = 'block';
                 window.estudioActualId = estudioParam;
                 
-                // Aterriza en la nueva pantalla de bienvenida amistosa
                 mostrarPantalla('p-bienvenida');
             } else {
-                // MODO ADMINISTRADOR - Landing Page
                 document.getElementById('admin-nav').style.display = 'none';
                 window.navegarA('landing');
             }
@@ -736,7 +729,6 @@
         };
 
         window.simularPrueba = (id) => {
-            // El simulador actúa como un participante real
             window.location.href = window.location.href.split('?')[0] + '?estudio=' + id;
         };
 
@@ -798,7 +790,6 @@
             window.actualizarSensibilidadHeatmap();
         };
 
-        // Filtro demográfico en tiempo real
         window.filtrarResultadosDemografia = () => {
             window.actualizarSensibilidadHeatmap();
         };
@@ -1085,7 +1076,6 @@
                 btn.onclick = () => {
                     document.querySelectorAll('#tabs-materiales .tab-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    // Reset UX al cambiar de material para evitar lienzos en blanco confusos
                     window.cambiarModoVisualizacion('calor');
                 };
                 tabsContainer.appendChild(btn);
@@ -1165,7 +1155,6 @@
             return fijaciones;
         }
 
-        // CONTROLADORES DE PLAYBACK
         window.togglePlayback = () => {
             window.isPlaying = !window.isPlaying;
             const btn = document.getElementById('btn-playpause');
@@ -1216,7 +1205,6 @@
             }
         }
 
-        // EVOLUCIÓN TÉRMICA (MAPA DE CALOR ACUMULATIVO)
         window.actualizarFramePlayback = (porcentaje) => {
             if(!window.playbackData || window.playbackData.length === 0) return;
             
@@ -1252,7 +1240,9 @@
         };
 
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
+            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
             const estudio = window.estudios.find(e => e.id === estudioId);
+            
             const wrap = document.getElementById('heatmap-wrap');
             wrap.innerHTML = '';
             
@@ -1584,6 +1574,7 @@
                 window.localStorage.removeItem('webgazerGlobalData');
                 window.localStorage.removeItem('webgazerGlobalSettings');
 
+                // ESTE ES EL RECOLECTOR MAESTRO DE DATOS (EL ÚNICO LISTENER)
                 webgazer.setRegression('ridge').setGazeListener(function(data, elapsedTime) {
                     if (data == null) {
                         window.ultimoFrameOjos = 0; 
@@ -1591,36 +1582,9 @@
                     }
                     window.ultimoFrameOjos = Date.now();
 
-                    if (window.isStimulusActive) {
-                        const imgEl = document.getElementById('estimulo-participante');
-                        if(!window.currentImgRect || !window.currentImgParams) return;
-                        
-                        let rect = window.currentImgRect;
-                        let drawW = rect.width;
-                        let drawH = rect.height;
-                        let offX = 0;
-                        let offY = 0;
-
-                        if (window.currentImgParams.imgRatio > window.currentImgParams.contRatio) {
-                            drawH = rect.width / window.currentImgParams.imgRatio;
-                            offY = (rect.height - drawH) / 2;
-                        } else {
-                            drawW = rect.height * window.currentImgParams.imgRatio;
-                            offX = (rect.width - drawW) / 2;
-                        }
-
-                        let normX = (data.x - rect.left - offX) / drawW;
-                        let normY = (data.y - rect.top - offY) / drawH;
-
-                        if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
-                            window.datosGazeActuales.push({
-                                x: normX,
-                                y: normY,
-                                time: Date.now() - window.tiempoInicioEstimulo,
-                                intensity: 1
-                            });
-                        }
-                    }
+                    // ¡LA CORRECCIÓN VITAL ESTÁ AQUÍ! Pasamos los datos en vivo a la variable global.
+                    window.latestGazeData = data; 
+                    
                 }).begin().then(function() {
                     
                     try { webgazer.showVideoPreview(false); } catch(e){}
@@ -1795,6 +1759,7 @@
 
                 window.isStimulusActive = true; 
 
+                // LOOP DE RECOLECCIÓN QUE LEE LOS DATOS FRESCOS DE LA VARIABLE GLOBAL
                 window.pollingInterval = setInterval(() => {
                     if(!window.isStimulusActive || !window.latestGazeData) return;
                     
