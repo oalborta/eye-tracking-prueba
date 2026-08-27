@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
     
-    <!-- LIBRERÍAS EXTERNAS (WebGazer, SimpleHeat, y ahora Chart.js para Analytics) -->
+    <!-- LIBRERÍAS EXTERNAS (WebGazer, SimpleHeat, Chart.js) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/webgazer@3.3.0/dist/webgazer.min.js"></script>
@@ -123,6 +123,15 @@
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
+        /* PLAYBACK SLIDER STYLES */
+        input[type=range].playback-slider {
+            -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
+        }
+        input[type=range].playback-slider::-webkit-slider-runnable-track { background: var(--border); height: 6px; border-radius: 3px; }
+        input[type=range].playback-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--accent); margin-top: -5px; box-shadow: 0 0 10px rgba(16,185,129,0.5); }
+        input[type=range].playback-slider:focus::-webkit-slider-thumb { box-shadow: 0 0 15px rgba(16,185,129,0.8); }
+
+        /* ENTORNO LABORATORIO */
         .pantalla-participante {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -131,6 +140,7 @@
 
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
 
+        /* PUNTO DE CALIBRACIÓN WEBGAZER */
         #punto-calibracion {
             width: 38px; height: 38px; border-radius: 50%; position: absolute;
             z-index: 999999; transform: translate(-50%, -50%);
@@ -333,23 +343,33 @@
                 </div>
 
                 <div class="card" style="margin-bottom: 2rem;">
+                    <!-- CONTROLES SUPERIORES (AJUSTES O PLAYBACK) -->
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap; justify-content: space-between;">
-                        <div style="display: flex; gap: 1.5rem; align-items: center;">
+                        
+                        <!-- Ajustes de Calor/Foco (Se ocultan en Playback) -->
+                        <div id="heatmap-settings" style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
-                                <input type="range" min="10" max="100" value="70" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="10" max="100" value="60" id="heatmap-radius" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Desenfoque</label>
-                                <input type="range" min="5" max="80" value="50" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
+                                <input type="range" min="5" max="80" value="45" id="heatmap-blur" oninput="actualizarSensibilidadHeatmap()">
                             </div>
                         </div>
+
+                        <!-- 🎬 CONTROLES DE PLAYBACK (Aparecen solo al darle a Playback) -->
+                        <div id="playback-controls" style="display: none; gap: 1rem; align-items: center; flex: 1;">
+                            <button id="btn-playpause" onclick="togglePlayback()" class="btn btn-primary" style="width: 40px; height: 40px; padding: 0; border-radius: 50%; justify-content: center;"><i class="fas fa-play"></i></button>
+                            <input type="range" class="playback-slider" id="slider-playback" min="0" max="100" step="0.1" value="0" style="flex:1;" oninput="seekPlayback(this.value)">
+                            <span id="label-playback-time" style="font-family: monospace; font-size: 0.85rem; font-weight: bold; color: var(--accent); min-width: 80px; text-align: right;">0.0s / 10.0s</span>
+                        </div>
                         
-                        <div class="toggle-group">
+                        <div class="toggle-group" style="margin-left: auto;">
                             <button id="btn-modo-calor" class="toggle-btn active" onclick="cambiarModoVisualizacion('calor')">🔥 Calor</button>
                             <button id="btn-modo-foco" class="toggle-btn" onclick="cambiarModoVisualizacion('foco')">🔦 Foco</button>
-                            <!-- MAGIA: BOTÓN DE RUTAS AÑADIDO -->
                             <button id="btn-modo-ruta" class="toggle-btn" onclick="cambiarModoVisualizacion('ruta')">📍 Rutas</button>
+                            <button id="btn-modo-playback" class="toggle-btn" onclick="cambiarModoVisualizacion('playback')">🎬 Playback</button>
                         </div>
                     </div>
 
@@ -360,11 +380,11 @@
                     </div>
                 </div>
 
-                <!-- MAGIA: GRÁFICO DE LÍNEA DE TIEMPO (CHART.JS) -->
+                <!-- GRÁFICO DE LÍNEA DE TIEMPO (CHART.JS) -->
                 <div class="card" style="margin-bottom: 2rem;">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
-                        <span style="font-size:0.8rem; color:var(--muted);">Fijaciones por segundo</span>
+                        <span style="font-size:0.8rem; color:var(--muted);">Fijaciones simultáneas</span>
                     </div>
                     <div style="position: relative; height: 250px; width: 100%;">
                         <canvas id="timelineChart"></canvas>
@@ -396,9 +416,8 @@
         </main>
     </div>
 
-    <!-- SECCIÓN PARTICIPANTE -->
+    <!-- SECCIÓN PARTICIPANTE (El núcleo intacto) -->
     <div id="participant-section" style="display:none;">
-        
         <div id="contenedor-calibracion" class="pantalla-participante" style="display:none;">
             <div id="punto-calibracion" class="rojo"></div>
         </div>
@@ -453,7 +472,7 @@
                         <strong style="color:var(--accent)">
                         1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
-                        3. Espera a que se ponga VERDE y haz CLIC EXACTAMENTE SOBRE ÉL.</strong><br>
+                        3. Espera a que se ponga VERDE y haz CLIC.</strong><br>
                         <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto verde para entrenar a la IA correctamente)</span>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
@@ -466,7 +485,7 @@
         <div id="p-carga" class="pantalla-participante" style="display:none; background: var(--gray-neutral);">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid #ccc; border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando IA WebGazer...</p>
+                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando WebGazer IA...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -496,8 +515,9 @@
         </div>
     </div>
 
-    <!-- NÚCLEO WEBGAZER (Intacto) + MAGIA DE ANALYTICS -->
+    <!-- EL MOTOR JAVASCRIPT: Tracking + Analíticas (Playback, Chart) -->
     <script type="text/javascript">
+        // VARIABLES GLOBALES (Motor visual intacto)
         window.estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
         window.estudioActualId = null;
@@ -512,10 +532,14 @@
         window.timeoutEstimulo = null;
         window.pollingInterval = null; 
         window.isCalibrating = false;
-        
         window.latestGazeData = null;
-        
-        // Variable Global para Chart.js
+
+        // VARIABLES DE PLAYBACK (Nuevas)
+        window.playbackData = []; 
+        window.playbackMaxTime = 10000;
+        window.isPlaying = false;
+        window.playbackRaf = null;
+        window.lastFrameTime = 0;
         window.attentionChart = null;
 
         function mostrarPantalla(idActiva) {
@@ -640,10 +664,24 @@
             }
         };
 
+        // LA MAGIA UX: CONTROLES DE PLAYBACK VS MAPA DE CALOR
         window.cambiarModoVisualizacion = (modo) => {
             window.visualizacionModo = modo;
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-modo-' + modo).classList.add('active');
+            
+            // Lógica de paneles
+            if (modo === 'playback') {
+                document.getElementById('heatmap-settings').style.display = 'none';
+                document.getElementById('playback-controls').style.display = 'flex';
+                // Reset de slider al cambiar a modo playback
+                document.getElementById('slider-playback').value = 0;
+            } else {
+                document.getElementById('heatmap-settings').style.display = 'flex';
+                document.getElementById('playback-controls').style.display = 'none';
+                if(window.isPlaying) window.togglePlayback(); // Pausa si se sale
+            }
+
             window.actualizarSensibilidadHeatmap();
         };
 
@@ -780,7 +818,6 @@
             }
         };
 
-        // SUPER COMPRESIÓN (Intacta)
         function comprimirYProcesarImagen(file, card) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -788,9 +825,9 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     
+                    const maxDim = 600; 
                     let width = img.width;
                     let height = img.height;
-                    const maxDim = 600; 
                     
                     if (width > maxDim || height > maxDim) {
                         if (width > height) { height *= maxDim / width; width = maxDim; } 
@@ -1009,14 +1046,126 @@
             return fijaciones;
         }
 
+        // FUNCIONES DE CONTROL DE PLAYBACK
+        window.togglePlayback = () => {
+            window.isPlaying = !window.isPlaying;
+            const btn = document.getElementById('btn-playpause');
+            btn.innerHTML = window.isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+            
+            if(window.isPlaying) {
+                if(parseFloat(document.getElementById('slider-playback').value) >= 100) {
+                    document.getElementById('slider-playback').value = 0; 
+                }
+                window.lastFrameTime = performance.now();
+                window.playbackRaf = requestAnimationFrame(animarPlayback);
+            } else {
+                cancelAnimationFrame(window.playbackRaf);
+            }
+        };
+
+        window.seekPlayback = (val) => {
+            window.actualizarFramePlayback(parseFloat(val));
+        };
+
+        function animarPlayback(timestamp) {
+            if(!window.isPlaying) return;
+            let delta = timestamp - window.lastFrameTime;
+            window.lastFrameTime = timestamp;
+            
+            let slider = document.getElementById('slider-playback');
+            let currentVal = parseFloat(slider.value);
+            
+            // Avanza el porcentaje del slider según los milisegundos transcurridos
+            let increment = (delta / window.playbackMaxTime) * 100;
+            currentVal += increment;
+            
+            if(currentVal >= 100) {
+                currentVal = 100;
+                window.isPlaying = false;
+                document.getElementById('btn-playpause').innerHTML = '<i class="fas fa-play"></i>';
+            }
+            
+            slider.value = currentVal;
+            window.actualizarFramePlayback(currentVal);
+            
+            if(window.isPlaying) {
+                window.playbackRaf = requestAnimationFrame(animarPlayback);
+            }
+        }
+
+        window.actualizarFramePlayback = (porcentaje) => {
+            if(!window.playbackData || window.playbackData.length === 0) return;
+            let currentTime = (porcentaje / 100) * window.playbackMaxTime;
+            document.getElementById('label-playback-time').textContent = (currentTime/1000).toFixed(1) + 's / ' + (window.playbackMaxTime/1000).toFixed(1) + 's';
+            
+            const canvas = document.querySelector('.heatmap-container canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const paleta = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+            
+            window.playbackData.forEach((userPoints, index) => {
+                let activePoint = null;
+                let activeIndex = -1;
+                // Buscar el punto correspondiente al milisegundo actual
+                for(let i=0; i < userPoints.length; i++){
+                    if(userPoints[i].time <= currentTime) {
+                        activePoint = userPoints[i];
+                        activeIndex = i;
+                    } else break;
+                }
+                
+                if(activePoint) {
+                    let cx = activePoint.x * canvas.width;
+                    let cy = activePoint.y * canvas.height;
+                    let color = paleta[index % paleta.length];
+                    
+                    // Efecto de Rastro Fantasma (Muestra el camino de los últimos 300ms)
+                    ctx.beginPath();
+                    let startIndex = Math.max(0, activeIndex - 10); 
+                    ctx.moveTo(userPoints[startIndex].x * canvas.width, userPoints[startIndex].y * canvas.height);
+                    for(let k = startIndex + 1; k <= activeIndex; k++) {
+                        ctx.lineTo(userPoints[k].x * canvas.width, userPoints[k].y * canvas.height);
+                    }
+                    ctx.strokeStyle = color + '66'; // Transparente 40%
+                    ctx.lineWidth = 5;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke();
+
+                    // El punto principal (Mirada en vivo)
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    
+                    // Anillo de brillo expansivo
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 26, 0, Math.PI * 2);
+                    ctx.strokeStyle = color + '99'; // Transparente 60%
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            });
+        };
+
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             const estudio = window.estudios.find(e => e.id === estudioId);
             const wrap = document.getElementById('heatmap-wrap');
             wrap.innerHTML = '';
+            
+            // Pausar cualquier playback activo al renderizar
+            window.isPlaying = false;
+            cancelAnimationFrame(window.playbackRaf);
 
             if (!estudio || !estudio.estimulos[materialIndex]) return;
             const material = estudio.estimulos[materialIndex];
             document.getElementById('instruccion-badge').textContent = `Instrucción: "${material.pregunta}"`;
+
+            window.playbackMaxTime = (material.duracion || 10) * 1000;
+            window.playbackData = []; // Array limpio para el modo Playback
 
             let puntosBrutos = [];
             let totalParticipantesFiltro = 0;
@@ -1025,7 +1174,6 @@
             let totalFijacionesCalculadas = 0;
             let countTTFFValidos = 0;
             
-            // LA MAGIA: Almacenamos las fijaciones de cada usuario por separado para dibujar las Rutas
             let fijacionesPorUsuario = [];
 
             if (estudio.participantes) {
@@ -1041,10 +1189,10 @@
                         );
                         
                         puntosBrutos = puntosBrutos.concat(dataUsuario);
+                        window.playbackData.push(dataUsuario); // Guardamos la data pura del usuario para el Video Playback
 
                         const fijacionesUsr = analizarFijaciones(dataUsuario);
                         
-                        // Guardamos las fijaciones individuales para dibujar el Gaze Plot (Rutas)
                         if(fijacionesUsr.length > 0) {
                             fijacionesPorUsuario.push(fijacionesUsr);
                             sumTTFF += fijacionesUsr[0].inicio; 
@@ -1141,17 +1289,14 @@
                                 ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
                                 ctx.fill();
                             });
-                        } 
-                        // LA MAGIA: MODO RUTA (Spaghetti Plot)
-                        else if (window.visualizacionModo === 'ruta') {
+                        } else if (window.visualizacionModo === 'ruta') {
                             const ctx = canvas.getContext('2d');
                             const paleta = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
                             
                             fijacionesPorUsuario.forEach((userFix, index) => {
                                 let color = paleta[index % paleta.length];
                                 
-                                // Dibuja la línea de recorrido
-                                ctx.strokeStyle = color + '80'; // 50% transparente
+                                ctx.strokeStyle = color + '80'; 
                                 ctx.lineWidth = 4 * scaleFactor;
                                 ctx.beginPath();
                                 userFix.forEach((f, i) => {
@@ -1162,7 +1307,6 @@
                                 });
                                 ctx.stroke();
 
-                                // Dibuja las fijaciones (Círculos numerados)
                                 userFix.forEach((f, i) => {
                                     let cx = f.x * canvas.width;
                                     let cy = f.y * canvas.height;
@@ -1170,7 +1314,7 @@
                                     
                                     ctx.beginPath();
                                     ctx.arc(cx, cy, radio, 0, Math.PI * 2);
-                                    ctx.fillStyle = color + 'CC'; // 80% opaco
+                                    ctx.fillStyle = color + 'CC';
                                     ctx.fill();
                                     ctx.strokeStyle = '#fff';
                                     ctx.lineWidth = 2 * scaleFactor;
@@ -1183,33 +1327,38 @@
                                     ctx.fillText(i + 1, cx, cy);
                                 });
                             });
+                        } else if (window.visualizacionModo === 'playback') {
+                            // En modo playback inicializamos el frame 0 del lienzo
+                            document.getElementById('slider-playback').value = 0;
+                            document.getElementById('btn-playpause').innerHTML = '<i class="fas fa-play"></i>';
+                            window.actualizarFramePlayback(0);
                         }
                     } catch(e) {
                         console.error("Seguro activo. UI protegida.", e);
                     }
                 }
                 
-                // LA MAGIA: RENDERIZAR LA LÍNEA DE TIEMPO (CHART.JS)
+                // RENDERIZAR LÍNEA DE TIEMPO (CHART.JS)
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
             
             img.src = material.imagen;
         };
 
-        // LA MAGIA: CÁLCULO Y DIBUJO DEL GRÁFICO DE ATENCIÓN
+        // LA MAGIA DE LA LÍNEA DE TIEMPO (TIMELINE)
         function renderizarLineaDeTiempo(fijacionesPorUsuario, duracionSegundos) {
             let maxTime = duracionSegundos * 1000;
             let labels = [];
             let dataAtencion = [];
             
-            // Evaluamos la atención en bloques de 0.5 segundos
+            // Evaluamos picos de atención cada 0.5 segundos
             for(let t = 0; t <= maxTime; t += 500) {
                 labels.push((t/1000).toFixed(1) + 's');
                 let fijacionesSimultaneas = 0;
                 
                 fijacionesPorUsuario.forEach(userFix => {
                     userFix.forEach(f => {
-                        // Si el usuario estaba fijando la mirada en este bloque de tiempo
+                        // Si la mirada estaba congelada en este milisegundo
                         if (f.inicio <= t + 500 && (f.inicio + f.duracion) >= t) {
                             fijacionesSimultaneas++;
                         }
@@ -1226,7 +1375,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Picos de Atención (Usuarios fijando la mirada)',
+                        label: 'Fijaciones Activas',
                         data: dataAtencion,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -1339,10 +1488,43 @@
                 window.localStorage.removeItem('webgazerGlobalData');
                 window.localStorage.removeItem('webgazerGlobalSettings');
 
-                // ESCUCHADOR PERPETUO Y SEGURO
                 webgazer.setRegression('ridge').setGazeListener(function(data, elapsedTime) {
-                    if (data == null) return;
-                    window.latestGazeData = data; 
+                    if (data == null) {
+                        window.ultimoFrameOjos = 0; 
+                        return;
+                    }
+                    window.ultimoFrameOjos = Date.now();
+
+                    if (window.isStimulusActive) {
+                        const imgEl = document.getElementById('estimulo-participante');
+                        if(!window.currentImgRect || !window.currentImgParams) return;
+                        
+                        let rect = window.currentImgRect;
+                        let drawW = rect.width;
+                        let drawH = rect.height;
+                        let offX = 0;
+                        let offY = 0;
+
+                        if (window.currentImgParams.imgRatio > window.currentImgParams.contRatio) {
+                            drawH = rect.width / window.currentImgParams.imgRatio;
+                            offY = (rect.height - drawH) / 2;
+                        } else {
+                            drawW = rect.height * window.currentImgParams.imgRatio;
+                            offX = (rect.width - drawW) / 2;
+                        }
+
+                        let normX = (data.x - rect.left - offX) / drawW;
+                        let normY = (data.y - rect.top - offY) / drawH;
+
+                        if (normX >= -0.05 && normX <= 1.05 && normY >= -0.05 && normY <= 1.05) {
+                            window.datosGazeActuales.push({
+                                x: normX,
+                                y: normY,
+                                time: Date.now() - window.tiempoInicioEstimulo,
+                                intensity: 1
+                            });
+                        }
+                    }
                 }).begin().then(function() {
                     
                     try { webgazer.showVideoPreview(false); } catch(e){}
@@ -1400,32 +1582,39 @@
             punto.style.left = pos.left;
             
             punto.className = 'rojo';
-            window.isCalibrating = true;
-
-            setTimeout(() => {
-                if (window.isCalibrating) {
-                    punto.className = 'verde';
-                    punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
+            punto.innerHTML = '';
+            
+            let tiempoMirando = 0;
+            
+            let calibInt = setInterval(() => {
+                let msDesdeUltimoFrame = Date.now() - (window.ultimoFrameOjos || 0);
+                
+                if (msDesdeUltimoFrame < 200) {
+                    tiempoMirando += 100;
+                    if (tiempoMirando >= 1000) {
+                        clearInterval(calibInt);
+                        punto.className = 'verde';
+                        punto.innerHTML = '<span style="pointer-events:none; font-size:0.75rem; font-weight:900; color:white;">CLIC</span>';
+                    }
+                } else {
+                    tiempoMirando = 0; 
                 }
-            }, 1200);
+            }, 100);
 
             punto.onclick = (e) => {
                 e.preventDefault();
                 
                 if (punto.className !== 'verde') {
-                    mostrarToast('Fija la mirada en el punto rojo hasta que esté VERDE para hacer clic', 'warn');
+                    mostrarToast('Espera que el punto se ponga VERDE para asegurar que la cámara ve tus ojos', 'warn');
                     return; 
                 }
                 
-                try { webgazer.recordScreenPosition(e.clientX, e.clientY, 'click'); } catch(err) {}
-
-                window.isCalibrating = false;
+                clearInterval(calibInt);
                 punto.className = 'rojo';
                 punto.innerHTML = '';
                 punto.style.display = 'none';
                 
                 pasoCalibracionActual++;
-                
                 setTimeout(mostrarPuntoCalibracion, 300);
             };
         }
@@ -1516,54 +1705,15 @@
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
                 duracionMs *= 1000;
 
+                window.currentImgRect = imgEl.getBoundingClientRect();
+                window.currentImgParams = {
+                    imgRatio: imgEl.naturalWidth / imgEl.naturalHeight,
+                    contRatio: window.currentImgRect.width / window.currentImgRect.height
+                };
+
                 window.isStimulusActive = true; 
 
-                // EL SEMÁFORO PROTECTOR
-                window.pollingInterval = setInterval(() => {
-                    if(!window.isStimulusActive || !window.latestGazeData) return;
-                    
-                    if (imgEl.naturalWidth === 0 || imgEl.naturalHeight === 0) return; // Esperar a que la imagen cargue
-                    
-                    let data = window.latestGazeData;
-                    let rect = imgEl.getBoundingClientRect(); 
-                    
-                    if (rect.width === 0 || rect.height === 0) return;
-                    
-                    let imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
-                    let contRatio = rect.width / rect.height;
-                    
-                    let drawW = rect.width;
-                    let drawH = rect.height;
-                    let offX = 0;
-                    let offY = 0;
-
-                    if (imgRatio > contRatio) {
-                        drawH = rect.width / imgRatio;
-                        offY = (rect.height - drawH) / 2;
-                    } else {
-                        drawW = rect.height * imgRatio;
-                        offX = (rect.width - drawW) / 2;
-                    }
-
-                    let normX = (data.x - rect.left - offX) / drawW;
-                    let normY = (data.y - rect.top - offY) / drawH;
-
-                    // Clampeo seguro
-                    let finalX = Math.max(0, Math.min(1, normX));
-                    let finalY = Math.max(0, Math.min(1, normY));
-
-                    if (!isNaN(finalX) && !isNaN(finalY) && isFinite(finalX) && isFinite(finalY)) {
-                        window.datosGazeActuales.push({
-                            x: finalX,
-                            y: finalY,
-                            time: Date.now() - window.tiempoInicioEstimulo,
-                            intensity: 1
-                        });
-                    }
-                }, 30);
-
                 window.timeoutEstimulo = setTimeout(() => {
-                    clearInterval(window.pollingInterval);
                     window.isStimulusActive = false; 
                     
                     if (!window.resultadosParticipanteGaze.gazePorMaterial) window.resultadosParticipanteGaze.gazePorMaterial = {};
@@ -1585,7 +1735,6 @@
 
         function finalizarParticipacion() {
             window.isStimulusActive = false;
-            if (window.pollingInterval) clearInterval(window.pollingInterval);
             document.body.classList.remove('modo-laboratorio');
             
             try {
@@ -1609,13 +1758,12 @@
                         gazePorMaterial: window.resultadosParticipanteGaze.gazePorMaterial || {}
                     });
 
-                    // GUARDA Y AVISA SI LA MEMORIA ESTÁ LLENA
                     try {
                         localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
                         window.estudios = dbEstudios;
                     } catch (e) {
                         console.error(e);
-                        alert("⚠️ MEMORIA LLENA: El navegador llegó a su límite de 5MB. Los resultados de esta prueba no pudieron guardarse. Ve al Dashboard y borra estudios antiguos.");
+                        alert("⚠️ ¡CUIDADO! La memoria del navegador está llena (Límite 5MB). Los datos de esta prueba NO pudieron guardarse. Ve al Dashboard y borra estudios antiguos para liberar espacio.");
                     }
                 }
             }
