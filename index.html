@@ -121,39 +121,21 @@
         .tab-btn { padding: 0.75rem 1.25rem; background: none; border: none; color: var(--muted); font-weight: 600; font-size: 0.875rem; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
         .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-        .toggle-group { display: inline-flex; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.25rem; }
+        .toggle-group { display: inline-flex; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 0.25rem; flex-wrap: wrap;}
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
-        /* PLAYBACK SLIDER STYLES */
-        input[type=range].playback-slider {
-            -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
-        }
+        /* PLAYBACK SLIDER */
+        input[type=range].playback-slider { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer; }
         input[type=range].playback-slider::-webkit-slider-runnable-track { background: var(--border); height: 6px; border-radius: 3px; }
         input[type=range].playback-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ef4444; margin-top: -5px; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
         input[type=range].playback-slider:focus::-webkit-slider-thumb { box-shadow: 0 0 15px rgba(239,68,68,0.8); }
 
-        .pantalla-participante {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000; overflow-y: auto; padding: 2rem;
-        }
-
+        .pantalla-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 2rem; }
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
 
-        #punto-calibracion {
-            width: 38px; height: 38px; border-radius: 50%; position: absolute;
-            z-index: 999999; transform: translate(-50%, -50%);
-            display: none; justify-content: center; align-items: center; 
-            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
-            font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
-            cursor: pointer;
-        }
-        #punto-calibracion::after {
-            content: ''; position: absolute;
-            top: -60px; left: -60px; right: -60px; bottom: -60px;
-            border-radius: 50%; cursor: pointer;
-        }
+        #punto-calibracion { width: 38px; height: 38px; border-radius: 50%; position: absolute; z-index: 999999; transform: translate(-50%, -50%); display: none; justify-content: center; align-items: center; transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s; font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none; cursor: pointer; }
+        #punto-calibracion::after { content: ''; position: absolute; top: -60px; left: -60px; right: -60px; bottom: -60px; border-radius: 50%; cursor: pointer; }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; }
 
@@ -179,17 +161,15 @@
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
+        #p-pregunta { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; }
         #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
-        
+        #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
+
         #countdown-text { font-size: 8rem; font-weight: 900; color: #222; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #p-intervalo .cruz { position: relative; width: 50px; height: 50px; }
         #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: #222; border-radius: 2px; }
         #p-intervalo .cruz::before { top: 23px; left: 0; width: 50px; height: 4px; }
         #p-intervalo .cruz::after { top: 0; left: 23px; width: 4px; height: 50px; }
-
-        /* MODAL ENLACE MÁGICO */
-        #modal-magic-link { position: fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); z-index:999999; display:none; justify-content:center; align-items:center; }
-        #modal-magic-link .card { width: 100%; max-width: 550px; text-align: center; }
     </style>
 </head>
 <body>
@@ -200,18 +180,18 @@
         <h2 style="font-size:1.8rem; font-weight:900; margin-bottom:1rem; color:white;">Por favor, abre esto en Chrome o Safari</h2>
         <p style="color:var(--muted); font-size:1.1rem; line-height:1.6; max-width:500px;">
             Estás abriendo este link desde una red social (WhatsApp, Facebook, etc). <br><br>
-            Por seguridad, estas aplicaciones <strong>bloquean el acceso a la cámara</strong>. Toca los 3 puntitos en la esquina de arriba y selecciona <strong>"Abrir en el navegador"</strong> (Chrome/Safari) para poder participar.
+            Por seguridad, estas aplicaciones <strong>bloquean el acceso a la cámara</strong>. Toca los 3 puntitos en la esquina de arriba y selecciona <strong>"Abrir en el navegador"</strong> para poder participar.
         </p>
     </div>
 
-    <!-- MODAL ENLACE MÁGICO Y DESCARGA -->
-    <div id="modal-magic-link">
-        <div class="card">
+    <!-- MODAL ENLACE MÁGICO Y DESCARGA (Ahora con display:none explícito para evitar bloqueos fantasma) -->
+    <div id="modal-magic-link" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); z-index:999999; justify-content:center; align-items:center;">
+        <div class="card" style="width: 100%; max-width: 550px; text-align: center;">
             <div style="font-size:3rem; color:var(--accent); margin-bottom:0.5rem;"><i class="fas fa-magic"></i></div>
             <h3 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.5rem;">Opciones para Compartir</h3>
             
             <p style="color:var(--muted); font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">
-                <strong>Opción A (Enlace Mágico):</strong> Copia este enlace y envíalo. (Recomendado solo si tus materiales usan URLs web, ya que los archivos locales harán el link muy largo).
+                <strong>Opción A (Enlace Mágico):</strong> Copia este enlace y envíalo. (Recomendado solo si tus materiales usan URLs web).
             </p>
             <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
                 <input type="text" id="input-magic-link" class="form-input" style="font-family:monospace; font-size:0.8rem; color:#aaa;" readonly>
@@ -219,7 +199,7 @@
             </div>
             
             <p style="color:var(--warn); font-size:0.8rem; margin-bottom:1rem;">
-                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, es mejor descargar el archivo y enviarlo. Tus alumnos lo podrán cargar en la página principal.
+                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, es mejor descargar el archivo para evitar que el enlace se rompa.
             </p>
             
             <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom: 0.5rem;">
@@ -233,7 +213,6 @@
     <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
 
-    <!-- INPUTS INVISIBLES -->
     <input type="file" id="input-importar-json" accept=".json" multiple style="display:none;" onchange="procesarImportacionJSON(event)">
     <input type="file" id="input-importar-bd" accept=".json" style="display:none;" onchange="importarBaseDatos(event)">
 
@@ -247,10 +226,9 @@
             <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
             <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
-    <!-- LANDING PAGE ADMINISTRADOR (SAAS) -->
+    <!-- LANDING PAGE ADMINISTRADOR -->
     <div id="view-landing" class="view" style="min-height: 80vh; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
         <div style="font-size:4.5rem; font-weight:900; margin-bottom:1rem; letter-spacing:-1.5px; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
         <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
@@ -258,7 +236,6 @@
         </p>
         
         <div style="display:flex; justify-content:center; gap:2rem; flex-wrap:wrap;">
-            <!-- TARJETA INVESTIGADOR -->
             <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
                 <div style="font-size:2.5rem; color:#3b82f6;"><i class="fas fa-laptop-code"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Investigador</h3>
@@ -268,7 +245,6 @@
                 <button class="btn btn-primary" style="width:100%; background:#3b82f6; border-radius: 8px; padding: 0.8rem; font-size: 1rem;" onclick="iniciarAdmin()">Ingresar al Panel <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
             </div>
 
-            <!-- TARJETA PARTICIPANTE -->
             <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
                 <div style="font-size:2.5rem; color:var(--accent);"><i class="fas fa-eye"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Participante</h3>
@@ -280,7 +256,6 @@
                     <i class="fas fa-file-upload" style="color: var(--accent); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
                     <div style="color: white; font-weight: 600; font-size: 0.95rem;">Cargar Archivo de Estudio (.json)</div>
                 </div>
-                <input type="file" id="input-estudio-alumno" accept=".json" style="display:none;" onchange="cargarEstudioAlumno(event)">
             </div>
         </div>
     </div>
@@ -291,7 +266,6 @@
 
             <div id="view-dashboard" class="view active">
                 
-                <!-- BOTONES DE MUDANZA (NUEVO) -->
                 <div style="display:flex; justify-content: flex-end; gap: 0.5rem; margin-bottom: 1rem;">
                     <button class="btn btn-secondary btn-sm" onclick="exportarBaseDatos()"><i class="fas fa-download"></i> Respaldar Sistema</button>
                     <button class="btn btn-secondary btn-sm" onclick="document.getElementById('input-importar-bd').click()"><i class="fas fa-upload"></i> Restaurar Sistema</button>
@@ -442,7 +416,7 @@
                             </div>
                         </div>
 
-                        <!-- BOTONES DE MODO -->
+                        <!-- BOTONES DE MODO: Reparados para que no fallen al hacer clic -->
                         <div class="toggle-group" style="margin-left: auto;">
                             <button id="btn-modo-calor" class="toggle-btn active" onclick="cambiarModoVisualizacion('calor')">🔥 Calor</button>
                             <button id="btn-modo-foco" class="toggle-btn" onclick="cambiarModoVisualizacion('foco')">🔦 Foco</button>
@@ -458,7 +432,6 @@
                     </div>
                 </div>
 
-                <!-- GRÁFICA DE LÍNEA DE TIEMPO (ESCALA 140PX) -->
                 <div class="card" style="margin-bottom: 2rem;" id="panel-grafica">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
@@ -469,7 +442,6 @@
                         <canvas id="timelineChart"></canvas>
                     </div>
 
-                    <!-- CONTROLADOR DE PLAYBACK -->
                     <div id="playback-controls" style="display: none; gap: 1rem; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
                         <button id="btn-playpause" onclick="togglePlayback()" class="btn btn-primary" style="width: 45px; height: 45px; padding: 0; border-radius: 50%; justify-content: center; background: #ef4444;"><i class="fas fa-play" style="margin-left: 3px;"></i></button>
                         <div style="flex:1; display:flex; flex-direction:column;">
@@ -508,10 +480,9 @@
         </main>
     </div>
 
-    <!-- SECCIÓN PARTICIPANTE (Flujo Alumno Remoto) -->
+    <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
 
-        <!-- PANTALLA DE BIENVENIDA -->
         <div id="p-bienvenida" class="pantalla-participante" style="background: var(--bg); display:flex;">
             <div style="max-width:500px; text-align:center;">
                 <div style="font-size:3rem; font-weight:900; margin-bottom:0.5rem; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
@@ -635,17 +606,50 @@
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT CORREGIDO Y BLINDADO -->
+    <!-- EL MOTOR JAVASCRIPT BLINDADO -->
     <script type="text/javascript">
-        // PROTECCIÓN CHART.JS (Por si falla el internet)
+        // PROTECCIÓN SEGURA DE CHART JS
         try {
+            const verticalLinePlugin = {
+                id: 'verticalLine',
+                afterDraw: (chart) => {
+                    if (window.visualizacionModo !== 'playback') return;
+                    let slider = document.getElementById('slider-playback');
+                    if (!slider) return;
+
+                    let ctx = chart.ctx;
+                    let xAxis = chart.scales.x;
+                    let yAxis = chart.scales.y;
+                    
+                    let porcentaje = parseFloat(slider.value) || 0;
+                    let xPosition = xAxis.left + (xAxis.right - xAxis.left) * (porcentaje / 100);
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(xPosition, yAxis.top);
+                    ctx.lineTo(xPosition, yAxis.bottom);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#ef4444'; 
+                    ctx.setLineDash([5, 5]); 
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
             Chart.register(verticalLinePlugin);
-        } catch(e) { console.warn("ChartJS plugin omitido"); }
+        } catch(e) { console.warn("ChartJS plugin omitido", e); }
 
         window.estudioParticipanteObj = null; 
-        window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
         window.estudioActualId = null;
         window.materialActualIndex = 0;
+        window.visualizacionModo = 'calor'; // MODO POR DEFECTO PARA QUE EL MAPA NUNCA QUEDE EN BLANCO
+
+        // PROTECCIÓN DE BASE DE DATOS LOCAL
+        try {
+            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+        } catch(e) {
+            window.estudios = [];
+            console.warn("Base de datos local limpia.");
+        }
 
         window.datosGazeActuales = [];
         window.tiempoInicioEstimulo = 0;
@@ -667,8 +671,8 @@
         window.playbackRaf = null;
         window.lastFrameTime = 0;
         window.lastExportedJsonStr = "";
+        window.ESTUDIO_INYECTADO = null;
 
-        // NUEVAS FUNCIONES DE MUDANZA DE BASE DE DATOS (V3.1)
         window.exportarBaseDatos = () => {
             const data = localStorage.getItem('et_estudios') || '[]';
             const blob = new Blob([data], {type: 'application/json'});
@@ -748,11 +752,6 @@
                 return; 
             }
 
-            if (window.location.protocol === 'file:') {
-                alert('🚨 AVISO DE USO LOCAL:\nSi intentas probar la cámara sin haber subido la página a la web, el navegador bloqueará la cámara por seguridad.');
-            }
-
-            // MAGIA: Leer el Hash de la URL para ver si es un Magic Link
             if (window.location.hash && window.location.hash.startsWith('#estudio=')) {
                 try {
                     const base64Str = window.location.hash.replace('#estudio=', '');
@@ -768,7 +767,7 @@
                         document.getElementById('view-landing').style.display = 'none';
                         document.getElementById('participant-section').style.display = 'block';
                         
-                        document.getElementById('lbl-bienvenida-titulo').textContent = `Estudio: ${estudioMagico.nombre}`;
+                        document.getElementById('lbl-bienvenida-titulo').textContent = `Estudio: ${estudioMagico.nombre || 'Evaluación Visual'}`;
                         mostrarPantalla('p-bienvenida');
                         return; 
                     }
@@ -778,7 +777,6 @@
                 }
             }
 
-            // Compatibilidad Local segura sin colgar el navegador
             const urlParams = new URLSearchParams(window.location.search);
             const estudioParam = urlParams.get('estudio');
 
@@ -795,7 +793,6 @@
             }
         };
 
-        // EXPORTACIÓN CON ESCUDO Y FALLBACK DE JSON
         window.exportarEstudioAlumnos = (id) => {
             const est = window.estudios.find(e => e.id === id);
             if(!est) return;
@@ -803,14 +800,12 @@
             const estLimpio = { ...est, participantes: [] }; 
             const jsonStr = JSON.stringify(estLimpio);
             window.lastExportedJsonStr = jsonStr;
-            window.lastExportedEstName = est.nombre;
+            window.lastExportedEstName = est.nombre || 'Estudio';
             
             try {
-                // Si pesa más de 50KB, el base64 romperá la URL y la UI. Forzamos descarga JSON.
                 if (jsonStr.length > 50000) {
                     throw new Error("Estudio muy pesado");
                 }
-                
                 const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
                 const baseUrl = window.location.origin + window.location.pathname;
                 const magicLink = `${baseUrl}#estudio=${base64Str}`;
@@ -819,7 +814,6 @@
                 document.getElementById('modal-magic-link').style.display = 'flex';
                 
             } catch (e) {
-                // FALLBACK INFALIBLE
                 alert("⚠️ Este estudio tiene imágenes muy pesadas para un 'Enlace Mágico'.\n\nEn su lugar, se descargará un archivo seguro (.json).\n\nEnvíale este archivo a tus participantes para que lo carguen en la página de inicio.");
                 window.descargarJSONManual();
             }
@@ -842,7 +836,6 @@
             document.getElementById('modal-magic-link').style.display = 'none';
         };
 
-        // ALUMNO SUBE EL JSON
         window.cargarEstudioAlumno = async (e) => {
             const file = e.target.files[0];
             if(!file) return;
@@ -858,7 +851,7 @@
                     document.getElementById('view-landing').style.display = 'none';
                     document.getElementById('participant-section').style.display = 'block';
                     
-                    document.getElementById('lbl-bienvenida-titulo').textContent = `Estudio: ${estudio.nombre}`;
+                    document.getElementById('lbl-bienvenida-titulo').textContent = `Estudio: ${estudio.nombre || 'Evaluación Visual'}`;
                     mostrarPantalla('p-bienvenida');
                 } else {
                     mostrarToast('El archivo no tiene el formato correcto.', 'error');
@@ -906,7 +899,7 @@
                     inicializarFormularioEstudio(idEdicion);
                 } else if (vista === 'results') {
                     document.getElementById('view-results').classList.add('active');
-                    window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+                    try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
                 }
             }
         };
@@ -922,7 +915,7 @@
             if(files.length === 0) return;
             
             const targetId = e.target.dataset.targetId;
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+            try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(err){}
             const idx = window.estudios.findIndex(x => x.id === targetId);
             
             if (idx === -1) {
@@ -952,7 +945,7 @@
             e.target.value = ''; 
         };
 
-        // LA REPARACIÓN DEL BOTÓN PROBAR (Usa el modo seguro local)
+        // LA REPARACIÓN DEL BOTÓN PROBAR (Usa el modo seguro local y recarga al instante)
         window.simularPrueba = (id) => {
             window.location.href = window.location.href.split('?')[0].split('#')[0] + '?estudio=' + id;
         };
@@ -969,12 +962,11 @@
 
         window.limpiarResultados = () => {
             if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
-                let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                const idx = dbEstudios.findIndex(e => e.id === window.estudioActualId);
+                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
+                const idx = window.estudios.findIndex(e => e.id === window.estudioActualId);
                 if(idx !== -1) {
-                    dbEstudios[idx].participantes = [];
-                    localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
-                    window.estudios = dbEstudios;
+                    window.estudios[idx].participantes = [];
+                    localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
                     verResultados(window.estudioActualId);
                     mostrarToast('Todos los datos han sido borrados', 'info');
                 }
@@ -983,18 +975,18 @@
 
         window.borrarUnParticipante = (partId) => {
             if(confirm('¿Eliminar datos de este participante individual?')) {
-                let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                const idx = dbEstudios.findIndex(e => e.id === window.estudioActualId);
+                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
+                const idx = window.estudios.findIndex(e => e.id === window.estudioActualId);
                 if(idx !== -1) {
-                    dbEstudios[idx].participantes = dbEstudios[idx].participantes.filter(p => p.id !== partId);
-                    localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
-                    window.estudios = dbEstudios;
+                    window.estudios[idx].participantes = window.estudios[idx].participantes.filter(p => p.id !== partId);
+                    localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
                     verResultados(window.estudioActualId);
                     mostrarToast('Participante eliminado', 'success');
                 }
             }
         };
 
+        // LA MAGIA: CONTROL DE MODOS SEGURO
         window.cambiarModoVisualizacion = (modo) => {
             window.visualizacionModo = modo;
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -1021,7 +1013,7 @@
         };
 
         function actualizarDashboard() {
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+            try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){ window.estudios = []; }
             const tbody = document.getElementById('tabla-estudios');
             tbody.innerHTML = '';
             document.getElementById('stat-estudios').textContent = window.estudios.length;
@@ -1036,29 +1028,31 @@
             document.getElementById('empty-dashboard').style.display = 'none';
 
             window.estudios.forEach(est => {
-                const tr = document.createElement('tr');
-                
-                // MÁS PROTECCIÓN (Null checks en renderizado de tabla)
-                const cantMat = est.estimulos ? est.estimulos.length : 0;
-                const cantPart = est.participantes ? est.participantes.length : 0;
-                
-                tr.innerHTML = `
-                    <td style="font-weight:600;">${est.nombre}</td>
-                    <td><span style="background:var(--bg2); padding:2px 8px; border-radius:4px; font-size:0.8rem; color:#fff;">${cantMat} mat.</span></td>
-                    <td>${cantPart}</td>
-                    <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
-                        <button class="btn btn-primary btn-sm" style="background:#10b981;" onclick="exportarEstudioAlumnos('${est.id}')" title="Generar Link Mágico / Archivo"><i class="fas fa-share-alt" style="margin-right:4px;"></i> Compartir</button>
-                        <button class="btn btn-primary btn-sm" style="background:#8b5cf6;" onclick="triggerImportar('${est.id}')" title="Importar Resultados de Alumnos"><i class="fas fa-file-import" style="margin-right:4px;"></i> Recibir</button>
-                        
-                        <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
-                        
-                        <button class="btn btn-secondary btn-sm" onclick="simularPrueba('${est.id}')" title="Probar Presencial"><i class="fas fa-play"></i></button>
-                        <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Ver Resultados"><i class="fas fa-chart-bar"></i></button>
-                        <button class="btn btn-secondary btn-sm" onclick="navegarA('create', '${est.id}')" title="Editar Estudio"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarEstudio('${est.id}')" title="Eliminar Estudio"><i class="fas fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
+                try {
+                    const tr = document.createElement('tr');
+                    
+                    const cantMat = est.estimulos ? est.estimulos.length : 0;
+                    const cantPart = est.participantes ? est.participantes.length : 0;
+                    const estNombre = est.nombre || 'Estudio';
+                    
+                    tr.innerHTML = `
+                        <td style="font-weight:600;">${estNombre}</td>
+                        <td><span style="background:var(--bg2); padding:2px 8px; border-radius:4px; font-size:0.8rem; color:#fff;">${cantMat} mat.</span></td>
+                        <td>${cantPart}</td>
+                        <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
+                            <button class="btn btn-primary btn-sm" style="background:#10b981;" onclick="exportarEstudioAlumnos('${est.id}')" title="Generar Link Mágico / Archivo"><i class="fas fa-share-alt" style="margin-right:4px;"></i> Compartir</button>
+                            <button class="btn btn-primary btn-sm" style="background:#8b5cf6;" onclick="triggerImportar('${est.id}')" title="Importar Resultados de Alumnos"><i class="fas fa-file-import" style="margin-right:4px;"></i> Recibir</button>
+                            
+                            <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
+                            
+                            <button class="btn btn-secondary btn-sm" onclick="simularPrueba('${est.id}')" title="Probar Presencial"><i class="fas fa-play"></i></button>
+                            <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Ver Resultados"><i class="fas fa-chart-bar"></i></button>
+                            <button class="btn btn-secondary btn-sm" onclick="navegarA('create', '${est.id}')" title="Editar Estudio"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarEstudio('${est.id}')" title="Eliminar Estudio"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                } catch(e) { console.error("Error al renderizar estudio", e); }
             });
         }
 
@@ -1071,7 +1065,7 @@
                 if (est) {
                     document.getElementById('form-titulo-modo').textContent = 'Editar Estudio de Eye Tracking';
                     document.getElementById('edit-estudio-id').value = est.id;
-                    document.getElementById('create-nombre').value = est.nombre;
+                    document.getElementById('create-nombre').value = est.nombre || '';
                     document.getElementById('create-intervalo').value = est.intervalo || 2;
                     document.getElementById('create-orden-modo').value = est.ordenModo || 'fijo-primero';
                     
@@ -1319,14 +1313,13 @@
             }
         };
 
-        // LA REPARACIÓN DE VER RESULTADOS (Protección contra arrays vacíos)
         window.verResultados = (id) => {
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+            try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             window.estudioActualId = id;
             const est = window.estudios.find(e => e.id === id);
             if (!est) return;
 
-            document.getElementById('results-titulo').textContent = est.nombre || 'Sin Nombre';
+            document.getElementById('results-titulo').textContent = est.nombre || 'Estudio';
             document.getElementById('results-subtitulo').textContent = `${est.participantes ? est.participantes.length : 0} participantes registrados`;
 
             const tabsContainer = document.getElementById('tabs-materiales');
@@ -1369,7 +1362,17 @@
                 });
             }
 
+            // ASEGURAMOS QUE EL MODO SIEMPRE ARRANCA EN CALOR PARA EVITAR PANTALLA EN BLANCO
+            window.visualizacionModo = 'calor';
+            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+            const btnModoCalor = document.getElementById('btn-modo-calor');
+            if(btnModoCalor) btnModoCalor.classList.add('active');
+            
+            document.getElementById('heatmap-settings').style.display = 'flex';
+            document.getElementById('playback-controls').style.display = 'none';
+
             navegarA('results');
+            
             if (est.estimulos.length > 0) {
                 renderizarMapaCalor(id, 0);
             } else {
@@ -1513,7 +1516,7 @@
         };
 
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+            try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             const estudio = window.estudios.find(e => e.id === estudioId);
             
             const wrap = document.getElementById('heatmap-wrap');
@@ -1522,7 +1525,7 @@
             window.isPlaying = false;
             cancelAnimationFrame(window.playbackRaf);
 
-            if (!estudio || !estudio.estimulos || !estudio.estimulos[materialIndex]) return;
+            if (!estudio || !estudio.estimulos[materialIndex]) return;
             const material = estudio.estimulos[materialIndex];
             const isVideo = material.tipo === 'video';
             
@@ -1616,9 +1619,20 @@
                 document.getElementById('heatmap-empty').style.display = 'none';
             }
 
-            const procesarMediaLoaded = () => {
+            // LA CARGA FORZADA Y EL TEMPORIZADOR DE RESPALDO
+            let isLoaded = false;
+            const safeProcesarMediaLoaded = () => {
+                if(isLoaded) return;
+                isLoaded = true;
+
                 let mWidth = isVideo ? mediaEl.videoWidth : mediaEl.naturalWidth;
                 let mHeight = isVideo ? mediaEl.videoHeight : mediaEl.naturalHeight;
+                
+                // Fallback de rescate si falla la lectura de medidas del navegador
+                if (!mWidth || !mHeight) {
+                    mWidth = 800;
+                    mHeight = 600;
+                }
                 
                 canvas.width = mWidth;
                 canvas.height = mHeight;
@@ -1713,11 +1727,23 @@
                         console.error("Seguro activo. UI protegida.", e);
                     }
                 }
-                
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
+
+            // CONEXIÓN SÚPER SEGURA PARA LA IMAGEN O VIDEO
+            if (isVideo) {
+                mediaEl.onloadeddata = safeProcesarMediaLoaded;
+                mediaEl.onerror = safeProcesarMediaLoaded; 
+                if (mediaEl.readyState >= 2) safeProcesarMediaLoaded();
+            } else {
+                mediaEl.onload = safeProcesarMediaLoaded;
+                mediaEl.onerror = safeProcesarMediaLoaded;
+                if (mediaEl.complete && mediaEl.naturalWidth > 0) safeProcesarMediaLoaded();
+            }
             
-            mediaEl.addEventListener(isVideo ? 'loadeddata' : 'load', procesarMediaLoaded);
+            // EL TEMPORIZADOR DE RESPALDO: Si en 1 segundo no responde, lo forzamos.
+            setTimeout(safeProcesarMediaLoaded, 1000);
+            
             mediaEl.src = material.imagen;
         };
 
@@ -1742,7 +1768,6 @@
 
             if(window.attentionChart) window.attentionChart.destroy();
             
-            // TRY/CATCH para proteger la UI si Chart.js falla al cargar
             try {
                 const ctxChart = document.getElementById('timelineChart').getContext('2d');
                 window.attentionChart = new Chart(ctxChart, {
@@ -1750,7 +1775,7 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Fijaciones simultáneas',
+                            label: 'Fijaciones simultáneas (Usuarios mirando un punto fijo)',
                             data: dataAtencion,
                             borderColor: '#10b981',
                             backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -1783,7 +1808,7 @@
                     }
                 });
             } catch(e) {
-                console.warn("ChartJS no renderizó", e);
+                console.warn("Chart.js falló al cargar.", e);
             }
         }
 
@@ -2056,12 +2081,12 @@
                     let mediaW = isVideo ? activeMediaEl.videoWidth : activeMediaEl.naturalWidth;
                     let mediaH = isVideo ? activeMediaEl.videoHeight : activeMediaEl.naturalHeight;
                     
-                    if (mediaW === 0 || mediaH === 0) return; 
+                    if (!mediaW || !mediaH) return; 
                     
                     let data = window.latestGazeData;
                     let rect = activeMediaEl.getBoundingClientRect(); 
                     
-                    if (rect.width === 0 || rect.height === 0) return;
+                    if (!rect.width || !rect.height) return;
                     
                     let imgRatio = mediaW / mediaH;
                     let contRatio = rect.width / rect.height;
@@ -2154,16 +2179,15 @@
                     </p>
                 `;
             } else {
-                let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                const idx = dbEstudios.findIndex(e => e.id === window.estudioActualId);
+                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
+                const idx = window.estudios.findIndex(e => e.id === window.estudioActualId);
                 
                 if (idx !== -1) {
-                    if (!dbEstudios[idx].participantes) dbEstudios[idx].participantes = [];
-                    dbEstudios[idx].participantes.push(dataA_Guardar);
+                    if (!window.estudios[idx].participantes) window.estudios[idx].participantes = [];
+                    window.estudios[idx].participantes.push(dataA_Guardar);
 
                     try {
-                        localStorage.setItem('et_estudios', JSON.stringify(dbEstudios));
-                        window.estudios = dbEstudios;
+                        localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
                     } catch (e) {
                         console.error(e);
                         alert("⚠️ MEMORIA LLENA: El navegador llegó a su límite de 5MB. Los datos de esta prueba NO pudieron guardarse.");
