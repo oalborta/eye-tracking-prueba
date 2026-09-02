@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
     
-    <!-- LIBRERÍAS EXTERNAS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/webgazer@3.3.0/dist/webgazer.min.js"></script>
@@ -16,23 +15,15 @@
     
     <style>
         :root {
-            --bg: #08080d;
-            --bg2: #0e0e16;
-            --card: #12121c;
-            --border: #1c1c2e;
-            --fg: #e4e4ec;
-            --muted: #5e5e76;
-            --accent: #10b981;
-            --warn: #f59e0b;
-            --danger: #ef4444;
-            --gray-neutral: #808080; 
+            --bg: #08080d; --bg2: #0e0e16; --card: #12121c; --border: #1c1c2e;
+            --fg: #e4e4ec; --muted: #5e5e76; --accent: #10b981; --warn: #f59e0b;
+            --danger: #ef4444; --gray-neutral: #808080; 
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; overflow-x: hidden; }
 
         body.modo-laboratorio { background: var(--gray-neutral) !important; color: #111; }
         body.modo-laboratorio .bg-glow { display: none; }
-        
         #webgazerGazeDot { display: none !important; }
 
         ::-webkit-scrollbar { width: 6px; }
@@ -46,10 +37,8 @@
         }
 
         .admin-nav {
-            position: sticky; top: 0; z-index: 100;
-            background: rgba(8,8,13,0.85); backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 2rem; height: 64px;
+            position: sticky; top: 0; z-index: 100; background: rgba(8,8,13,0.85); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border); padding: 0 2rem; height: 64px;
             display: flex; align-items: center; justify-content: space-between;
         }
         .admin-nav .logo { font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
@@ -66,20 +55,10 @@
         .view { display: none; position: relative; z-index: 1; }
         .view.active { display: block; }
 
-        .card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 14px; padding: 1.5rem;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; transition: border-color 0.3s, box-shadow 0.3s; }
 
-        .stat-card {
-            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-            padding: 1.5rem; position: relative; overflow: hidden;
-        }
-        .stat-card::after {
-            content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px;
-            border-radius: 50%; filter: blur(40px); opacity: 0.15;
-        }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; position: relative; overflow: hidden; }
+        .stat-card::after { content: ''; position: absolute; top: 0; right: 0; width: 80px; height: 80px; border-radius: 50%; filter: blur(40px); opacity: 0.15; }
         .stat-card.green::after { background: var(--accent); }
         .stat-card.amber::after { background: var(--warn); }
         .stat-card.blue::after { background: #3b82f6; }
@@ -91,8 +70,7 @@
         .btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
             padding: 0.65rem 1.25rem; border-radius: 10px; font-family: 'Outfit', sans-serif;
-            font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer;
-            transition: all 0.2s; text-decoration: none;
+            font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.2s; text-decoration: none;
         }
         .btn-primary { background: var(--accent); color: #fff; }
         .btn-primary:hover { background: #059669; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(16,185,129,0.3); }
@@ -125,35 +103,15 @@
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
-        /* PLAYBACK SLIDER STYLES */
-        input[type=range].playback-slider {
-            -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
-        }
+        input[type=range].playback-slider { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer; }
         input[type=range].playback-slider::-webkit-slider-runnable-track { background: var(--border); height: 6px; border-radius: 3px; }
         input[type=range].playback-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ef4444; margin-top: -5px; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
-        input[type=range].playback-slider:focus::-webkit-slider-thumb { box-shadow: 0 0 15px rgba(239,68,68,0.8); }
 
-        .pantalla-participante {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000; overflow-y: auto; padding: 2rem;
-        }
-
+        .pantalla-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 2rem; }
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
 
-        #punto-calibracion {
-            width: 38px; height: 38px; border-radius: 50%; position: absolute;
-            z-index: 999999; transform: translate(-50%, -50%);
-            display: none; justify-content: center; align-items: center; 
-            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
-            font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
-            cursor: pointer;
-        }
-        #punto-calibracion::after {
-            content: ''; position: absolute;
-            top: -60px; left: -60px; right: -60px; bottom: -60px;
-            border-radius: 50%; cursor: pointer;
-        }
+        #punto-calibracion { width: 38px; height: 38px; border-radius: 50%; position: absolute; z-index: 999999; transform: translate(-50%, -50%); display: none; justify-content: center; align-items: center; transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s; font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none; cursor: pointer; }
+        #punto-calibracion::after { content: ''; position: absolute; top: -60px; left: -60px; right: -60px; bottom: -60px; border-radius: 50%; cursor: pointer; }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; }
 
@@ -180,8 +138,7 @@
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
         #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
-        #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
-
+        
         #countdown-text { font-size: 8rem; font-weight: 900; color: #222; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #p-intervalo .cruz { position: relative; width: 50px; height: 50px; }
         #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: #222; border-radius: 2px; }
@@ -191,24 +148,24 @@
 </head>
 <body>
 
-    <!-- ADVERTENCIA ANTI-WHATSAPP BROWSER -->
+    <!-- ALERTAS GLOBALES -->
     <div id="inapp-warning" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg); z-index:9999999; flex-direction:column; justify-content:center; align-items:center; padding:2rem; text-align:center;">
         <i class="fas fa-exclamation-triangle" style="font-size:4rem; color:var(--danger); margin-bottom:1rem;"></i>
         <h2 style="font-size:1.8rem; font-weight:900; margin-bottom:1rem; color:white;">Por favor, abre esto en Chrome o Safari</h2>
         <p style="color:var(--muted); font-size:1.1rem; line-height:1.6; max-width:500px;">
-            Estás abriendo este link desde una red social (WhatsApp, Facebook, etc). <br><br>
-            Por seguridad, estas aplicaciones <strong>bloquean el acceso a la cámara</strong>. Toca los 3 puntitos en la esquina de arriba y selecciona <strong>"Abrir en el navegador"</strong> para poder participar.
+            Estás abriendo este link desde una red social. <br><br>
+            Por seguridad, estas aplicaciones <strong>bloquean el acceso a la cámara</strong>. Toca los 3 puntitos en la esquina de arriba y selecciona <strong>"Abrir en el navegador"</strong>.
         </p>
     </div>
 
-    <!-- MODAL ENLACE MÁGICO Y DESCARGA -->
+    <!-- MODAL ENLACE MÁGICO -->
     <div id="modal-magic-link" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); z-index:999999; justify-content:center; align-items:center;">
         <div class="card" style="width: 100%; max-width: 550px; text-align: center;">
             <div style="font-size:3rem; color:var(--accent); margin-bottom:0.5rem;"><i class="fas fa-magic"></i></div>
             <h3 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.5rem;">Opciones para Compartir</h3>
             
             <p style="color:var(--muted); font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">
-                <strong>Opción A (Enlace Mágico):</strong> Copia este enlace y envíalo. (Recomendado solo si tus materiales usan URLs web).
+                <strong>Opción A (Enlace Mágico):</strong> Copia este enlace y envíalo a tus alumnos.
             </p>
             <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
                 <input type="text" id="input-magic-link" class="form-input" style="font-family:monospace; font-size:0.8rem; color:#aaa;" readonly>
@@ -216,7 +173,7 @@
             </div>
             
             <p style="color:var(--warn); font-size:0.8rem; margin-bottom:1rem;">
-                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, es mejor descargar el archivo JSON para evitar que el enlace se rompa.
+                <i class="fas fa-info-circle"></i> <strong>Opción B (Archivo Físico):</strong> Si el link de arriba falla por usar imágenes muy pesadas, descarga este archivo de respaldo y envíalo.
             </p>
             
             <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom: 0.5rem;">
@@ -226,11 +183,12 @@
         </div>
     </div>
 
+    <!-- UI BASE -->
     <div class="bg-glow"></div>
     <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
 
-    <!-- INPUTS INVISIBLES DE IMPORTACIÓN -->
+    <!-- INPUTS DE SISTEMA OCULTOS -->
     <input type="file" id="input-importar-json" accept=".json" multiple style="display:none;" onchange="procesarImportacionJSON(event)">
     <input type="file" id="input-importar-bd" accept=".json" style="display:none;" onchange="importarBaseDatos(event)">
 
@@ -238,16 +196,16 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
+    <!-- NAVEGACIÓN ADMINISTRADOR -->
     <nav class="admin-nav" id="admin-nav" style="display:none;">
         <div class="logo">Eye<span>Track</span> Pro</div>
         <div class="nav-links">
             <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
             <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
         </div>
-        <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
-    <!-- LANDING PAGE BIFURCADA -->
+    <!-- VISTA: LANDING PAGE -->
     <div id="view-landing" class="view" style="min-height: 80vh; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
         <div style="font-size:4.5rem; font-weight:900; margin-bottom:1rem; letter-spacing:-1.5px; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
         <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
@@ -255,8 +213,7 @@
         </p>
         
         <div style="display:flex; justify-content:center; gap:2rem; flex-wrap:wrap;">
-            <!-- TARJETA INVESTIGADOR -->
-            <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8);">
                 <div style="font-size:2.5rem; color:#3b82f6;"><i class="fas fa-laptop-code"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Investigador</h3>
                 <p style="color:var(--muted); font-size:0.9rem; line-height: 1.5; margin-bottom: 0.5rem; flex:1;">
@@ -265,14 +222,13 @@
                 <button class="btn btn-primary" style="width:100%; background:#3b82f6; border-radius: 8px; padding: 0.8rem; font-size: 1rem;" onclick="iniciarAdmin()">Ingresar al Panel <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
             </div>
 
-            <!-- TARJETA PARTICIPANTE -->
-            <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+            <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8);">
                 <div style="font-size:2.5rem; color:var(--accent);"><i class="fas fa-eye"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Participante</h3>
                 <p style="color:var(--muted); font-size:0.9rem; line-height: 1.5; margin-bottom: 0.5rem; flex:1;">
-                    ¿Tu profesor te envió un archivo de estudio en lugar de un link? Súbelo aquí para comenzar la evaluación.
+                    ¿Te enviaron un archivo de estudio de respaldo? Súbelo aquí para comenzar la evaluación.
                 </p>
-                <div class="file-upload-box" onclick="document.getElementById('input-estudio-alumno').click()" style="padding: 1rem; border: 1px dashed var(--accent); border-radius: 8px; cursor: pointer; text-align: center; background: rgba(16,185,129,0.05); transition: background 0.3s;">
+                <div class="file-upload-box" onclick="document.getElementById('input-estudio-alumno').click()" style="padding: 1rem; border: 1px dashed var(--accent); border-radius: 8px; cursor: pointer; text-align: center; background: rgba(16,185,129,0.05);">
                     <i class="fas fa-file-upload" style="color: var(--accent); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
                     <div style="color: white; font-weight: 600; font-size: 0.95rem;">Cargar Archivo (.json)</div>
                 </div>
@@ -281,10 +237,11 @@
         </div>
     </div>
 
-    <!-- PANEL ADMIN -->
+    <!-- VISTAS: ADMINISTRADOR -->
     <div id="admin-section" style="display:none;">
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
+            <!-- VISTA: DASHBOARD -->
             <div id="view-dashboard" class="view active">
                 <div style="display:flex; justify-content: flex-end; gap: 0.5rem; margin-bottom: 1rem;">
                     <button class="btn btn-secondary btn-sm" onclick="exportarBaseDatos()"><i class="fas fa-download"></i> Respaldar Sistema</button>
@@ -327,7 +284,7 @@
                 </div>
             </div>
 
-            <!-- CREAR ESTUDIO -->
+            <!-- VISTA: CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -337,12 +294,12 @@
                         <input type="hidden" id="edit-estudio-id" value="">
                         <div class="form-group">
                             <label class="form-label">Nombre del Estudio</label>
-                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Spot Video + Banners">
+                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Banners Verano">
                         </div>
 
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
-                                <label class="form-label">Intervalo entre estímulos (seg)</label>
+                                <label class="form-label">Intervalo (seg)</label>
                                 <input type="number" id="create-intervalo" class="form-input" value="2" min="1" max="10">
                             </div>
                             <div class="form-group">
@@ -371,7 +328,7 @@
                 </div>
             </div>
 
-            <!-- RESULTADOS -->
+            <!-- VISTA: RESULTADOS Y ANÁLISIS -->
             <div id="view-results" class="view">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
                     <div style="display:flex; align-items:center; gap:1rem;">
@@ -421,8 +378,8 @@
                     </div>
                 </div>
 
+                <!-- CONTENEDOR DEL MAPA DE CALOR -->
                 <div class="card" style="margin-bottom: 2rem; border-color: var(--accent);">
-                    
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap; justify-content: space-between;">
                         
                         <div id="heatmap-settings" style="display: flex; gap: 1.5rem; align-items: center;">
@@ -436,7 +393,6 @@
                             </div>
                         </div>
 
-                        <!-- BOTONES DE MODO -->
                         <div class="toggle-group" style="margin-left: auto;">
                             <button id="btn-modo-calor" class="toggle-btn active" onclick="cambiarModoVisualizacion('calor')">🔥 Calor</button>
                             <button id="btn-modo-foco" class="toggle-btn" onclick="cambiarModoVisualizacion('foco')">🔦 Foco</button>
@@ -452,7 +408,7 @@
                     </div>
                 </div>
 
-                <!-- GRÁFICA DE LÍNEA DE TIEMPO -->
+                <!-- CONTENEDOR DE LA GRÁFICA Y CONTROLES DE PLAYBACK -->
                 <div class="card" style="margin-bottom: 2rem;" id="panel-grafica">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
@@ -476,6 +432,7 @@
                     </div>
                 </div>
 
+                <!-- TABLA DE PARTICIPANTES -->
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados</h3>
@@ -501,7 +458,7 @@
         </main>
     </div>
 
-    <!-- SECCIÓN PARTICIPANTE (El Flujo Visual de Pruebas) -->
+    <!-- VISTAS: FLUJO DEL PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
 
         <div id="p-bienvenida" class="pantalla-participante" style="background: var(--bg); display:flex;">
@@ -510,16 +467,16 @@
                 <p style="color:var(--accent); font-weight:600; font-size:0.9rem; letter-spacing:1px; text-transform:uppercase; margin-bottom:2rem;">Portal del Participante</p>
                 
                 <div class="card" style="text-align:left; background: rgba(18, 18, 28, 0.8);">
-                    <h3 style="font-weight:800; font-size:1.2rem; margin-bottom:1rem; color:white;" id="lbl-bienvenida-titulo">¡Hola! Has sido invitado a un estudio visual.</h3>
+                    <h3 style="font-weight:800; font-size:1.2rem; margin-bottom:1rem; color:white;" id="lbl-bienvenida-titulo">¡Hola! Has sido invitado a un estudio.</h3>
                     <p style="line-height:1.6; color:#bbb; font-size:0.95rem; margin-bottom:1.5rem;">
-                        Tu opinión es muy importante. Evaluaremos de manera anónima qué elementos visuales atraen más tu atención.
+                        Evaluaremos de manera anónima qué elementos visuales atraen más tu atención.
                     </p>
                     <div style="background: rgba(16,185,129,0.05); border-left: 3px solid var(--accent); padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">
                         <strong style="color:white; display:block; margin-bottom:0.5rem;">¿Qué vas a hacer?</strong>
                         <ul style="color:#aaa; font-size:0.85rem; list-style:disc; margin-left: 1rem; line-height:1.5;">
-                            <li>Completar unos datos demográficos rápidos.</li>
-                            <li>Calibrar la cámara mirando un punto en la pantalla.</li>
-                            <li>Observar imágenes o videos por breves segundos.</li>
+                            <li>Completar datos demográficos.</li>
+                            <li>Calibrar la cámara mirando un punto.</li>
+                            <li>Observar el material visual por pocos segundos.</li>
                         </ul>
                     </div>
                     <button class="btn btn-primary" style="width:100%; justify-content:center; padding: 0.85rem; font-size: 1rem;" onclick="mostrarPantalla('p-demografia')">
@@ -578,13 +535,12 @@
                 <div class="card" style="text-align:left;">
                     <h3 style="font-weight:700; margin-bottom:1rem; color:white;"><i class="fas fa-shield-alt" style="color:var(--accent);margin-right:6px;"></i>Aviso de Privacidad</h3>
                     <p style="line-height:1.7; color:#bbb; font-size:0.92rem; margin-bottom:1.5rem;">
-                        Usaremos tu cámara web para rastrear tu vista con <strong style="color:white;">WebGazer IA</strong>. No se almacena video.
+                        Usaremos tu cámara web para rastrear tu vista con Inteligencia Artificial. No se almacena video ni fotos tuyas.
                         <br><br><strong style="color:white;">CALIBRACIÓN CIENTÍFICA:</strong> El entorno se volverá gris neutro para estabilizar tus pupilas.<br><br>
                         <strong style="color:var(--accent)">
                         1. NO muevas la cabeza, mantenla perfectamente quieta.<br>
                         2. Mueve SÓLO LOS OJOS hacia el punto rojo.<br>
-                        3. Espera a que se ponga VERDE y haz CLIC EXACTAMENTE SOBRE ÉL.</strong><br>
-                        <span style="font-size:0.8rem; color:#888;">(Haz clic justo en el centro del punto verde para entrenar a la IA correctamente)</span>
+                        3. Espera a que se ponga VERDE y haz CLIC EXACTAMENTE SOBRE ÉL.</strong>
                     </p>
                     <button id="btn-iniciar-camara" class="btn btn-primary" style="width:100%; justify-content:center;" onclick="participanteAceptar()">
                         <i class="fas fa-camera"></i> Acepto y encender cámara
@@ -596,7 +552,7 @@
         <div id="p-carga" class="pantalla-participante" style="display:none; background: var(--gray-neutral);">
             <div style="text-align:center;">
                 <div style="width:48px; height:48px; border:3px solid #ccc; border-top-color:var(--accent); border-radius:50%; animation: spin 1s linear infinite; margin:0 auto 1.5rem;"></div>
-                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando WebGazer IA...</p>
+                <p style="font-weight:600; font-size:1.1rem; color:#111;">Conectando Motor de IA...</p>
             </div>
         </div>
         <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
@@ -627,9 +583,9 @@
         </div>
     </div>
 
-    <!-- MOTOR JAVASCRIPT: UNIFICADO Y SÚPER BLINDADO -->
+    <!-- EL MOTOR JAVASCRIPT PRINCIPAL -->
     <script type="text/javascript">
-        // PROTECCIÓN CHART JS AL INICIO
+        // INYECCIÓN DE PLUGIN PARA CHART JS (Línea del Playback)
         try {
             const verticalLinePlugin = {
                 id: 'verticalLine',
@@ -641,7 +597,6 @@
                     let ctx = chart.ctx;
                     let xAxis = chart.scales.x;
                     let yAxis = chart.scales.y;
-                    
                     let porcentaje = parseFloat(slider.value) || 0;
                     let xPosition = xAxis.left + (xAxis.right - xAxis.left) * (porcentaje / 100);
 
@@ -659,11 +614,11 @@
             Chart.register(verticalLinePlugin);
         } catch(e) { console.warn("ChartJS plugin omitido"); }
 
-        // VARIABLES GLOBALES DEL SISTEMA
+        // VARIABLES GLOBALES
         window.estudioParticipanteObj = null; 
         window.estudioActualId = null;
         window.materialActualIndex = 0;
-        window.visualizacionModo = 'calor'; // MODO POR DEFECTO PARA RENDERIZAR SIEMPRE
+        window.visualizacionModo = 'calor'; // Modo por defecto 
 
         try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } 
         catch(e) { window.estudios = []; }
@@ -691,7 +646,7 @@
         window.lastExportedJsonStr = "";
         window.ESTUDIO_INYECTADO = null; 
 
-        // IMPORTAR Y EXPORTAR SISTEMA
+        // 1. SISTEMA DE RESPALDO Y RESTAURACIÓN LOCAL
         window.exportarBaseDatos = () => {
             const data = localStorage.getItem('et_estudios') || '[]';
             const blob = new Blob([data], {type: 'application/json'});
@@ -699,7 +654,7 @@
             a.href = URL.createObjectURL(blob);
             a.download = `EyeTrackPro_Backup_${Date.now()}.json`;
             a.click();
-            mostrarToast('Base de datos exportada con éxito', 'success');
+            mostrarToast('Base de datos exportada', 'success');
         };
 
         window.importarBaseDatos = async (e) => {
@@ -709,7 +664,7 @@
                 const text = await file.text();
                 const data = JSON.parse(text);
                 if(Array.isArray(data)) {
-                    if(confirm('⚠️ ADVERTENCIA: Esto reemplazará todos los estudios actuales. ¿Deseas continuar?')) {
+                    if(confirm('⚠️ ADVERTENCIA: Esto reemplazará todos los estudios actuales. ¿Continuar?')) {
                         localStorage.setItem('et_estudios', JSON.stringify(data));
                         window.estudios = data;
                         actualizarDashboard();
@@ -720,6 +675,7 @@
             e.target.value = '';
         };
 
+        // 2. NAVEGADOR DE PANTALLAS
         function mostrarPantalla(idActiva) {
             const pantallas = ['p-bienvenida', 'p-demografia', 'p-consentimiento', 'p-carga', 'p-pregunta', 'p-intervalo', 'p-fin', 'contenedor-calibracion'];
             pantallas.forEach(p => { 
@@ -756,7 +712,9 @@
             setTimeout(() => toast.remove(), 4000); 
         };
 
-        // INICIALIZACIÓN
+        window.addEventListener('beforeunload', () => { try { webgazer.end(); } catch(e){} });
+
+        // 3. SECUENCIA DE INICIO (LANDING VS ESTUDIANTE)
         window.onload = () => {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             if ((ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("WhatsApp") > -1)) {
@@ -805,7 +763,7 @@
             }
         };
 
-        // COMPARTIR ESTUDIOS
+        // 4. DISTRIBUCIÓN (LINK MÁGICO / DESCARGA)
         window.exportarEstudioAlumnos = (id) => {
             const est = window.estudios.find(e => e.id === id);
             if(!est) return;
@@ -816,16 +774,15 @@
             window.lastExportedEstName = est.nombre || 'Estudio';
             
             try {
-                if (jsonStr.length > 50000) throw new Error("Estudio muy pesado");
+                if (jsonStr.length > 50000) throw new Error("Estudio muy pesado para link");
                 const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
                 const baseUrl = window.location.origin + window.location.pathname;
                 const magicLink = `${baseUrl}#estudio=${base64Str}`;
                 
                 document.getElementById('input-magic-link').value = magicLink;
                 document.getElementById('modal-magic-link').style.display = 'flex';
-                
             } catch (e) {
-                alert("⚠️ Este estudio tiene imágenes muy pesadas para un 'Enlace Mágico'.\n\nEn su lugar, se descargará un archivo seguro (.json).\n\nEnvíale este archivo a tus participantes para que lo carguen en la página de inicio.");
+                alert("⚠️ Este estudio tiene imágenes muy pesadas para un 'Enlace Mágico'.\n\nEn su lugar, se descargará un archivo seguro (.json).\n\nEnvíale este archivo a tus participantes.");
                 window.descargarJSONManual();
             }
         };
@@ -864,16 +821,11 @@
                     
                     document.getElementById('lbl-bienvenida-titulo').textContent = `Estudio: ${estudio.nombre}`;
                     mostrarPantalla('p-bienvenida');
-                } else {
-                    mostrarToast('El archivo no tiene el formato correcto.', 'error');
-                }
-            } catch(err) {
-                mostrarToast('Error al leer el archivo', 'error');
-            }
+                } else { mostrarToast('El archivo no tiene el formato correcto.', 'error'); }
+            } catch(err) { mostrarToast('Error al leer el archivo de estudio', 'error'); }
             e.target.value = ''; 
         };
 
-        // RUTAS DEL PANEL
         window.iniciarAdmin = () => {
             document.getElementById('admin-nav').style.display = 'flex';
             document.getElementById('admin-section').style.display = 'block';
@@ -907,6 +859,7 @@
             }
         };
 
+        // 5. IMPORTAR RESULTADOS ALUMNOS Y DB
         window.triggerImportar = (id) => {
             const input = document.getElementById('input-importar-json');
             input.dataset.targetId = id;
@@ -922,7 +875,7 @@
             const idx = window.estudios.findIndex(x => x.id === targetId);
             
             if (idx === -1) {
-                mostrarToast('Error al localizar el estudio destino', 'error');
+                mostrarToast('Error al localizar el estudio', 'error');
                 return;
             }
             if (!window.estudios[idx].participantes) window.estudios[idx].participantes = [];
@@ -957,6 +910,7 @@
 
         window.cerrarSesion = () => { window.location.href = window.location.href.split('?')[0].split('#')[0]; };
 
+        // 6. FLUJO DE RESULTADOS Y UI (PROTECCIÓN DE EVENTOS)
         window.limpiarResultados = () => {
             if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
                 try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
@@ -1049,6 +1003,7 @@
             });
         }
 
+        // 7. CREADOR DE ESTUDIOS (COMPRESIÓN SEGURA)
         function inicializarFormularioEstudio(idEdicion = null) {
             document.getElementById('lista-estimulos-creacion').innerHTML = '';
             document.getElementById('edit-estudio-id').value = '';
@@ -1253,7 +1208,7 @@
                     return;
                 }
 
-                window.estudios = window.estudios || [];
+                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){ window.estudios = []; }
 
                 if (idEdit) {
                     const idx = window.estudios.findIndex(e => e.id === idEdit);
@@ -1290,18 +1245,20 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error de guardado. Elimina estudios antiguos.");
+                alert("⚠️ Memoria del navegador LLENA. Ve al Dashboard y elimina estudios antiguos.");
             }
         };
 
         window.eliminarEstudio = (id) => {
             if (confirm('¿Estás seguro de eliminar este estudio? Esto liberará espacio en la memoria.')) {
+                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
                 window.estudios = window.estudios.filter(e => e.id !== id);
                 localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
                 actualizarDashboard();
             }
         };
 
+        // 8. RENDERIZADO DE RESULTADOS (EL FAILSAFE DE CARGA INYECTADO AQUÍ)
         window.verResultados = (id) => {
             try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             window.estudioActualId = id;
@@ -1404,12 +1361,8 @@
                             y: (minY + maxY)/2
                         });
                         i = j; 
-                    } else {
-                        i++; 
-                    }
-                } else {
-                    i++;
-                }
+                    } else { i++; }
+                } else { i++; }
             }
             return fijaciones;
         }
@@ -1428,7 +1381,6 @@
             } else {
                 cancelAnimationFrame(window.playbackRaf);
             }
-            
             if(window.attentionChart) window.attentionChart.update('none');
         };
 
@@ -1607,7 +1559,7 @@
             }
 
             // ==========================================
-            // FAILSAFE ANTI-CACHÉ (NUNCA MÁS BOTONES MUERTOS)
+            // FAILSAFE ANTI-CACHÉ V2.0
             // ==========================================
             let isLoaded = false;
             const safeProcesarMediaLoaded = () => {
@@ -1617,7 +1569,7 @@
                 let mWidth = isVideo ? mediaEl.videoWidth : mediaEl.naturalWidth;
                 let mHeight = isVideo ? mediaEl.videoHeight : mediaEl.naturalHeight;
                 
-                // Forzamos un tamaño si el navegador cargó instantáneamente sin avisar
+                // Fallback agresivo si el navegador retiene las dimensiones
                 if (!mWidth || !mHeight) {
                     mWidth = 800;
                     mHeight = 600;
@@ -1716,11 +1668,10 @@
                         console.error("Seguro activo. UI protegida.", e);
                     }
                 }
-                
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
             
-            // CONECTAMOS LOS EVENTOS PERO NO CONFIAMOS EN ELLOS
+            // CONEXIONES DE EVENTOS Y FORZADO
             if (isVideo) {
                 mediaEl.onloadeddata = safeProcesarMediaLoaded;
                 mediaEl.onerror = safeProcesarMediaLoaded; 
@@ -1731,9 +1682,8 @@
                 if (mediaEl.complete && mediaEl.naturalWidth > 0) safeProcesarMediaLoaded();
             }
             
-            // EXIGIMOS QUE SE DIBUJE SÍ O SÍ EN 500ms
-            setTimeout(safeProcesarMediaLoaded, 500);
-            
+            // TEMPORIZADOR A PRUEBA DE BALAS: 300ms de espera máxima
+            setTimeout(safeProcesarMediaLoaded, 300);
             mediaEl.src = material.imagen;
         };
 
@@ -1865,6 +1815,7 @@
             mostrarPantalla('p-consentimiento');
         };
 
+        // 9. EL MOTOR DE CAPTURA WEBGAZER
         window.participanteAceptar = function() {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
@@ -1974,8 +1925,8 @@
                 if(window.ESTUDIO_INYECTADO) {
                     window.estudioParticipanteObj = window.ESTUDIO_INYECTADO;
                 } else {
-                    let localEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-                    window.estudioParticipanteObj = localEstudios.find(e => e.id === window.estudioActualId);
+                    try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
+                    window.estudioParticipanteObj = window.estudios.find(e => e.id === window.estudioActualId);
                 }
                 
                 if (!window.estudioParticipanteObj || !window.estudioParticipanteObj.estimulos || window.estudioParticipanteObj.estimulos.length === 0) {
