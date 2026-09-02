@@ -125,7 +125,6 @@
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
-        /* PLAYBACK SLIDER */
         input[type=range].playback-slider { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer; }
         input[type=range].playback-slider::-webkit-slider-runnable-track { background: var(--border); height: 6px; border-radius: 3px; }
         input[type=range].playback-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ef4444; margin-top: -5px; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
@@ -161,15 +160,14 @@
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
-        #p-pregunta { background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; }
         #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
-        #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
-
+        
         #countdown-text { font-size: 8rem; font-weight: 900; color: #222; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #p-intervalo .cruz { position: relative; width: 50px; height: 50px; }
         #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: #222; border-radius: 2px; }
         #p-intervalo .cruz::before { top: 23px; left: 0; width: 50px; height: 4px; }
         #p-intervalo .cruz::after { top: 0; left: 23px; width: 4px; height: 50px; }
+
     </style>
 </head>
 <body>
@@ -184,7 +182,7 @@
         </p>
     </div>
 
-    <!-- MODAL ENLACE MÁGICO Y DESCARGA (Ahora con display:none explícito para evitar bloqueos fantasma) -->
+    <!-- MODAL ENLACE MÁGICO Y DESCARGA -->
     <div id="modal-magic-link" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); z-index:999999; justify-content:center; align-items:center;">
         <div class="card" style="width: 100%; max-width: 550px; text-align: center;">
             <div style="font-size:3rem; color:var(--accent); margin-bottom:0.5rem;"><i class="fas fa-magic"></i></div>
@@ -199,7 +197,7 @@
             </div>
             
             <p style="color:var(--warn); font-size:0.8rem; margin-bottom:1rem;">
-                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, es mejor descargar el archivo para evitar que el enlace se rompa.
+                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, descarga el archivo JSON.
             </p>
             
             <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom: 0.5rem;">
@@ -213,6 +211,7 @@
     <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
 
+    <!-- INPUTS INVISIBLES -->
     <input type="file" id="input-importar-json" accept=".json" multiple style="display:none;" onchange="procesarImportacionJSON(event)">
     <input type="file" id="input-importar-bd" accept=".json" style="display:none;" onchange="importarBaseDatos(event)">
 
@@ -226,6 +225,7 @@
             <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
             <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
         </div>
+        <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
     <!-- LANDING PAGE ADMINISTRADOR -->
@@ -236,6 +236,7 @@
         </p>
         
         <div style="display:flex; justify-content:center; gap:2rem; flex-wrap:wrap;">
+            <!-- TARJETA INVESTIGADOR -->
             <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
                 <div style="font-size:2.5rem; color:#3b82f6;"><i class="fas fa-laptop-code"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Investigador</h3>
@@ -245,6 +246,7 @@
                 <button class="btn btn-primary" style="width:100%; background:#3b82f6; border-radius: 8px; padding: 0.8rem; font-size: 1rem;" onclick="iniciarAdmin()">Ingresar al Panel <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
             </div>
 
+            <!-- TARJETA PARTICIPANTE -->
             <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
                 <div style="font-size:2.5rem; color:var(--accent);"><i class="fas fa-eye"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Participante</h3>
@@ -416,7 +418,7 @@
                             </div>
                         </div>
 
-                        <!-- BOTONES DE MODO: Reparados para que no fallen al hacer clic -->
+                        <!-- BOTONES DE MODO -->
                         <div class="toggle-group" style="margin-left: auto;">
                             <button id="btn-modo-calor" class="toggle-btn active" onclick="cambiarModoVisualizacion('calor')">🔥 Calor</button>
                             <button id="btn-modo-foco" class="toggle-btn" onclick="cambiarModoVisualizacion('foco')">🔦 Foco</button>
@@ -428,10 +430,11 @@
                     <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
                     <div id="heatmap-wrap" style="text-align:center;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
-                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material y filtros.</p>
+                        <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
                     </div>
                 </div>
 
+                <!-- GRÁFICA DE LÍNEA DE TIEMPO (ESCALA 140PX) -->
                 <div class="card" style="margin-bottom: 2rem;" id="panel-grafica">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
@@ -442,6 +445,7 @@
                         <canvas id="timelineChart"></canvas>
                     </div>
 
+                    <!-- CONTROLADOR DE PLAYBACK -->
                     <div id="playback-controls" style="display: none; gap: 1rem; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
                         <button id="btn-playpause" onclick="togglePlayback()" class="btn btn-primary" style="width: 45px; height: 45px; padding: 0; border-radius: 50%; justify-content: center; background: #ef4444;"><i class="fas fa-play" style="margin-left: 3px;"></i></button>
                         <div style="flex:1; display:flex; flex-direction:column;">
@@ -606,7 +610,7 @@
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT BLINDADO -->
+    <!-- EL MOTOR JAVASCRIPT CON EL FAILSAFE INYECTADO -->
     <script type="text/javascript">
         // PROTECCIÓN SEGURA DE CHART JS
         try {
@@ -851,7 +855,7 @@
                     document.getElementById('view-landing').style.display = 'none';
                     document.getElementById('participant-section').style.display = 'block';
                     
-                    document.getElementById('lbl-bienvenida-titulo').textContent = `Estudio: ${estudio.nombre || 'Evaluación Visual'}`;
+                    document.getElementById('lbl-bienvenida-titulo').textContent = `Estudio: ${estudio.nombre}`;
                     mostrarPantalla('p-bienvenida');
                 } else {
                     mostrarToast('El archivo no tiene el formato correcto.', 'error');
@@ -945,7 +949,6 @@
             e.target.value = ''; 
         };
 
-        // LA REPARACIÓN DEL BOTÓN PROBAR (Usa el modo seguro local y recarga al instante)
         window.simularPrueba = (id) => {
             window.location.href = window.location.href.split('?')[0].split('#')[0] + '?estudio=' + id;
         };
@@ -986,7 +989,6 @@
             }
         };
 
-        // LA MAGIA: CONTROL DE MODOS SEGURO
         window.cambiarModoVisualizacion = (modo) => {
             window.visualizacionModo = modo;
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -1319,7 +1321,7 @@
             const est = window.estudios.find(e => e.id === id);
             if (!est) return;
 
-            document.getElementById('results-titulo').textContent = est.nombre || 'Estudio';
+            document.getElementById('results-titulo').textContent = est.nombre || 'Sin Nombre';
             document.getElementById('results-subtitulo').textContent = `${est.participantes ? est.participantes.length : 0} participantes registrados`;
 
             const tabsContainer = document.getElementById('tabs-materiales');
@@ -1362,18 +1364,17 @@
                 });
             }
 
-            // ASEGURAMOS QUE EL MODO SIEMPRE ARRANCA EN CALOR PARA EVITAR PANTALLA EN BLANCO
-            window.visualizacionModo = 'calor';
-            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-            const btnModoCalor = document.getElementById('btn-modo-calor');
-            if(btnModoCalor) btnModoCalor.classList.add('active');
-            
-            document.getElementById('heatmap-settings').style.display = 'flex';
-            document.getElementById('playback-controls').style.display = 'none';
-
             navegarA('results');
-            
             if (est.estimulos.length > 0) {
+                // Forzar el modo calor por defecto al entrar
+                window.visualizacionModo = 'calor';
+                document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+                const btnModoCalor = document.getElementById('btn-modo-calor');
+                if(btnModoCalor) btnModoCalor.classList.add('active');
+                
+                document.getElementById('heatmap-settings').style.display = 'flex';
+                document.getElementById('playback-controls').style.display = 'none';
+
                 renderizarMapaCalor(id, 0);
             } else {
                 document.getElementById('heatmap-empty').style.display = 'block';
@@ -1525,7 +1526,7 @@
             window.isPlaying = false;
             cancelAnimationFrame(window.playbackRaf);
 
-            if (!estudio || !estudio.estimulos[materialIndex]) return;
+            if (!estudio || !estudio.estimulos || !estudio.estimulos[materialIndex]) return;
             const material = estudio.estimulos[materialIndex];
             const isVideo = material.tipo === 'video';
             
@@ -1619,7 +1620,7 @@
                 document.getElementById('heatmap-empty').style.display = 'none';
             }
 
-            // LA CARGA FORZADA Y EL TEMPORIZADOR DE RESPALDO
+            // EL FAMOSO FAILSAFE MECANISMO DE CARGA
             let isLoaded = false;
             const safeProcesarMediaLoaded = () => {
                 if(isLoaded) return;
@@ -1628,7 +1629,7 @@
                 let mWidth = isVideo ? mediaEl.videoWidth : mediaEl.naturalWidth;
                 let mHeight = isVideo ? mediaEl.videoHeight : mediaEl.naturalHeight;
                 
-                // Fallback de rescate si falla la lectura de medidas del navegador
+                // Fallback si la imagen cargó de caché sin soltar su tamaño
                 if (!mWidth || !mHeight) {
                     mWidth = 800;
                     mHeight = 600;
@@ -1718,18 +1719,15 @@
                                     ctx.fillText(i + 1, cx, cy);
                                 });
                             });
-                        } else if (window.visualizacionModo === 'playback') {
-                            document.getElementById('slider-playback').value = 0;
-                            document.getElementById('btn-playpause').innerHTML = '<i class="fas fa-play" style="margin-left:3px;"></i>';
-                            window.actualizarFramePlayback(0);
                         }
                     } catch(e) {
                         console.error("Seguro activo. UI protegida.", e);
                     }
                 }
+                
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
-
+            
             // CONEXIÓN SÚPER SEGURA PARA LA IMAGEN O VIDEO
             if (isVideo) {
                 mediaEl.onloadeddata = safeProcesarMediaLoaded;
@@ -1741,8 +1739,8 @@
                 if (mediaEl.complete && mediaEl.naturalWidth > 0) safeProcesarMediaLoaded();
             }
             
-            // EL TEMPORIZADOR DE RESPALDO: Si en 1 segundo no responde, lo forzamos.
-            setTimeout(safeProcesarMediaLoaded, 1000);
+            // EL TEMPORIZADOR DE RESPALDO: Si el navegador ignora la carga rápida en caché, actuamos por la fuerza.
+            setTimeout(safeProcesarMediaLoaded, 500);
             
             mediaEl.src = material.imagen;
         };
@@ -1814,7 +1812,7 @@
 
         window.exportarCSV = () => {
             if (!window.estudioActualId) return;
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
+            try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             const estudio = window.estudios.find(e => e.id === window.estudioActualId);
             if (!estudio || !estudio.participantes || estudio.participantes.length === 0) {
                 alert('No hay datos de participantes para exportar.');
