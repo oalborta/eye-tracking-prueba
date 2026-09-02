@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EyeTrack Pro — Sistema de Eye Tracking para Marketing</title>
     
+    <!-- LIBRERÍAS EXTERNAS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/simpleheat@0.4.0/simpleheat.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/webgazer@3.3.0/dist/webgazer.min.js"></script>
@@ -133,7 +134,6 @@
         .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
         .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
-        .toast.warn { background: #78350f; color: #fde68a; border: 1px solid #f59e0b; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
@@ -148,24 +148,21 @@
 </head>
 <body>
 
-    <!-- ALERTAS GLOBALES -->
+    <!-- ADVERTENCIA ANTI-WHATSAPP -->
     <div id="inapp-warning" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg); z-index:9999999; flex-direction:column; justify-content:center; align-items:center; padding:2rem; text-align:center;">
         <i class="fas fa-exclamation-triangle" style="font-size:4rem; color:var(--danger); margin-bottom:1rem;"></i>
-        <h2 style="font-size:1.8rem; font-weight:900; margin-bottom:1rem; color:white;">Por favor, abre esto en Chrome o Safari</h2>
-        <p style="color:var(--muted); font-size:1.1rem; line-height:1.6; max-width:500px;">
-            Estás abriendo este link desde una red social. <br><br>
-            Por seguridad, estas aplicaciones <strong>bloquean el acceso a la cámara</strong>. Toca los 3 puntitos en la esquina de arriba y selecciona <strong>"Abrir en el navegador"</strong>.
-        </p>
+        <h2 style="font-size:1.8rem; font-weight:900; margin-bottom:1rem; color:white;">Abre esto en Chrome o Safari</h2>
+        <p style="color:var(--muted); font-size:1.1rem; max-width:500px;">Las redes sociales bloquean la cámara. Toca los 3 puntitos y selecciona "Abrir en el navegador".</p>
     </div>
 
-    <!-- MODAL ENLACE MÁGICO -->
+    <!-- MODAL ENLACE MÁGICO Y DESCARGA -->
     <div id="modal-magic-link" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); backdrop-filter:blur(5px); z-index:999999; justify-content:center; align-items:center;">
         <div class="card" style="width: 100%; max-width: 550px; text-align: center;">
             <div style="font-size:3rem; color:var(--accent); margin-bottom:0.5rem;"><i class="fas fa-magic"></i></div>
             <h3 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.5rem;">Opciones para Compartir</h3>
             
-            <p style="color:var(--muted); font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">
-                <strong>Opción A (Enlace Mágico):</strong> Copia este enlace y envíalo a tus alumnos.
+            <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1.5rem;">
+                <strong>Opción A (Enlace Mágico):</strong> Cópialo y envíalo. Solo usar si tus imágenes son links URL.
             </p>
             <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
                 <input type="text" id="input-magic-link" class="form-input" style="font-family:monospace; font-size:0.8rem; color:#aaa;" readonly>
@@ -173,11 +170,11 @@
             </div>
             
             <p style="color:var(--warn); font-size:0.8rem; margin-bottom:1rem;">
-                <i class="fas fa-info-circle"></i> <strong>Opción B (Archivo Físico):</strong> Si el link de arriba falla por usar imágenes muy pesadas, descarga este archivo de respaldo y envíalo.
+                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Descarga el archivo JSON para tus alumnos.
             </p>
             
             <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom: 0.5rem;">
-                <button class="btn btn-secondary" onclick="descargarJSONManual()"><i class="fas fa-file-download"></i> Descargar Archivo (.json)</button>
+                <button class="btn btn-secondary" onclick="descargarJSONManual()"><i class="fas fa-file-download"></i> Descargar Archivo</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('modal-magic-link').style.display='none'">Cerrar</button>
             </div>
         </div>
@@ -196,7 +193,6 @@
         <i class="fas fa-door-open"></i> Salir de la prueba
     </button>
 
-    <!-- NAVEGACIÓN ADMINISTRADOR -->
     <nav class="admin-nav" id="admin-nav" style="display:none;">
         <div class="logo">Eye<span>Track</span> Pro</div>
         <div class="nav-links">
@@ -217,7 +213,7 @@
                 <div style="font-size:2.5rem; color:#3b82f6;"><i class="fas fa-laptop-code"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Investigador</h3>
                 <p style="color:var(--muted); font-size:0.9rem; line-height: 1.5; margin-bottom: 0.5rem; flex:1;">
-                    Crea estudios visuales, genera Enlaces Mágicos y analiza mapas de calor de tus alumnos remotos.
+                    Crea estudios visuales, genera Enlaces Mágicos y analiza mapas de calor.
                 </p>
                 <button class="btn btn-primary" style="width:100%; background:#3b82f6; border-radius: 8px; padding: 0.8rem; font-size: 1rem;" onclick="iniciarAdmin()">Ingresar al Panel <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
             </div>
@@ -583,9 +579,9 @@
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT PRINCIPAL -->
+    <!-- EL MOTOR JAVASCRIPT PRINCIPAL DESACOPLADO -->
     <script type="text/javascript">
-        // INYECCIÓN DE PLUGIN PARA CHART JS (Línea del Playback)
+        // INYECCIÓN DE PLUGIN PARA CHART JS
         try {
             const verticalLinePlugin = {
                 id: 'verticalLine',
@@ -614,11 +610,11 @@
             Chart.register(verticalLinePlugin);
         } catch(e) { console.warn("ChartJS plugin omitido"); }
 
-        // VARIABLES GLOBALES
+        // VARIABLES GLOBALES DEL SISTEMA
         window.estudioParticipanteObj = null; 
         window.estudioActualId = null;
         window.materialActualIndex = 0;
-        window.visualizacionModo = 'calor'; // Modo por defecto 
+        window.visualizacionModo = 'calor';
 
         try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } 
         catch(e) { window.estudios = []; }
@@ -645,6 +641,12 @@
         window.currentHeatmapMedia = null; 
         window.lastExportedJsonStr = "";
         window.ESTUDIO_INYECTADO = null; 
+
+        // VARIABLES DE MEMORIA DE DIBUJO (LA CLAVE DEL ÉXITO)
+        window.currentCanvas = null;
+        window.currentPuntosBrutos = [];
+        window.currentFijacionesPorUsuario = [];
+        window.currentFijacionesPlanas = [];
 
         // 1. SISTEMA DE RESPALDO Y RESTAURACIÓN LOCAL
         window.exportarBaseDatos = () => {
@@ -714,7 +716,7 @@
 
         window.addEventListener('beforeunload', () => { try { webgazer.end(); } catch(e){} });
 
-        // 3. SECUENCIA DE INICIO (LANDING VS ESTUDIANTE)
+        // 3. SECUENCIA DE INICIO
         window.onload = () => {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             if ((ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("WhatsApp") > -1)) {
@@ -763,7 +765,7 @@
             }
         };
 
-        // 4. DISTRIBUCIÓN (LINK MÁGICO / DESCARGA)
+        // 4. DISTRIBUCIÓN 
         window.exportarEstudioAlumnos = (id) => {
             const est = window.estudios.find(e => e.id === id);
             if(!est) return;
@@ -875,7 +877,7 @@
             const idx = window.estudios.findIndex(x => x.id === targetId);
             
             if (idx === -1) {
-                mostrarToast('Error al localizar el estudio', 'error');
+                mostrarToast('Error al localizar el estudio destino', 'error');
                 return;
             }
             if (!window.estudios[idx].participantes) window.estudios[idx].participantes = [];
@@ -910,7 +912,6 @@
 
         window.cerrarSesion = () => { window.location.href = window.location.href.split('?')[0].split('#')[0]; };
 
-        // 6. FLUJO DE RESULTADOS Y UI (PROTECCIÓN DE EVENTOS)
         window.limpiarResultados = () => {
             if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
                 try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
@@ -937,6 +938,87 @@
             }
         };
 
+        // 6. MOTOR DE DIBUJO DESACOPLADO (AQUÍ ESTÁ LA SOLUCIÓN DEL ERROR DE BOTONES)
+        window.dibujarCapaVisualizacion = () => {
+            const canvas = window.currentCanvas;
+            if(!canvas) return; // Si no hay lienzo, no hace nada y no rompe.
+            
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.globalCompositeOperation = 'source-over'; // Reseteo de seguridad vital
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const mWidth = canvas.width;
+            const scaleFactor = mWidth / 800;
+            let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
+            let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
+
+            if (window.visualizacionModo === 'calor') {
+                const validPoints = window.currentPuntosBrutos.map(p => [p.x * canvas.width, p.y * canvas.height, 1]);
+                if (validPoints.length > 0) {
+                    const heat = simpleheat(canvas);
+                    heat.radius(radius, blur);
+                    heat.data(validPoints);
+                    heat.max(Math.max(2, validPoints.length / 40)); 
+                    heat.draw();
+                }
+            } else if (window.visualizacionModo === 'foco') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'destination-out';
+                
+                const focusRadius = radius * 1.5; 
+                window.currentFijacionesPlanas.forEach(f => {
+                    if(isNaN(f.x) || isNaN(f.y)) return;
+                    let cx = f.x * canvas.width;
+                    let cy = f.y * canvas.height;
+                    let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, focusRadius);
+                    grd.addColorStop(0, 'rgba(255, 255, 255, 1)'); 
+                    grd.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); 
+                    grd.addColorStop(1, 'rgba(255, 255, 255, 0)'); 
+                    ctx.fillStyle = grd;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalCompositeOperation = 'source-over'; // Reseteo
+            } else if (window.visualizacionModo === 'ruta') {
+                const paleta = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+                window.currentFijacionesPorUsuario.forEach((userFix, index) => {
+                    let color = paleta[index % paleta.length];
+                    ctx.strokeStyle = color + '80'; 
+                    ctx.lineWidth = 4 * scaleFactor;
+                    ctx.beginPath();
+                    userFix.forEach((f, i) => {
+                        let cx = f.x * canvas.width;
+                        let cy = f.y * canvas.height;
+                        if(i===0) ctx.moveTo(cx, cy);
+                        else ctx.lineTo(cx, cy);
+                    });
+                    ctx.stroke();
+
+                    userFix.forEach((f, i) => {
+                        let cx = f.x * canvas.width;
+                        let cy = f.y * canvas.height;
+                        let r = Math.min(60 * scaleFactor, Math.max(15 * scaleFactor, (f.duracion / 30) * scaleFactor));
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.fillStyle = color + 'CC';
+                        ctx.fill();
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2 * scaleFactor;
+                        ctx.stroke();
+                        ctx.fillStyle = '#fff';
+                        ctx.font = `bold ${14 * scaleFactor}px Outfit`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(i + 1, cx, cy);
+                    });
+                });
+            } else if (window.visualizacionModo === 'playback') {
+                window.actualizarFramePlayback(document.getElementById('slider-playback').value);
+            }
+        };
+
         window.cambiarModoVisualizacion = (modo) => {
             window.visualizacionModo = modo;
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -947,19 +1029,29 @@
                 document.getElementById('heatmap-settings').style.display = 'none';
                 document.getElementById('playback-controls').style.display = 'flex';
                 if(window.currentHeatmapMedia && window.currentHeatmapMedia.tagName === 'VIDEO') window.currentHeatmapMedia.pause();
-                if(window.attentionChart) window.attentionChart.update('none');
             } else {
                 document.getElementById('heatmap-settings').style.display = 'flex';
                 document.getElementById('playback-controls').style.display = 'none';
                 if(window.isPlaying) window.togglePlayback();
                 if(window.currentHeatmapMedia && window.currentHeatmapMedia.tagName === 'VIDEO') window.currentHeatmapMedia.play();
-                if(window.attentionChart) window.attentionChart.update('none');
             }
-            window.actualizarSensibilidadHeatmap();
+            
+            // LA CLAVE: Solo pintamos de nuevo, no recargamos la imagen. Es INSTANTÁNEO.
+            window.dibujarCapaVisualizacion();
+            
+            if(window.attentionChart) window.attentionChart.update('none');
+        };
+
+        window.actualizarSensibilidadHeatmap = () => {
+            window.dibujarCapaVisualizacion();
         };
 
         window.filtrarResultadosDemografia = () => {
-            window.actualizarSensibilidadHeatmap();
+            const activeTab = document.querySelector('#tabs-materiales .tab-btn.active');
+            if (activeTab && window.estudioActualId) {
+                const index = Array.from(activeTab.parentNode.children).indexOf(activeTab);
+                window.renderizarMapaCalor(window.estudioActualId, index, document.getElementById('filtro-genero').value, document.getElementById('filtro-edad').value);
+            }
         };
 
         function actualizarDashboard() {
@@ -1003,7 +1095,7 @@
             });
         }
 
-        // 7. CREADOR DE ESTUDIOS (COMPRESIÓN SEGURA)
+        // 7. CREADOR DE ESTUDIOS
         function inicializarFormularioEstudio(idEdicion = null) {
             document.getElementById('lista-estimulos-creacion').innerHTML = '';
             document.getElementById('edit-estudio-id').value = '';
@@ -1095,7 +1187,7 @@
                         </div>
 
                         <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
-                            <input type="text" class="form-input url-input" style="font-size: 0.8rem; padding: 0.5rem;" placeholder="${isVideo ? 'Pega link directo al .mp4...' : 'O pega URL aquí...'}" value="${img.startsWith('http') ? img : ''}">
+                            <input type="text" class="form-input url-input" style="font-size: 0.8rem; padding: 0.5rem;" placeholder="${isVideo ? 'Pega link al .mp4...' : 'O pega URL aquí...'}" value="${img.startsWith('http') ? img : ''}">
                             <button class="btn btn-secondary btn-sm btn-url-load" onclick="cargarImagenURLBtn(this)">${isVideo ? 'Cargar Video' : 'Cargar URL'}</button>
                         </div>
                         <input type="hidden" class="est-img-base64" value="${img}">
@@ -1245,7 +1337,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Memoria del navegador LLENA. Ve al Dashboard y elimina estudios antiguos.");
+                alert("⚠️ Error de guardado. Elimina estudios antiguos.");
             }
         };
 
@@ -1258,7 +1350,7 @@
             }
         };
 
-        // 8. RENDERIZADO DE RESULTADOS (EL FAILSAFE DE CARGA INYECTADO AQUÍ)
+        // 8. RENDERIZADO DE RESULTADOS (EL FAILSAFE DE CARGA Y REDIBUJADO EN VIVO)
         window.verResultados = (id) => {
             try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             window.estudioActualId = id;
@@ -1280,7 +1372,7 @@
                 btn.onclick = () => {
                     document.querySelectorAll('#tabs-materiales .tab-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    window.cambiarModoVisualizacion('calor');
+                    window.renderizarMapaCalor(id, idx);
                 };
                 tabsContainer.appendChild(btn);
             });
@@ -1309,7 +1401,9 @@
             }
 
             navegarA('results');
+            
             if (est.estimulos.length > 0) {
+                // RESETEO DE MODOS AL ENTRAR
                 window.visualizacionModo = 'calor';
                 document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
                 const btnModoCalor = document.getElementById('btn-modo-calor');
@@ -1340,12 +1434,8 @@
                 while(j < puntosArray.length) {
                     let currentX = puntosArray[j].x;
                     let currentY = puntosArray[j].y;
-                    
-                    minX = Math.min(minX, currentX);
-                    maxX = Math.max(maxX, currentX);
-                    minY = Math.min(minY, currentY);
-                    maxY = Math.max(maxY, currentY);
-
+                    minX = Math.min(minX, currentX); maxX = Math.max(maxX, currentX);
+                    minY = Math.min(minY, currentY); maxY = Math.max(maxY, currentY);
                     let dist = Math.max(maxX - minX, maxY - minY);
                     if(dist > umbralDistancia) break; 
                     j++;
@@ -1410,10 +1500,7 @@
             window.actualizarFramePlayback(currentVal);
             
             if(window.attentionChart) window.attentionChart.update('none');
-            
-            if(window.isPlaying) {
-                window.playbackRaf = requestAnimationFrame(animarPlayback);
-            }
+            if(window.isPlaying) window.playbackRaf = requestAnimationFrame(animarPlayback);
         }
 
         window.actualizarFramePlayback = (porcentaje) => {
@@ -1426,10 +1513,11 @@
                 window.currentHeatmapMedia.currentTime = currentTime / 1000;
             }
             
-            const canvas = document.querySelector('.heatmap-container canvas');
+            const canvas = window.currentCanvas;
             if(!canvas) return;
             
-            const ctx = canvas.getContext('2d');
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.globalCompositeOperation = 'source-over';
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             let puntosEvolutivos = [];
@@ -1454,6 +1542,7 @@
             }
         };
 
+        // LA MAGIA DE RENDERIZACIÓN DESACOPLADA (SOLO CARGA DATOS 1 VEZ)
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             const estudio = window.estudios.find(e => e.id === estudioId);
@@ -1511,6 +1600,12 @@
                 });
             }
 
+            // GUARDAMOS EN MEMORIA PARA QUE LOS BOTONES PINTEN INSTANTÁNEAMENTE
+            window.currentPuntosBrutos = puntosBrutos;
+            window.currentFijacionesPorUsuario = fijacionesPorUsuario;
+            window.currentFijacionesPlanas = [];
+            fijacionesPorUsuario.forEach(arr => window.currentFijacionesPlanas.push(...arr));
+
             const msToSecs = (ms) => (ms/1000).toFixed(2) + 's';
             
             if (totalParticipantesFiltro > 0 && countTTFFValidos > 0) {
@@ -1558,9 +1653,7 @@
                 document.getElementById('heatmap-empty').style.display = 'none';
             }
 
-            // ==========================================
-            // FAILSAFE ANTI-CACHÉ V2.0
-            // ==========================================
+            // CARGA DE DIMENSIONES DEL LIENZO
             let isLoaded = false;
             const safeProcesarMediaLoaded = () => {
                 if(isLoaded) return;
@@ -1569,7 +1662,6 @@
                 let mWidth = isVideo ? mediaEl.videoWidth : mediaEl.naturalWidth;
                 let mHeight = isVideo ? mediaEl.videoHeight : mediaEl.naturalHeight;
                 
-                // Fallback agresivo si el navegador retiene las dimensiones
                 if (!mWidth || !mHeight) {
                     mWidth = 800;
                     mHeight = 600;
@@ -1580,98 +1672,13 @@
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
                 
-                if (puntosBrutos.length > 0) {
-                    const scaleFactor = mWidth / 800;
-                    let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
-                    let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
-                    
-                    const validPoints = [];
-                    puntosBrutos.forEach(p => {
-                        validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
-                    });
-
-                    try {
-                        if (window.visualizacionModo === 'calor') {
-                            const heat = simpleheat(canvas);
-                            heat.radius(radius, blur);
-                            heat.data(validPoints);
-                            heat.max(Math.max(2, validPoints.length / 40)); 
-                            heat.draw();
-                        } else if (window.visualizacionModo === 'foco') {
-                            const ctx = canvas.getContext('2d');
-                            ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                            ctx.fillRect(0, 0, canvas.width, canvas.height);
-                            ctx.globalCompositeOperation = 'destination-out';
-                            
-                            const fijacionesTotales = analizarFijaciones(puntosBrutos);
-                            const focusRadius = radius * 1.5; 
-
-                            fijacionesTotales.forEach(f => {
-                                if(isNaN(f.x) || isNaN(f.y)) return;
-                                let cx = f.x * canvas.width;
-                                let cy = f.y * canvas.height;
-                                
-                                let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, focusRadius);
-                                grd.addColorStop(0, 'rgba(255, 255, 255, 1)'); 
-                                grd.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); 
-                                grd.addColorStop(1, 'rgba(255, 255, 255, 0)'); 
-                                
-                                ctx.fillStyle = grd;
-                                ctx.beginPath();
-                                ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
-                                ctx.fill();
-                            });
-                        } else if (window.visualizacionModo === 'ruta') {
-                            const ctx = canvas.getContext('2d');
-                            const paleta = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
-                            
-                            fijacionesPorUsuario.forEach((userFix, index) => {
-                                let color = paleta[index % paleta.length];
-                                
-                                ctx.strokeStyle = color + '80'; 
-                                ctx.lineWidth = 4 * scaleFactor;
-                                ctx.beginPath();
-                                userFix.forEach((f, i) => {
-                                    let cx = f.x * canvas.width;
-                                    let cy = f.y * canvas.height;
-                                    if(i===0) ctx.moveTo(cx, cy);
-                                    else ctx.lineTo(cx, cy);
-                                });
-                                ctx.stroke();
-
-                                userFix.forEach((f, i) => {
-                                    let cx = f.x * canvas.width;
-                                    let cy = f.y * canvas.height;
-                                    let radio = Math.min(60 * scaleFactor, Math.max(15 * scaleFactor, (f.duracion / 30) * scaleFactor));
-                                    
-                                    ctx.beginPath();
-                                    ctx.arc(cx, cy, radio, 0, Math.PI * 2);
-                                    ctx.fillStyle = color + 'CC';
-                                    ctx.fill();
-                                    ctx.strokeStyle = '#fff';
-                                    ctx.lineWidth = 2 * scaleFactor;
-                                    ctx.stroke();
-                                    
-                                    ctx.fillStyle = '#fff';
-                                    ctx.font = `bold ${14 * scaleFactor}px Outfit`;
-                                    ctx.textAlign = 'center';
-                                    ctx.textBaseline = 'middle';
-                                    ctx.fillText(i + 1, cx, cy);
-                                });
-                            });
-                        } else if (window.visualizacionModo === 'playback') {
-                            document.getElementById('slider-playback').value = 0;
-                            document.getElementById('btn-playpause').innerHTML = '<i class="fas fa-play" style="margin-left:3px;"></i>';
-                            window.actualizarFramePlayback(0);
-                        }
-                    } catch(e) {
-                        console.error("Seguro activo. UI protegida.", e);
-                    }
-                }
+                window.currentCanvas = canvas;
+                
+                // ORDENAMOS DIBUJAR LA CAPA
+                window.dibujarCapaVisualizacion();
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
             
-            // CONEXIONES DE EVENTOS Y FORZADO
             if (isVideo) {
                 mediaEl.onloadeddata = safeProcesarMediaLoaded;
                 mediaEl.onerror = safeProcesarMediaLoaded; 
@@ -1682,9 +1689,90 @@
                 if (mediaEl.complete && mediaEl.naturalWidth > 0) safeProcesarMediaLoaded();
             }
             
-            // TEMPORIZADOR A PRUEBA DE BALAS: 300ms de espera máxima
-            setTimeout(safeProcesarMediaLoaded, 300);
+            // Failsafe 500ms
+            setTimeout(safeProcesarMediaLoaded, 500);
             mediaEl.src = material.imagen;
+        };
+
+        // LA FUNCIÓN DESACOPLADA QUE PINTA AL INSTANTE CUANDO TOCAS UN BOTÓN
+        window.dibujarCapaVisualizacion = () => {
+            const canvas = window.currentCanvas;
+            if(!canvas) return;
+            
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.globalCompositeOperation = 'source-over'; 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const mWidth = canvas.width;
+            const scaleFactor = mWidth / 800;
+            let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
+            let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
+
+            if (window.visualizacionModo === 'calor') {
+                const validPoints = window.currentPuntosBrutos.map(p => [p.x * canvas.width, p.y * canvas.height, 1]);
+                if (validPoints.length > 0) {
+                    const heat = simpleheat(canvas);
+                    heat.radius(radius, blur);
+                    heat.data(validPoints);
+                    heat.max(Math.max(2, validPoints.length / 40)); 
+                    heat.draw();
+                }
+            } else if (window.visualizacionModo === 'foco') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = 'destination-out';
+                
+                const focusRadius = radius * 1.5; 
+                window.currentFijacionesPlanas.forEach(f => {
+                    if(isNaN(f.x) || isNaN(f.y)) return;
+                    let cx = f.x * canvas.width;
+                    let cy = f.y * canvas.height;
+                    let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, focusRadius);
+                    grd.addColorStop(0, 'rgba(255, 255, 255, 1)'); 
+                    grd.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); 
+                    grd.addColorStop(1, 'rgba(255, 255, 255, 0)'); 
+                    ctx.fillStyle = grd;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalCompositeOperation = 'source-over'; 
+            } else if (window.visualizacionModo === 'ruta') {
+                const paleta = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+                window.currentFijacionesPorUsuario.forEach((userFix, index) => {
+                    let color = paleta[index % paleta.length];
+                    ctx.strokeStyle = color + '80'; 
+                    ctx.lineWidth = 4 * scaleFactor;
+                    ctx.beginPath();
+                    userFix.forEach((f, i) => {
+                        let cx = f.x * canvas.width;
+                        let cy = f.y * canvas.height;
+                        if(i===0) ctx.moveTo(cx, cy);
+                        else ctx.lineTo(cx, cy);
+                    });
+                    ctx.stroke();
+
+                    userFix.forEach((f, i) => {
+                        let cx = f.x * canvas.width;
+                        let cy = f.y * canvas.height;
+                        let r = Math.min(60 * scaleFactor, Math.max(15 * scaleFactor, (f.duracion / 30) * scaleFactor));
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.fillStyle = color + 'CC';
+                        ctx.fill();
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2 * scaleFactor;
+                        ctx.stroke();
+                        ctx.fillStyle = '#fff';
+                        ctx.font = `bold ${14 * scaleFactor}px Outfit`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(i + 1, cx, cy);
+                    });
+                });
+            } else if (window.visualizacionModo === 'playback') {
+                window.actualizarFramePlayback(document.getElementById('slider-playback').value);
+            }
         };
 
         function renderizarLineaDeTiempo(fijacionesPorUsuario, duracionSegundos) {
@@ -1815,7 +1903,6 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // 9. EL MOTOR DE CAPTURA WEBGAZER
         window.participanteAceptar = function() {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
