@@ -125,16 +125,35 @@
         .toggle-btn { padding: 0.5rem 1rem; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
         .toggle-btn.active { background: rgba(255,255,255,0.1); color: var(--fg); }
 
-        input[type=range].playback-slider { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer; }
+        /* PLAYBACK SLIDER STYLES */
+        input[type=range].playback-slider {
+            -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer;
+        }
         input[type=range].playback-slider::-webkit-slider-runnable-track { background: var(--border); height: 6px; border-radius: 3px; }
         input[type=range].playback-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ef4444; margin-top: -5px; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
         input[type=range].playback-slider:focus::-webkit-slider-thumb { box-shadow: 0 0 15px rgba(239,68,68,0.8); }
 
-        .pantalla-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 2rem; }
+        .pantalla-participante {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; overflow-y: auto; padding: 2rem;
+        }
+
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
 
-        #punto-calibracion { width: 38px; height: 38px; border-radius: 50%; position: absolute; z-index: 999999; transform: translate(-50%, -50%); display: none; justify-content: center; align-items: center; transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s; font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none; cursor: pointer; }
-        #punto-calibracion::after { content: ''; position: absolute; top: -60px; left: -60px; right: -60px; bottom: -60px; border-radius: 50%; cursor: pointer; }
+        #punto-calibracion {
+            width: 38px; height: 38px; border-radius: 50%; position: absolute;
+            z-index: 999999; transform: translate(-50%, -50%);
+            display: none; justify-content: center; align-items: center; 
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.1s;
+            font-family: 'Outfit', sans-serif; font-size: 0.7rem; font-weight: 900; color: white; user-select: none;
+            cursor: pointer;
+        }
+        #punto-calibracion::after {
+            content: ''; position: absolute;
+            top: -60px; left: -60px; right: -60px; bottom: -60px;
+            border-radius: 50%; cursor: pointer;
+        }
         #punto-calibracion.rojo { background: #ef4444; box-shadow: 0 0 15px 3px rgba(239,68,68,0.5); }
         #punto-calibracion.verde { background: #10b981; box-shadow: 0 0 25px 8px rgba(16,185,129,0.7); transform: translate(-50%, -50%) scale(1.15); border: 2px solid white; }
 
@@ -161,13 +180,13 @@
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
         #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
-        
+        #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
+
         #countdown-text { font-size: 8rem; font-weight: 900; color: #222; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #p-intervalo .cruz { position: relative; width: 50px; height: 50px; }
         #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: #222; border-radius: 2px; }
         #p-intervalo .cruz::before { top: 23px; left: 0; width: 50px; height: 4px; }
         #p-intervalo .cruz::after { top: 0; left: 23px; width: 4px; height: 50px; }
-
     </style>
 </head>
 <body>
@@ -197,7 +216,7 @@
             </div>
             
             <p style="color:var(--warn); font-size:0.8rem; margin-bottom:1rem;">
-                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, descarga el archivo JSON.
+                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, es mejor descargar el archivo JSON para evitar que el enlace se rompa.
             </p>
             
             <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom: 0.5rem;">
@@ -211,7 +230,7 @@
     <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
 
-    <!-- INPUTS INVISIBLES -->
+    <!-- INPUTS INVISIBLES DE IMPORTACIÓN -->
     <input type="file" id="input-importar-json" accept=".json" multiple style="display:none;" onchange="procesarImportacionJSON(event)">
     <input type="file" id="input-importar-bd" accept=".json" style="display:none;" onchange="importarBaseDatos(event)">
 
@@ -228,7 +247,7 @@
         <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
-    <!-- LANDING PAGE ADMINISTRADOR -->
+    <!-- LANDING PAGE BIFURCADA -->
     <div id="view-landing" class="view" style="min-height: 80vh; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
         <div style="font-size:4.5rem; font-weight:900; margin-bottom:1rem; letter-spacing:-1.5px; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
         <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
@@ -253,11 +272,11 @@
                 <p style="color:var(--muted); font-size:0.9rem; line-height: 1.5; margin-bottom: 0.5rem; flex:1;">
                     ¿Tu profesor te envió un archivo de estudio en lugar de un link? Súbelo aquí para comenzar la evaluación.
                 </p>
-                
                 <div class="file-upload-box" onclick="document.getElementById('input-estudio-alumno').click()" style="padding: 1rem; border: 1px dashed var(--accent); border-radius: 8px; cursor: pointer; text-align: center; background: rgba(16,185,129,0.05); transition: background 0.3s;">
                     <i class="fas fa-file-upload" style="color: var(--accent); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
-                    <div style="color: white; font-weight: 600; font-size: 0.95rem;">Cargar Archivo de Estudio (.json)</div>
+                    <div style="color: white; font-weight: 600; font-size: 0.95rem;">Cargar Archivo (.json)</div>
                 </div>
+                <input type="file" id="input-estudio-alumno" accept=".json" style="display:none;" onchange="cargarEstudioAlumno(event)">
             </div>
         </div>
     </div>
@@ -267,7 +286,6 @@
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
             <div id="view-dashboard" class="view active">
-                
                 <div style="display:flex; justify-content: flex-end; gap: 0.5rem; margin-bottom: 1rem;">
                     <button class="btn btn-secondary btn-sm" onclick="exportarBaseDatos()"><i class="fas fa-download"></i> Respaldar Sistema</button>
                     <button class="btn btn-secondary btn-sm" onclick="document.getElementById('input-importar-bd').click()"><i class="fas fa-upload"></i> Restaurar Sistema</button>
@@ -434,7 +452,7 @@
                     </div>
                 </div>
 
-                <!-- GRÁFICA DE LÍNEA DE TIEMPO (ESCALA 140PX) -->
+                <!-- GRÁFICA DE LÍNEA DE TIEMPO -->
                 <div class="card" style="margin-bottom: 2rem;" id="panel-grafica">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
@@ -445,7 +463,6 @@
                         <canvas id="timelineChart"></canvas>
                     </div>
 
-                    <!-- CONTROLADOR DE PLAYBACK -->
                     <div id="playback-controls" style="display: none; gap: 1rem; align-items: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
                         <button id="btn-playpause" onclick="togglePlayback()" class="btn btn-primary" style="width: 45px; height: 45px; padding: 0; border-radius: 50%; justify-content: center; background: #ef4444;"><i class="fas fa-play" style="margin-left: 3px;"></i></button>
                         <div style="flex:1; display:flex; flex-direction:column;">
@@ -484,7 +501,7 @@
         </main>
     </div>
 
-    <!-- SECCIÓN PARTICIPANTE -->
+    <!-- SECCIÓN PARTICIPANTE (El Flujo Visual de Pruebas) -->
     <div id="participant-section" style="display:none;">
 
         <div id="p-bienvenida" class="pantalla-participante" style="background: var(--bg); display:flex;">
@@ -605,14 +622,14 @@
         <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background: var(--bg);">
             <div style="font-size:4rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:2rem; color:white;">¡Estudio completado!</h2>
-            <p style="color:#bbb; max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
+            <p style="color:#bbb; max-width:400px; text-align:center; font-size:1.1rem;" id="txt-fin-mensaje">Tus datos de atención ocular han sido guardados correctamente.</p>
             <button id="btn-final-volver" class="btn btn-primary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Finalizar y Salir</button>
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT CON EL FAILSAFE INYECTADO -->
+    <!-- MOTOR JAVASCRIPT: UNIFICADO Y SÚPER BLINDADO -->
     <script type="text/javascript">
-        // PROTECCIÓN SEGURA DE CHART JS
+        // PROTECCIÓN CHART JS AL INICIO
         try {
             const verticalLinePlugin = {
                 id: 'verticalLine',
@@ -640,20 +657,16 @@
                 }
             };
             Chart.register(verticalLinePlugin);
-        } catch(e) { console.warn("ChartJS plugin omitido", e); }
+        } catch(e) { console.warn("ChartJS plugin omitido"); }
 
+        // VARIABLES GLOBALES DEL SISTEMA
         window.estudioParticipanteObj = null; 
         window.estudioActualId = null;
         window.materialActualIndex = 0;
-        window.visualizacionModo = 'calor'; // MODO POR DEFECTO PARA QUE EL MAPA NUNCA QUEDE EN BLANCO
+        window.visualizacionModo = 'calor'; // MODO POR DEFECTO PARA RENDERIZAR SIEMPRE
 
-        // PROTECCIÓN DE BASE DE DATOS LOCAL
-        try {
-            window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
-        } catch(e) {
-            window.estudios = [];
-            console.warn("Base de datos local limpia.");
-        }
+        try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } 
+        catch(e) { window.estudios = []; }
 
         window.datosGazeActuales = [];
         window.tiempoInicioEstimulo = 0;
@@ -674,9 +687,11 @@
         window.isPlaying = false;
         window.playbackRaf = null;
         window.lastFrameTime = 0;
+        window.currentHeatmapMedia = null; 
         window.lastExportedJsonStr = "";
-        window.ESTUDIO_INYECTADO = null;
+        window.ESTUDIO_INYECTADO = null; 
 
+        // IMPORTAR Y EXPORTAR SISTEMA
         window.exportarBaseDatos = () => {
             const data = localStorage.getItem('et_estudios') || '[]';
             const blob = new Blob([data], {type: 'application/json'});
@@ -694,18 +709,14 @@
                 const text = await file.text();
                 const data = JSON.parse(text);
                 if(Array.isArray(data)) {
-                    if(confirm('⚠️ ADVERTENCIA: Esto reemplazará todos los estudios actuales en esta computadora. ¿Deseas continuar?')) {
+                    if(confirm('⚠️ ADVERTENCIA: Esto reemplazará todos los estudios actuales. ¿Deseas continuar?')) {
                         localStorage.setItem('et_estudios', JSON.stringify(data));
                         window.estudios = data;
                         actualizarDashboard();
                         mostrarToast('Sistema restaurado con éxito', 'success');
                     }
-                } else {
-                    mostrarToast('Archivo de respaldo inválido', 'error');
-                }
-            } catch(err) {
-                mostrarToast('Error al leer el archivo de respaldo', 'error');
-            }
+                } else { mostrarToast('Archivo de respaldo inválido', 'error'); }
+            } catch(err) { mostrarToast('Error al leer el archivo', 'error'); }
             e.target.value = '';
         };
 
@@ -745,10 +756,7 @@
             setTimeout(() => toast.remove(), 4000); 
         };
 
-        window.addEventListener('beforeunload', () => {
-            try { webgazer.end(); } catch(e){}
-        });
-
+        // INICIALIZACIÓN
         window.onload = () => {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             if ((ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("WhatsApp") > -1)) {
@@ -797,6 +805,7 @@
             }
         };
 
+        // COMPARTIR ESTUDIOS
         window.exportarEstudioAlumnos = (id) => {
             const est = window.estudios.find(e => e.id === id);
             if(!est) return;
@@ -807,9 +816,7 @@
             window.lastExportedEstName = est.nombre || 'Estudio';
             
             try {
-                if (jsonStr.length > 50000) {
-                    throw new Error("Estudio muy pesado");
-                }
+                if (jsonStr.length > 50000) throw new Error("Estudio muy pesado");
                 const base64Str = btoa(unescape(encodeURIComponent(jsonStr)));
                 const baseUrl = window.location.origin + window.location.pathname;
                 const magicLink = `${baseUrl}#estudio=${base64Str}`;
@@ -836,7 +843,7 @@
             const input = document.getElementById('input-magic-link');
             input.select();
             document.execCommand('copy');
-            mostrarToast('Enlace copiado al portapapeles', 'success');
+            mostrarToast('Enlace copiado', 'success');
             document.getElementById('modal-magic-link').style.display = 'none';
         };
 
@@ -861,24 +868,16 @@
                     mostrarToast('El archivo no tiene el formato correcto.', 'error');
                 }
             } catch(err) {
-                mostrarToast('Error al leer el archivo de estudio', 'error');
+                mostrarToast('Error al leer el archivo', 'error');
             }
             e.target.value = ''; 
         };
 
+        // RUTAS DEL PANEL
         window.iniciarAdmin = () => {
             document.getElementById('admin-nav').style.display = 'flex';
             document.getElementById('admin-section').style.display = 'block';
             window.navegarA('dashboard');
-        };
-
-        window.accederEstudioManual = () => {
-            const val = document.getElementById('input-codigo-estudio').value.trim();
-            if(!val) {
-                mostrarToast('Ingresa un código de estudio válido', 'error');
-                return;
-            }
-            window.location.href = window.location.href.split('?')[0] + '?estudio=' + val;
         };
 
         window.navegarA = (vista, idEdicion = null) => {
@@ -929,7 +928,6 @@
             if (!window.estudios[idx].participantes) window.estudios[idx].participantes = [];
 
             let importados = 0;
-            
             for (let file of files) {
                 try {
                     let text = await file.text();
@@ -938,14 +936,12 @@
                         window.estudios[idx].participantes.push(jsonData);
                         importados++;
                     }
-                } catch(err) {
-                    console.error("Archivo inválido", err);
-                }
+                } catch(err) { console.error("Archivo inválido", err); }
             }
             
             localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
             actualizarDashboard();
-            mostrarToast(`Se importaron ${importados} resultados exitosamente.`, 'success');
+            mostrarToast(`Se importaron ${importados} resultados.`, 'success');
             e.target.value = ''; 
         };
 
@@ -959,9 +955,7 @@
             window.location.href = window.location.href.split('?')[0].split('#')[0]; 
         };
 
-        window.cerrarSesion = () => {
-            window.location.href = window.location.href.split('?')[0].split('#')[0];
-        };
+        window.cerrarSesion = () => { window.location.href = window.location.href.split('?')[0].split('#')[0]; };
 
         window.limpiarResultados = () => {
             if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
@@ -971,7 +965,7 @@
                     window.estudios[idx].participantes = [];
                     localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
                     verResultados(window.estudioActualId);
-                    mostrarToast('Todos los datos han sido borrados', 'info');
+                    mostrarToast('Datos borrados', 'info');
                 }
             }
         };
@@ -1032,7 +1026,6 @@
             window.estudios.forEach(est => {
                 try {
                     const tr = document.createElement('tr');
-                    
                     const cantMat = est.estimulos ? est.estimulos.length : 0;
                     const cantPart = est.participantes ? est.participantes.length : 0;
                     const estNombre = est.nombre || 'Estudio';
@@ -1044,9 +1037,7 @@
                         <td style="text-align:right; display:flex; gap:0.4rem; justify-content:flex-end;">
                             <button class="btn btn-primary btn-sm" style="background:#10b981;" onclick="exportarEstudioAlumnos('${est.id}')" title="Generar Link Mágico / Archivo"><i class="fas fa-share-alt" style="margin-right:4px;"></i> Compartir</button>
                             <button class="btn btn-primary btn-sm" style="background:#8b5cf6;" onclick="triggerImportar('${est.id}')" title="Importar Resultados de Alumnos"><i class="fas fa-file-import" style="margin-right:4px;"></i> Recibir</button>
-                            
                             <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 0 4px;"></div>
-                            
                             <button class="btn btn-secondary btn-sm" onclick="simularPrueba('${est.id}')" title="Probar Presencial"><i class="fas fa-play"></i></button>
                             <button class="btn btn-secondary btn-sm" onclick="verResultados('${est.id}')" title="Ver Resultados"><i class="fas fa-chart-bar"></i></button>
                             <button class="btn btn-secondary btn-sm" onclick="navegarA('create', '${est.id}')" title="Editar Estudio"><i class="fas fa-edit"></i></button>
@@ -1054,7 +1045,7 @@
                         </td>
                     `;
                     tbody.appendChild(tr);
-                } catch(e) { console.error("Error al renderizar estudio", e); }
+                } catch(e) {}
             });
         }
 
@@ -1299,11 +1290,7 @@
                 }, 1200);
 
             } catch(e) {
-                if(e.name === 'QuotaExceededError' || e.message.includes('Quota')) {
-                    alert("⚠️ Memoria del navegador LLENA (Límite 5MB). Ve al Dashboard y elimina estudios antiguos.");
-                } else {
-                    alert("⚠️ Error: " + e.message);
-                }
+                alert("⚠️ Error de guardado. Elimina estudios antiguos.");
             }
         };
 
@@ -1366,7 +1353,6 @@
 
             navegarA('results');
             if (est.estimulos.length > 0) {
-                // Forzar el modo calor por defecto al entrar
                 window.visualizacionModo = 'calor';
                 document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
                 const btnModoCalor = document.getElementById('btn-modo-calor');
@@ -1620,7 +1606,9 @@
                 document.getElementById('heatmap-empty').style.display = 'none';
             }
 
-            // EL FAMOSO FAILSAFE MECANISMO DE CARGA
+            // ==========================================
+            // FAILSAFE ANTI-CACHÉ (NUNCA MÁS BOTONES MUERTOS)
+            // ==========================================
             let isLoaded = false;
             const safeProcesarMediaLoaded = () => {
                 if(isLoaded) return;
@@ -1629,7 +1617,7 @@
                 let mWidth = isVideo ? mediaEl.videoWidth : mediaEl.naturalWidth;
                 let mHeight = isVideo ? mediaEl.videoHeight : mediaEl.naturalHeight;
                 
-                // Fallback si la imagen cargó de caché sin soltar su tamaño
+                // Forzamos un tamaño si el navegador cargó instantáneamente sin avisar
                 if (!mWidth || !mHeight) {
                     mWidth = 800;
                     mHeight = 600;
@@ -1719,6 +1707,10 @@
                                     ctx.fillText(i + 1, cx, cy);
                                 });
                             });
+                        } else if (window.visualizacionModo === 'playback') {
+                            document.getElementById('slider-playback').value = 0;
+                            document.getElementById('btn-playpause').innerHTML = '<i class="fas fa-play" style="margin-left:3px;"></i>';
+                            window.actualizarFramePlayback(0);
                         }
                     } catch(e) {
                         console.error("Seguro activo. UI protegida.", e);
@@ -1728,7 +1720,7 @@
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
             
-            // CONEXIÓN SÚPER SEGURA PARA LA IMAGEN O VIDEO
+            // CONECTAMOS LOS EVENTOS PERO NO CONFIAMOS EN ELLOS
             if (isVideo) {
                 mediaEl.onloadeddata = safeProcesarMediaLoaded;
                 mediaEl.onerror = safeProcesarMediaLoaded; 
@@ -1739,7 +1731,7 @@
                 if (mediaEl.complete && mediaEl.naturalWidth > 0) safeProcesarMediaLoaded();
             }
             
-            // EL TEMPORIZADOR DE RESPALDO: Si el navegador ignora la carga rápida en caché, actuamos por la fuerza.
+            // EXIGIMOS QUE SE DIBUJE SÍ O SÍ EN 500ms
             setTimeout(safeProcesarMediaLoaded, 500);
             
             mediaEl.src = material.imagen;
