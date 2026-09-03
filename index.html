@@ -107,6 +107,7 @@
         input[type=range].playback-slider { -webkit-appearance: none; width: 100%; background: transparent; height: 6px; border-radius: 3px; outline: none; cursor: pointer; }
         input[type=range].playback-slider::-webkit-slider-runnable-track { background: var(--border); height: 6px; border-radius: 3px; }
         input[type=range].playback-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #ef4444; margin-top: -5px; box-shadow: 0 0 10px rgba(239,68,68,0.5); }
+        input[type=range].playback-slider:focus::-webkit-slider-thumb { box-shadow: 0 0 15px rgba(239,68,68,0.8); }
 
         .pantalla-participante { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; overflow-y: auto; padding: 2rem; }
         #contenedor-calibracion, #p-intervalo { background: var(--gray-neutral) !important; }
@@ -134,11 +135,13 @@
         .toast.success { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
         .toast.error { background: #7f1d1d; color: #fca5a5; border: 1px solid #ef4444; }
         .toast.info { background: #1e3a5f; color: #93c5fd; border: 1px solid #3b82f6; }
+        .toast.warn { background: #78350f; color: #fde68a; border: 1px solid #f59e0b; }
         @keyframes toastIn { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-20px); } }
         
         #btn-abortar { position: fixed; top: 20px; right: 20px; z-index: 999999; background: rgba(255,255,255,0.7); color: #111; border: 1px solid rgba(0,0,0,0.1); display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Outfit', sans-serif; font-size: 0.85rem; }
-        
+        #btn-abortar:hover { background: rgba(239,68,68,0.9); color: white; border-color: #ef4444; }
+
         #countdown-text { font-size: 8rem; font-weight: 900; color: #222; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         #p-intervalo .cruz { position: relative; width: 50px; height: 50px; }
         #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: #222; border-radius: 2px; }
@@ -148,11 +151,14 @@
 </head>
 <body>
 
-    <!-- ADVERTENCIA ANTI-WHATSAPP -->
+    <!-- ADVERTENCIA ANTI-WHATSAPP BROWSER -->
     <div id="inapp-warning" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:var(--bg); z-index:9999999; flex-direction:column; justify-content:center; align-items:center; padding:2rem; text-align:center;">
         <i class="fas fa-exclamation-triangle" style="font-size:4rem; color:var(--danger); margin-bottom:1rem;"></i>
-        <h2 style="font-size:1.8rem; font-weight:900; margin-bottom:1rem; color:white;">Abre esto en Chrome o Safari</h2>
-        <p style="color:var(--muted); font-size:1.1rem; max-width:500px;">Las redes sociales bloquean la cámara. Toca los 3 puntitos y selecciona "Abrir en el navegador".</p>
+        <h2 style="font-size:1.8rem; font-weight:900; margin-bottom:1rem; color:white;">Por favor, abre esto en Chrome o Safari</h2>
+        <p style="color:var(--muted); font-size:1.1rem; line-height:1.6; max-width:500px;">
+            Estás abriendo este link desde una red social (WhatsApp, Facebook, etc). <br><br>
+            Por seguridad, estas aplicaciones <strong>bloquean el acceso a la cámara</strong>. Toca los 3 puntitos en la esquina de arriba y selecciona <strong>"Abrir en el navegador"</strong> para poder participar.
+        </p>
     </div>
 
     <!-- MODAL ENLACE MÁGICO Y DESCARGA -->
@@ -161,8 +167,8 @@
             <div style="font-size:3rem; color:var(--accent); margin-bottom:0.5rem;"><i class="fas fa-magic"></i></div>
             <h3 style="font-size:1.5rem; font-weight:800; color:white; margin-bottom:0.5rem;">Opciones para Compartir</h3>
             
-            <p style="color:var(--muted); font-size:0.9rem; margin-bottom:1.5rem;">
-                <strong>Opción A (Enlace Mágico):</strong> Cópialo y envíalo. Solo usar si tus imágenes son links URL.
+            <p style="color:var(--muted); font-size:0.9rem; line-height:1.5; margin-bottom:1.5rem;">
+                <strong>Opción A (Enlace Mágico):</strong> Copia este enlace y envíalo. (Recomendado solo si tus materiales usan URLs web).
             </p>
             <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
                 <input type="text" id="input-magic-link" class="form-input" style="font-family:monospace; font-size:0.8rem; color:#aaa;" readonly>
@@ -170,22 +176,20 @@
             </div>
             
             <p style="color:var(--warn); font-size:0.8rem; margin-bottom:1rem;">
-                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Descarga el archivo JSON para tus alumnos.
+                <i class="fas fa-info-circle"></i> <strong>Opción B (Segura):</strong> Si subiste imágenes desde tu PC, es mejor descargar el archivo JSON para evitar que el enlace se rompa.
             </p>
             
             <div style="display:flex; gap:0.5rem; justify-content:center; margin-bottom: 0.5rem;">
-                <button class="btn btn-secondary" onclick="descargarJSONManual()"><i class="fas fa-file-download"></i> Descargar Archivo</button>
+                <button class="btn btn-secondary" onclick="descargarJSONManual()"><i class="fas fa-file-download"></i> Descargar Archivo (.json)</button>
                 <button class="btn btn-secondary" onclick="document.getElementById('modal-magic-link').style.display='none'">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <!-- UI BASE -->
     <div class="bg-glow"></div>
     <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
 
-    <!-- INPUTS DE SISTEMA OCULTOS -->
     <input type="file" id="input-importar-json" accept=".json" multiple style="display:none;" onchange="procesarImportacionJSON(event)">
     <input type="file" id="input-importar-bd" accept=".json" style="display:none;" onchange="importarBaseDatos(event)">
 
@@ -199,9 +203,10 @@
             <a onclick="navegarA('dashboard')" id="nav-link-dashboard" class="active"><i class="fas fa-chart-bar" style="margin-right:4px"></i> Dashboard</a>
             <a onclick="navegarA('create')" id="nav-link-create"><i class="fas fa-plus" style="margin-right:4px"></i> Nuevo Estudio</a>
         </div>
+        <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
-    <!-- VISTA: LANDING PAGE -->
+    <!-- LANDING PAGE ADMINISTRADOR (SAAS) -->
     <div id="view-landing" class="view" style="min-height: 80vh; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
         <div style="font-size:4.5rem; font-weight:900; margin-bottom:1rem; letter-spacing:-1.5px; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
         <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
@@ -209,36 +214,38 @@
         </p>
         
         <div style="display:flex; justify-content:center; gap:2rem; flex-wrap:wrap;">
+            <!-- TARJETA INVESTIGADOR -->
             <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8);">
                 <div style="font-size:2.5rem; color:#3b82f6;"><i class="fas fa-laptop-code"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Investigador</h3>
                 <p style="color:var(--muted); font-size:0.9rem; line-height: 1.5; margin-bottom: 0.5rem; flex:1;">
-                    Crea estudios visuales, genera Enlaces Mágicos y analiza mapas de calor.
+                    Crea estudios visuales, genera Enlaces Mágicos y analiza mapas de calor de tus alumnos remotos.
                 </p>
                 <button class="btn btn-primary" style="width:100%; background:#3b82f6; border-radius: 8px; padding: 0.8rem; font-size: 1rem;" onclick="iniciarAdmin()">Ingresar al Panel <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
             </div>
 
+            <!-- TARJETA PARTICIPANTE -->
             <div class="card" style="width: 380px; text-align:center; display:flex; flex-direction:column; gap:1rem; background: rgba(18, 18, 28, 0.8);">
                 <div style="font-size:2.5rem; color:var(--accent);"><i class="fas fa-eye"></i></div>
                 <h3 style="font-size:1.25rem; font-weight:800; color:white;">Acceso Participante</h3>
                 <p style="color:var(--muted); font-size:0.9rem; line-height: 1.5; margin-bottom: 0.5rem; flex:1;">
-                    ¿Te enviaron un archivo de estudio de respaldo? Súbelo aquí para comenzar la evaluación.
+                    ¿Tu profesor te envió un archivo de estudio en lugar de un link? Súbelo aquí para comenzar la evaluación.
                 </p>
-                <div class="file-upload-box" onclick="document.getElementById('input-estudio-alumno').click()" style="padding: 1rem; border: 1px dashed var(--accent); border-radius: 8px; cursor: pointer; text-align: center; background: rgba(16,185,129,0.05);">
+                
+                <div class="file-upload-box" onclick="document.getElementById('input-estudio-alumno').click()" style="padding: 1rem; border: 1px dashed var(--accent); border-radius: 8px; cursor: pointer; text-align: center; background: rgba(16,185,129,0.05); transition: background 0.3s;">
                     <i class="fas fa-file-upload" style="color: var(--accent); font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
                     <div style="color: white; font-weight: 600; font-size: 0.95rem;">Cargar Archivo (.json)</div>
                 </div>
-                <input type="file" id="input-estudio-alumno" accept=".json" style="display:none;" onchange="cargarEstudioAlumno(event)">
             </div>
         </div>
     </div>
 
-    <!-- VISTAS: ADMINISTRADOR -->
+    <!-- PANEL ADMIN -->
     <div id="admin-section" style="display:none;">
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
-            <!-- VISTA: DASHBOARD -->
             <div id="view-dashboard" class="view active">
+                
                 <div style="display:flex; justify-content: flex-end; gap: 0.5rem; margin-bottom: 1rem;">
                     <button class="btn btn-secondary btn-sm" onclick="exportarBaseDatos()"><i class="fas fa-download"></i> Respaldar Sistema</button>
                     <button class="btn btn-secondary btn-sm" onclick="document.getElementById('input-importar-bd').click()"><i class="fas fa-upload"></i> Restaurar Sistema</button>
@@ -280,7 +287,7 @@
                 </div>
             </div>
 
-            <!-- VISTA: CREAR ESTUDIO -->
+            <!-- CREAR ESTUDIO -->
             <div id="view-create" class="view">
                 <div style="max-width: 750px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
@@ -290,7 +297,7 @@
                         <input type="hidden" id="edit-estudio-id" value="">
                         <div class="form-group">
                             <label class="form-label">Nombre del Estudio</label>
-                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Banners Verano">
+                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Spot Video + Banners">
                         </div>
 
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -324,7 +331,7 @@
                 </div>
             </div>
 
-            <!-- VISTA: RESULTADOS Y ANÁLISIS -->
+            <!-- RESULTADOS -->
             <div id="view-results" class="view">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
                     <div style="display:flex; align-items:center; gap:1rem;">
@@ -374,8 +381,8 @@
                     </div>
                 </div>
 
-                <!-- CONTENEDOR DEL MAPA DE CALOR -->
                 <div class="card" style="margin-bottom: 2rem; border-color: var(--accent);">
+                    
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap; justify-content: space-between;">
                         
                         <div id="heatmap-settings" style="display: flex; gap: 1.5rem; align-items: center;">
@@ -389,6 +396,7 @@
                             </div>
                         </div>
 
+                        <!-- BOTONES DE MODO -->
                         <div class="toggle-group" style="margin-left: auto;">
                             <button id="btn-modo-calor" class="toggle-btn active" onclick="cambiarModoVisualizacion('calor')">🔥 Calor</button>
                             <button id="btn-modo-foco" class="toggle-btn" onclick="cambiarModoVisualizacion('foco')">🔦 Foco</button>
@@ -404,7 +412,7 @@
                     </div>
                 </div>
 
-                <!-- CONTENEDOR DE LA GRÁFICA Y CONTROLES DE PLAYBACK -->
+                <!-- GRÁFICA DE LÍNEA DE TIEMPO -->
                 <div class="card" style="margin-bottom: 2rem;" id="panel-grafica">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
@@ -428,7 +436,6 @@
                     </div>
                 </div>
 
-                <!-- TABLA DE PARTICIPANTES -->
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
                         <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados</h3>
@@ -454,7 +461,7 @@
         </main>
     </div>
 
-    <!-- VISTAS: FLUJO DEL PARTICIPANTE -->
+    <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
 
         <div id="p-bienvenida" class="pantalla-participante" style="background: var(--bg); display:flex;">
@@ -579,9 +586,9 @@
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT PRINCIPAL DESACOPLADO -->
+    <!-- EL MOTOR JAVASCRIPT PRINCIPAL -->
     <script type="text/javascript">
-        // INYECCIÓN DE PLUGIN PARA CHART JS
+        // INYECCIÓN DE PLUGIN PARA CHART JS (Línea del Playback)
         try {
             const verticalLinePlugin = {
                 id: 'verticalLine',
@@ -614,7 +621,7 @@
         window.estudioParticipanteObj = null; 
         window.estudioActualId = null;
         window.materialActualIndex = 0;
-        window.visualizacionModo = 'calor';
+        window.visualizacionModo = 'calor'; 
 
         try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } 
         catch(e) { window.estudios = []; }
@@ -642,8 +649,7 @@
         window.lastExportedJsonStr = "";
         window.ESTUDIO_INYECTADO = null; 
 
-        // VARIABLES DE MEMORIA DE DIBUJO (LA CLAVE DEL ÉXITO)
-        window.currentCanvas = null;
+        // VARIABLES DE MEMORIA PARA DIBUJO INSTANTÁNEO EN BOTONES
         window.currentPuntosBrutos = [];
         window.currentFijacionesPorUsuario = [];
         window.currentFijacionesPlanas = [];
@@ -765,7 +771,7 @@
             }
         };
 
-        // 4. DISTRIBUCIÓN 
+        // 4. DISTRIBUCIÓN
         window.exportarEstudioAlumnos = (id) => {
             const est = window.estudios.find(e => e.id === id);
             if(!est) return;
@@ -832,6 +838,15 @@
             document.getElementById('admin-nav').style.display = 'flex';
             document.getElementById('admin-section').style.display = 'block';
             window.navegarA('dashboard');
+        };
+
+        window.accederEstudioManual = () => {
+            const val = document.getElementById('input-codigo-estudio').value.trim();
+            if(!val) {
+                mostrarToast('Ingresa un código de estudio válido', 'error');
+                return;
+            }
+            window.location.href = window.location.href.split('?')[0] + '?estudio=' + val;
         };
 
         window.navegarA = (vista, idEdicion = null) => {
@@ -912,39 +927,16 @@
 
         window.cerrarSesion = () => { window.location.href = window.location.href.split('?')[0].split('#')[0]; };
 
-        window.limpiarResultados = () => {
-            if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
-                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
-                const idx = window.estudios.findIndex(e => e.id === window.estudioActualId);
-                if(idx !== -1) {
-                    window.estudios[idx].participantes = [];
-                    localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
-                    verResultados(window.estudioActualId);
-                    mostrarToast('Datos borrados', 'info');
-                }
-            }
-        };
-
-        window.borrarUnParticipante = (partId) => {
-            if(confirm('¿Eliminar datos de este participante individual?')) {
-                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
-                const idx = window.estudios.findIndex(e => e.id === window.estudioActualId);
-                if(idx !== -1) {
-                    window.estudios[idx].participantes = window.estudios[idx].participantes.filter(p => p.id !== partId);
-                    localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
-                    verResultados(window.estudioActualId);
-                    mostrarToast('Participante eliminado', 'success');
-                }
-            }
-        };
-
-        // 6. MOTOR DE DIBUJO DESACOPLADO (AQUÍ ESTÁ LA SOLUCIÓN DEL ERROR DE BOTONES)
+        // ==========================================
+        // LA SOLUCIÓN MAESTRA: DIBUJO DESACOPLADO INSTANTÁNEO
+        // ==========================================
         window.dibujarCapaVisualizacion = () => {
-            const canvas = window.currentCanvas;
-            if(!canvas) return; // Si no hay lienzo, no hace nada y no rompe.
+            // Busca el lienzo físicamente en la pantalla, nada de variables "fantasmas"
+            const canvas = document.querySelector('.heatmap-container canvas');
+            if(!canvas) return;
             
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            ctx.globalCompositeOperation = 'source-over'; // Reseteo de seguridad vital
+            ctx.globalCompositeOperation = 'source-over'; 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const mWidth = canvas.width;
@@ -955,11 +947,13 @@
             if (window.visualizacionModo === 'calor') {
                 const validPoints = window.currentPuntosBrutos.map(p => [p.x * canvas.width, p.y * canvas.height, 1]);
                 if (validPoints.length > 0) {
-                    const heat = simpleheat(canvas);
-                    heat.radius(radius, blur);
-                    heat.data(validPoints);
-                    heat.max(Math.max(2, validPoints.length / 40)); 
-                    heat.draw();
+                    try {
+                        const heat = simpleheat(canvas);
+                        heat.radius(radius, blur);
+                        heat.data(validPoints);
+                        heat.max(Math.max(2, validPoints.length / 40)); 
+                        heat.draw();
+                    } catch(e) { console.warn("SimpleHeat Error", e); }
                 }
             } else if (window.visualizacionModo === 'foco') {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
@@ -980,7 +974,7 @@
                     ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
                     ctx.fill();
                 });
-                ctx.globalCompositeOperation = 'source-over'; // Reseteo
+                ctx.globalCompositeOperation = 'source-over'; 
             } else if (window.visualizacionModo === 'ruta') {
                 const paleta = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
                 window.currentFijacionesPorUsuario.forEach((userFix, index) => {
@@ -989,6 +983,7 @@
                     ctx.lineWidth = 4 * scaleFactor;
                     ctx.beginPath();
                     userFix.forEach((f, i) => {
+                        if(isNaN(f.x) || isNaN(f.y)) return;
                         let cx = f.x * canvas.width;
                         let cy = f.y * canvas.height;
                         if(i===0) ctx.moveTo(cx, cy);
@@ -997,6 +992,7 @@
                     ctx.stroke();
 
                     userFix.forEach((f, i) => {
+                        if(isNaN(f.x) || isNaN(f.y)) return;
                         let cx = f.x * canvas.width;
                         let cy = f.y * canvas.height;
                         let r = Math.min(60 * scaleFactor, Math.max(15 * scaleFactor, (f.duracion / 30) * scaleFactor));
@@ -1036,14 +1032,38 @@
                 if(window.currentHeatmapMedia && window.currentHeatmapMedia.tagName === 'VIDEO') window.currentHeatmapMedia.play();
             }
             
-            // LA CLAVE: Solo pintamos de nuevo, no recargamos la imagen. Es INSTANTÁNEO.
+            // LA CLAVE: El botón ordena que se pinte en la pantalla al instante
             window.dibujarCapaVisualizacion();
             
             if(window.attentionChart) window.attentionChart.update('none');
         };
 
-        window.actualizarSensibilidadHeatmap = () => {
-            window.dibujarCapaVisualizacion();
+        window.actualizarSensibilidadHeatmap = () => { window.dibujarCapaVisualizacion(); };
+
+        window.limpiarResultados = () => {
+            if(confirm('⚠️ ¿Seguro que deseas ELIMINAR TODOS LOS DATOS de este estudio?')) {
+                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
+                const idx = window.estudios.findIndex(e => e.id === window.estudioActualId);
+                if(idx !== -1) {
+                    window.estudios[idx].participantes = [];
+                    localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
+                    verResultados(window.estudioActualId);
+                    mostrarToast('Datos borrados', 'info');
+                }
+            }
+        };
+
+        window.borrarUnParticipante = (partId) => {
+            if(confirm('¿Eliminar datos de este participante individual?')) {
+                try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
+                const idx = window.estudios.findIndex(e => e.id === window.estudioActualId);
+                if(idx !== -1) {
+                    window.estudios[idx].participantes = window.estudios[idx].participantes.filter(p => p.id !== partId);
+                    localStorage.setItem('et_estudios', JSON.stringify(window.estudios));
+                    verResultados(window.estudioActualId);
+                    mostrarToast('Participante eliminado', 'success');
+                }
+            }
         };
 
         window.filtrarResultadosDemografia = () => {
@@ -1337,7 +1357,7 @@
                 }, 1200);
 
             } catch(e) {
-                alert("⚠️ Error de guardado. Elimina estudios antiguos.");
+                alert("⚠️ Memoria del navegador LLENA. Ve al Dashboard y elimina estudios antiguos.");
             }
         };
 
@@ -1350,7 +1370,7 @@
             }
         };
 
-        // 8. RENDERIZADO DE RESULTADOS (EL FAILSAFE DE CARGA Y REDIBUJADO EN VIVO)
+        // 8. RENDERIZADO DE RESULTADOS (MODO DESACOPLADO REAL)
         window.verResultados = (id) => {
             try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             window.estudioActualId = id;
@@ -1403,7 +1423,6 @@
             navegarA('results');
             
             if (est.estimulos.length > 0) {
-                // RESETEO DE MODOS AL ENTRAR
                 window.visualizacionModo = 'calor';
                 document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
                 const btnModoCalor = document.getElementById('btn-modo-calor');
@@ -1418,13 +1437,14 @@
             }
         };
 
+        // LA CLAVE DE LAS RUTAS CALIBRADAS: Ajustado a 6% y 150ms
         function analizarFijaciones(puntosArray) {
             let fijaciones = [];
             if (!puntosArray || puntosArray.length === 0) return fijaciones;
             
             let i = 0;
-            const umbralDistancia = 0.25; 
-            const umbralTiempo = 100;     
+            const umbralDistancia = 0.06; 
+            const umbralTiempo = 150;     
 
             while(i < puntosArray.length) {
                 let j = i + 1;
@@ -1513,7 +1533,7 @@
                 window.currentHeatmapMedia.currentTime = currentTime / 1000;
             }
             
-            const canvas = window.currentCanvas;
+            const canvas = document.querySelector('.heatmap-container canvas');
             if(!canvas) return;
             
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -1534,15 +1554,16 @@
                 let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
                 let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
 
-                const heat = simpleheat(canvas);
-                heat.radius(radius, blur);
-                heat.data(puntosEvolutivos);
-                heat.max(Math.max(2, puntosEvolutivos.length / 40)); 
-                heat.draw();
+                try {
+                    const heat = simpleheat(canvas);
+                    heat.radius(radius, blur);
+                    heat.data(puntosEvolutivos);
+                    heat.max(Math.max(2, puntosEvolutivos.length / 40)); 
+                    heat.draw();
+                } catch(e){}
             }
         };
 
-        // LA MAGIA DE RENDERIZACIÓN DESACOPLADA (SOLO CARGA DATOS 1 VEZ)
         window.renderizarMapaCalor = (estudioId, materialIndex, filtroGenero = 'todos', filtroEdad = 'todos') => {
             try { window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]'); } catch(e){}
             const estudio = window.estudios.find(e => e.id === estudioId);
@@ -1600,11 +1621,13 @@
                 });
             }
 
-            // GUARDAMOS EN MEMORIA PARA QUE LOS BOTONES PINTEN INSTANTÁNEAMENTE
+            // GUARDAMOS EN MEMORIA GLOBAL PARA LOS BOTONES
             window.currentPuntosBrutos = puntosBrutos;
             window.currentFijacionesPorUsuario = fijacionesPorUsuario;
             window.currentFijacionesPlanas = [];
-            fijacionesPorUsuario.forEach(arr => window.currentFijacionesPlanas.push(...arr));
+            fijacionesPorUsuario.forEach(arr => {
+                window.currentFijacionesPlanas.push(...arr);
+            });
 
             const msToSecs = (ms) => (ms/1000).toFixed(2) + 's';
             
@@ -1653,7 +1676,6 @@
                 document.getElementById('heatmap-empty').style.display = 'none';
             }
 
-            // CARGA DE DIMENSIONES DEL LIENZO
             let isLoaded = false;
             const safeProcesarMediaLoaded = () => {
                 if(isLoaded) return;
@@ -1672,9 +1694,7 @@
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
                 
-                window.currentCanvas = canvas;
-                
-                // ORDENAMOS DIBUJAR LA CAPA
+                // ORDENAMOS DIBUJAR LA CAPA INSTANTANEAMENTE
                 window.dibujarCapaVisualizacion();
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
@@ -1689,90 +1709,8 @@
                 if (mediaEl.complete && mediaEl.naturalWidth > 0) safeProcesarMediaLoaded();
             }
             
-            // Failsafe 500ms
             setTimeout(safeProcesarMediaLoaded, 500);
             mediaEl.src = material.imagen;
-        };
-
-        // LA FUNCIÓN DESACOPLADA QUE PINTA AL INSTANTE CUANDO TOCAS UN BOTÓN
-        window.dibujarCapaVisualizacion = () => {
-            const canvas = window.currentCanvas;
-            if(!canvas) return;
-            
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            ctx.globalCompositeOperation = 'source-over'; 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            const mWidth = canvas.width;
-            const scaleFactor = mWidth / 800;
-            let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
-            let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
-
-            if (window.visualizacionModo === 'calor') {
-                const validPoints = window.currentPuntosBrutos.map(p => [p.x * canvas.width, p.y * canvas.height, 1]);
-                if (validPoints.length > 0) {
-                    const heat = simpleheat(canvas);
-                    heat.radius(radius, blur);
-                    heat.data(validPoints);
-                    heat.max(Math.max(2, validPoints.length / 40)); 
-                    heat.draw();
-                }
-            } else if (window.visualizacionModo === 'foco') {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.globalCompositeOperation = 'destination-out';
-                
-                const focusRadius = radius * 1.5; 
-                window.currentFijacionesPlanas.forEach(f => {
-                    if(isNaN(f.x) || isNaN(f.y)) return;
-                    let cx = f.x * canvas.width;
-                    let cy = f.y * canvas.height;
-                    let grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, focusRadius);
-                    grd.addColorStop(0, 'rgba(255, 255, 255, 1)'); 
-                    grd.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)'); 
-                    grd.addColorStop(1, 'rgba(255, 255, 255, 0)'); 
-                    ctx.fillStyle = grd;
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, focusRadius, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                ctx.globalCompositeOperation = 'source-over'; 
-            } else if (window.visualizacionModo === 'ruta') {
-                const paleta = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
-                window.currentFijacionesPorUsuario.forEach((userFix, index) => {
-                    let color = paleta[index % paleta.length];
-                    ctx.strokeStyle = color + '80'; 
-                    ctx.lineWidth = 4 * scaleFactor;
-                    ctx.beginPath();
-                    userFix.forEach((f, i) => {
-                        let cx = f.x * canvas.width;
-                        let cy = f.y * canvas.height;
-                        if(i===0) ctx.moveTo(cx, cy);
-                        else ctx.lineTo(cx, cy);
-                    });
-                    ctx.stroke();
-
-                    userFix.forEach((f, i) => {
-                        let cx = f.x * canvas.width;
-                        let cy = f.y * canvas.height;
-                        let r = Math.min(60 * scaleFactor, Math.max(15 * scaleFactor, (f.duracion / 30) * scaleFactor));
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                        ctx.fillStyle = color + 'CC';
-                        ctx.fill();
-                        ctx.strokeStyle = '#fff';
-                        ctx.lineWidth = 2 * scaleFactor;
-                        ctx.stroke();
-                        ctx.fillStyle = '#fff';
-                        ctx.font = `bold ${14 * scaleFactor}px Outfit`;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText(i + 1, cx, cy);
-                    });
-                });
-            } else if (window.visualizacionModo === 'playback') {
-                window.actualizarFramePlayback(document.getElementById('slider-playback').value);
-            }
         };
 
         function renderizarLineaDeTiempo(fijacionesPorUsuario, duracionSegundos) {
