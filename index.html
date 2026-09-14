@@ -191,12 +191,18 @@
         #p-intervalo .cruz::before, #p-intervalo .cruz::after { content: ''; position: absolute; background: #222; border-radius: 2px; }
         #p-intervalo .cruz::before { top: 23px; left: 0; width: 50px; height: 4px; }
         #p-intervalo .cruz::after { top: 0; left: 23px; width: 4px; height: 50px; }
+
+        .aoi-badge { padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .aoi-overlay { position: absolute; border: 2px dashed #f59e0b; background: rgba(245, 158, 11, 0.15); color: #fff; font-size: 0.75rem; font-weight: bold; pointer-events: none; display: flex; align-items: flex-start; justify-content: flex-start; padding: 2px 4px; z-index: 20; }
+        .quality-badge { padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; }
+        .quality-alta { background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid #10b981; }
+        .quality-media { background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid #f59e0b; }
+        .quality-baja { background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid #ef4444; }
     </style>
 </head>
 <body>
 
     <div class="bg-glow"></div>
-    <div class="bg-glow-2"></div>
     <div id="toast-container"></div>
 
     <button id="btn-abortar" onclick="volverAlDashboardDesdePrueba()" title="Cancelar prueba">
@@ -213,7 +219,7 @@
         <button class="btn btn-secondary btn-sm" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir del Sistema</button>
     </nav>
 
-    <!-- EL PORTAL ADMINISTRADOR (LANDING PAGE) -->
+    <!-- PORTAL ADMINISTRADOR -->
     <div id="view-landing" class="view" style="min-height: 80vh; align-items: center; justify-content: center; flex-direction: column; text-align: center;">
         <div style="font-size:4.5rem; font-weight:900; margin-bottom:1rem; letter-spacing:-1.5px; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
         <p style="color:var(--muted); font-size:1.15rem; margin-bottom:3.5rem; max-width:600px; line-height: 1.6; margin-left: auto; margin-right: auto;">
@@ -230,7 +236,7 @@
         </div>
     </div>
 
-    <!-- EL PANEL DE ADMINISTRACIÓN -->
+    <!-- PANEL DE ADMINISTRACIÓN -->
     <div id="admin-section" style="display:none;">
         <main style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
 
@@ -273,15 +279,15 @@
             </div>
 
             <div id="view-create" class="view">
-                <div style="max-width: 750px; margin: 0 auto;">
+                <div style="max-width: 800px; margin: 0 auto;">
                     <h2 id="form-titulo-modo" style="font-weight:800; font-size:1.5rem; margin-bottom:0.5rem;">Nuevo Estudio de Eye Tracking</h2>
-                    <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos independientes, duraciones y orden.</p>
+                    <p style="color:var(--muted); margin-bottom:2rem;">Configura estímulos independientes, duraciones, AOIs (Áreas de Interés) y orden.</p>
 
                     <div class="card">
                         <input type="hidden" id="edit-estudio-id" value="">
                         <div class="form-group">
                             <label class="form-label">Nombre del Estudio</label>
-                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Banners Campaña">
+                            <input type="text" id="create-nombre" class="form-input" placeholder="Ej: Test Banners Campaña B2B">
                         </div>
 
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -301,7 +307,7 @@
                         <hr style="border-color:var(--border); margin: 1.5rem 0;">
 
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
-                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales</h3>
+                            <h3 style="font-weight:700; font-size:1.1rem;">Materiales Visuales & Areas of Interest (AOIs)</h3>
                             <button class="btn btn-secondary btn-sm" onclick="agregarCampoEstimulo()"><i class="fas fa-plus"></i> Agregar Material</button>
                         </div>
 
@@ -327,7 +333,7 @@
                     </div>
                     <div style="display:flex; gap:0.5rem;">
                         <button class="btn btn-danger btn-sm" onclick="limpiarResultados()"><i class="fas fa-trash-alt"></i> Borrar Datos</button>
-                        <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> CSV</button>
+                        <button class="btn btn-primary btn-sm" onclick="exportarCSV()"><i class="fas fa-download"></i> CSV Fijaciones</button>
                     </div>
                 </div>
 
@@ -356,7 +362,7 @@
                         <div class="stat-number" style="font-size:2rem; margin-top:0.5rem;" id="metrica-ttff">-</div>
                     </div>
                     <div class="stat-card purple" style="padding: 1.25rem; flex: 1; min-width: 200px;">
-                        <div class="stat-label" style="margin-top:0; color:#c4b5fd;"><i class="fas fa-eye"></i> Duración Promedio</div>
+                        <div class="stat-label" style="margin-top:0; color:#c4b5fd;"><i class="fas fa-eye"></i> Duración Fijación</div>
                         <div class="stat-number" style="font-size:2rem; margin-top:0.5rem;" id="metrica-duracion">-</div>
                     </div>
                     <div class="stat-card amber" style="padding: 1.25rem; flex: 1; min-width: 200px;">
@@ -365,10 +371,35 @@
                     </div>
                 </div>
 
+                <!-- DASHBOARD AOI -->
+                <div class="card" style="margin-bottom: 2rem; border-color: var(--warn);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                        <h3 style="font-weight:800; font-size:1.1rem; color:var(--warn);"><i class="fas fa-bullseye"></i> Análisis de Áreas de Interés (AOIs)</h3>
+                        <label style="font-size:0.85rem; color:var(--fg); cursor:pointer; display:flex; align-items:center; gap:0.4rem;">
+                            <input type="checkbox" id="check-mostrar-aois" checked onchange="actualizarSensibilidadHeatmap()"> Mostrar Cajas AOI en Canvas
+                        </label>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Orden (TTFF)</th>
+                                    <th>Elemento AOI</th>
+                                    <th>TTFF Promedio</th>
+                                    <th>Tiempo Fijación Total</th>
+                                    <th>% Participantes que Vieron</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-aoi-resultados"></tbody>
+                        </table>
+                    </div>
+                    <div id="empty-aoi-results" class="empty-state" style="display:none; padding:1.5rem;">
+                        <p style="font-size:0.85rem; color:var(--muted);">No hay AOIs configuradas para este material o sin datos suficientes.</p>
+                    </div>
+                </div>
+
                 <div class="card" style="margin-bottom: 2rem; border-color: var(--accent);">
-                    
                     <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; align-items: center; background: var(--bg2); padding: 1rem; border-radius: 10px; flex-wrap: wrap; justify-content: space-between;">
-                        
                         <div id="heatmap-settings" style="display: flex; gap: 1.5rem; align-items: center;">
                             <div>
                                 <label class="form-label" style="font-size: 0.75rem;">Radio del Haz</label>
@@ -389,7 +420,7 @@
                     </div>
 
                     <div id="instruccion-badge" style="color: var(--warn); font-weight:600; font-size: 0.9rem; margin-bottom:1rem; text-align:center;"></div>
-                    <div id="heatmap-wrap" style="text-align:center;"></div>
+                    <div id="heatmap-wrap" style="text-align:center; position:relative;"></div>
                     <div id="heatmap-empty" class="empty-state" style="display:none;">
                         <p style="font-weight:600; color: var(--warn);"><i class="fas fa-exclamation-triangle"></i> Todavía no hay datos para este material.</p>
                     </div>
@@ -397,8 +428,8 @@
 
                 <div class="card" style="margin-bottom: 2rem;" id="panel-grafica">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                        <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Atención</h3>
-                        <span style="font-size:0.8rem; color:var(--muted);">Fijaciones simultáneas</span>
+                        <h3 style="font-weight:700; font-size:1.1rem;"><i class="fas fa-chart-line" style="color:var(--accent); margin-right:8px;"></i> Línea de Tiempo de Fijaciones</h3>
+                        <span style="font-size:0.8rem; color:var(--muted);">Fijaciones simultáneas acumuladas</span>
                     </div>
                     
                     <div style="position: relative; height: 140px; width: 100%;">
@@ -420,15 +451,17 @@
 
                 <div class="card">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                        <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados</h3>
+                        <h3 style="font-weight:700; font-size:1.1rem;">Participantes Registrados & Validación de Calidad</h3>
                     </div>
                     <div class="table-wrap">
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Participante ID</th>
+                                    <th>ID</th>
                                     <th>Fecha</th>
                                     <th>Demografía</th>
+                                    <th>Calibración Score</th>
+                                    <th>Calidad Muestra</th>
                                     <th style="text-align:right;">Acción</th>
                                 </tr>
                             </thead>
@@ -446,7 +479,6 @@
     <!-- SECCIÓN PARTICIPANTE -->
     <div id="participant-section" style="display:none;">
 
-        <!-- PANTALLA DE BIENVENIDA -->
         <div id="p-bienvenida" class="pantalla-participante" style="background: var(--bg); display:flex;">
             <div style="max-width:500px; text-align:center;">
                 <div style="font-size:3rem; font-weight:900; margin-bottom:0.5rem; color:white;">Eye<span style="color:var(--accent)">Track</span> Pro</div>
@@ -564,12 +596,12 @@
         <div id="p-fin" class="pantalla-participante" style="display:none; flex-direction:column; gap:1.25rem; background: var(--bg);">
             <div style="font-size:4rem; color:var(--accent);"><i class="fas fa-check-circle"></i></div>
             <h2 style="font-weight:900; font-size:2rem; color:white;">¡Estudio completado!</h2>
-            <p style="color:#bbb; max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido guardados correctamente.</p>
+            <p style="color:#bbb; max-width:400px; text-align:center; font-size:1.1rem;">Tus datos de atención ocular han sido procesados y guardados correctamente.</p>
             <button class="btn btn-primary" onclick="volverAlDashboardDesdePrueba()" style="margin-top:1rem;">Finalizar y Salir</button>
         </div>
     </div>
 
-    <!-- EL MOTOR JAVASCRIPT CORREGIDO Y BLINDADO -->
+    <!-- MOTOR JAVASCRIPT MEJORADO Y OPTIMIZADO -->
     <script type="text/javascript">
         window.estudioParticipanteObj = null; 
         window.estudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
@@ -586,9 +618,11 @@
         window.pollingInterval = null; 
         window.isCalibrating = false;
         
-        // LA VARIABLE CLAVE QUE RESCATA LOS DATOS:
         window.latestGazeData = null;
-        window.ultimoFrameOjos = 0;
+        window.ultimoFrameOjos = Date.now();
+        window.puntosPérdidaRostroCount = 0;
+        window.scoreCalibracionActual = 0;
+        window.calibErrorsList = [];
         
         window.attentionChart = null;
         window.playbackData = []; 
@@ -690,15 +724,6 @@
             document.getElementById('admin-nav').style.display = 'flex';
             document.getElementById('admin-section').style.display = 'block';
             window.navegarA('dashboard');
-        };
-
-        window.accederEstudioManual = () => {
-            const val = document.getElementById('input-codigo-estudio').value.trim();
-            if(!val) {
-                mostrarToast('Ingresa un código de estudio válido', 'error');
-                return;
-            }
-            window.location.href = window.location.href.split('?')[0] + '?estudio=' + val;
         };
 
         window.navegarA = (vista, idEdicion = null) => {
@@ -853,7 +878,7 @@
                     
                     if (est.estimulos && est.estimulos.length > 0) {
                         est.estimulos.forEach(mat => {
-                            agregarCampoEstimulo(mat.id, mat.nombre, mat.imagen, mat.pregunta, mat.duracion);
+                            agregarCampoEstimulo(mat.id, mat.nombre, mat.imagen, mat.pregunta, mat.duracion, mat.aois || []);
                         });
                         return;
                     }
@@ -862,10 +887,10 @@
             
             document.getElementById('form-titulo-modo').textContent = 'Nuevo Estudio de Eye Tracking';
             document.getElementById('create-nombre').value = '';
-            agregarCampoEstimulo('', 'Banner Principal', '', '¿Qué elementos llaman tu atención primero?', 10);
+            agregarCampoEstimulo('', 'Banner Principal', '', '¿Qué elementos llaman tu atención primero?', 10, []);
         }
 
-        window.agregarCampoEstimulo = (id = '', nombre = '', img = '', pregunta = '', duracion = 10) => {
+        window.agregarCampoEstimulo = (id = '', nombre = '', img = '', pregunta = '', duracion = 10, aois = []) => {
             const container = document.getElementById('lista-estimulos-creacion');
             const index = container.children.length;
             const div = document.createElement('div');
@@ -888,7 +913,7 @@
                             <label class="form-label">Pregunta o Instrucción</label>
                             <input type="text" class="form-input est-pregunta" value="${pregunta}" placeholder="Ej: ¿Qué atrae más tu vista?">
                         </div>
-                        <div class="form-group" style="margin-bottom:0;">
+                        <div class="form-group" style="margin-bottom:0.75rem;">
                             <label class="form-label">Duración (segundos)</label>
                             <input type="number" class="form-input est-duracion" value="${duracion}" min="3" max="60">
                         </div>
@@ -901,15 +926,65 @@
                             <img class="preview-img" src="${img || ''}" style="max-height:85px; margin:0 auto; display:${img ? 'block' : 'none'}; border-radius:4px; object-fit:contain;">
                         </div>
                         <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
-                            <input type="text" class="form-input url-input" style="font-size: 0.8rem; padding: 0.5rem;" placeholder="O pega una URL aquí...">
+                            <input type="text" class="form-input url-input" style="font-size: 0.8rem; padding: 0.5rem;" placeholder="O pega una URL (S3 / Firebase)...">
                             <button class="btn btn-secondary btn-sm" onclick="cargarImagenURLBtn(this)">Cargar URL</button>
                         </div>
                         <input type="hidden" class="est-img-base64" value="${img}">
                     </div>
                 </div>
+
+                <!-- SECCIÓN AOIs (AREAS OF INTEREST) -->
+                <div style="margin-top:1.25rem; background:var(--bg); padding:1rem; border-radius:8px; border:1px dashed var(--border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                        <span style="font-weight:700; font-size:0.85rem; color:var(--warn);"><i class="fas fa-bullseye"></i> Áreas de Interés (AOIs)</span>
+                        <div style="display:flex; gap:0.3rem;">
+                            <button class="btn btn-secondary btn-sm" onclick="agregarPresetAOI(this, 'Logo')">+ Logo</button>
+                            <button class="btn btn-secondary btn-sm" onclick="agregarPresetAOI(this, 'Producto')">+ Producto</button>
+                            <button class="btn btn-secondary btn-sm" onclick="agregarPresetAOI(this, 'Precio')">+ Precio</button>
+                            <button class="btn btn-secondary btn-sm" onclick="agregarPresetAOI(this, 'Promoción')">+ Promo</button>
+                            <button class="btn btn-secondary btn-sm" onclick="agregarPresetAOI(this, 'CTA')">+ CTA</button>
+                        </div>
+                    </div>
+                    <div class="aoi-lista-container" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+                </div>
             `;
             container.appendChild(div);
+
+            if (aois && aois.length > 0) {
+                aois.forEach(a => agregarItemAOIUI(div.querySelector('.aoi-lista-container'), a.nombre, a.x, a.y, a.width, a.height));
+            }
         };
+
+        window.agregarPresetAOI = (btn, tipo) => {
+            const container = btn.closest('.estimulo-item-card').querySelector('.aoi-lista-container');
+            const presets = {
+                'Logo': { x: 5, y: 5, w: 25, h: 15 },
+                'Producto': { x: 30, y: 20, w: 40, h: 50 },
+                'Precio': { x: 75, y: 15, w: 20, h: 15 },
+                'Promoción': { x: 10, y: 70, w: 35, h: 20 },
+                'CTA': { x: 60, y: 70, w: 35, h: 20 }
+            };
+            const p = presets[tipo] || { x: 10, y: 10, w: 20, h: 20 };
+            agregarItemAOIUI(container, tipo, p.x, p.y, p.w, p.h);
+        };
+
+        function agregarItemAOIUI(container, nombre = 'Zona', x = 10, y = 10, w = 20, h = 20) {
+            const div = document.createElement('div');
+            div.className = 'aoi-item-row';
+            div.style.display = 'grid';
+            div.style.gridTemplateColumns = '2fr 1fr 1fr 1fr 1fr auto';
+            div.style.gap = '0.5rem';
+            div.style.alignItems = 'center';
+            div.innerHTML = `
+                <input type="text" class="form-input aoi-nombre" value="${nombre}" placeholder="Nombre AOI" style="padding:0.3rem 0.5rem; font-size:0.8rem;">
+                <input type="number" class="form-input aoi-x" value="${x}" placeholder="X %" min="0" max="100" style="padding:0.3rem 0.5rem; font-size:0.8rem;">
+                <input type="number" class="form-input aoi-y" value="${y}" placeholder="Y %" min="0" max="100" style="padding:0.3rem 0.5rem; font-size:0.8rem;">
+                <input type="number" class="form-input aoi-w" value="${w}" placeholder="W %" min="1" max="100" style="padding:0.3rem 0.5rem; font-size:0.8rem;">
+                <input type="number" class="form-input aoi-h" value="${h}" placeholder="H %" min="1" max="100" style="padding:0.3rem 0.5rem; font-size:0.8rem;">
+                <button class="btn btn-danger btn-sm" onclick="this.closest('.aoi-item-row').remove()"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(div);
+        }
 
         window.cargarImagenLocal = (input) => {
             const file = input.files[0];
@@ -933,7 +1008,6 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    
                     const maxDim = 600; 
                     let width = img.width;
                     let height = img.height;
@@ -990,12 +1064,24 @@
                     let estIdInput = t.querySelector('.est-id');
                     let matId = estIdInput ? estIdInput.value : 'mat_' + Math.random().toString(36).substr(2, 9);
 
+                    let aois = [];
+                    t.querySelectorAll('.aoi-item-row').forEach(row => {
+                        aois.push({
+                            nombre: row.querySelector('.aoi-nombre').value.trim() || 'AOI',
+                            x: Number(row.querySelector('.aoi-x').value) || 0,
+                            y: Number(row.querySelector('.aoi-y').value) || 0,
+                            width: Number(row.querySelector('.aoi-w').value) || 10,
+                            height: Number(row.querySelector('.aoi-h').value) || 10
+                        });
+                    });
+
                     estimulos.push({
                         id: matId,
                         nombre: t.querySelector('.est-nombre').value.trim() || 'Material sin nombre',
                         imagen: imgVal,
                         pregunta: t.querySelector('.est-pregunta').value.trim() || 'Observa la imagen',
-                        duracion: Number(t.querySelector('.est-duracion').value) || 10
+                        duracion: Number(t.querySelector('.est-duracion').value) || 10,
+                        aois: aois
                     });
                 });
 
@@ -1042,7 +1128,7 @@
 
             } catch(e) {
                 if(e.name === 'QuotaExceededError' || e.message.includes('Quota')) {
-                    alert("⚠️ Memoria del navegador LLENA (Límite 5MB). Ve al Dashboard y elimina estudios antiguos haciendo clic en el basurero rojo para liberar espacio.");
+                    alert("⚠️ Memoria del navegador LLENA (Límite 5MB). Ve al Dashboard y elimina estudios antiguos haciendo clic en el basurero rojo o utiliza URLs de imagen externas (S3/Firebase).");
                 } else {
                     alert("⚠️ Error: " + e.message);
                 }
@@ -1090,12 +1176,14 @@
                 let parts = [...est.participantes].reverse(); 
                 parts.forEach(p => {
                     const d = new Date(p.fecha).toLocaleString();
+                    const qClass = p.calidad === 'Alta' ? 'quality-alta' : p.calidad === 'Media' ? 'quality-media' : 'quality-baja';
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><span style="font-size:0.75rem; color:var(--accent); font-family:monospace;">${p.id}</span></td>
                         <td style="color:var(--muted); font-size:0.85rem;">${d}</td>
-                        <td>${p.edadRango}</td>
-                        <td>${p.genero} / ${p.ocupacion}</td>
+                        <td>${p.edadRango} / ${p.genero}</td>
+                        <td><strong style="color:var(--accent);">${p.scoreCalibracion || 85}%</strong></td>
+                        <td><span class="quality-badge ${qClass}">${p.calidad || 'Alta'}</span></td>
                         <td style="text-align:right;">
                             <button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:transparent;" onclick="borrarUnParticipante('${p.id}')"><i class="fas fa-trash"></i></button>
                         </td>
@@ -1108,12 +1196,17 @@
             if (est.estimulos.length > 0) renderizarMapaCalor(id, 0);
         };
 
+        // ALGORITMO OPTIMIZADO DE DETECCIÓN DE FIJACIONES (3 DECIMALES)
         function analizarFijaciones(puntosArray) {
             let fijaciones = [];
             if (!puntosArray || puntosArray.length === 0) return fijaciones;
             
+            if (puntosArray[0] && typeof puntosArray[0].duracion === 'number') {
+                return puntosArray;
+            }
+
             let i = 0;
-            const umbralDistancia = 0.25; 
+            const umbralDistancia = 0.08; 
             const umbralTiempo = 100;     
 
             while(i < puntosArray.length) {
@@ -1130,7 +1223,7 @@
                     minY = Math.min(minY, currentY);
                     maxY = Math.max(maxY, currentY);
 
-                    let dist = Math.max(maxX - minX, maxY - minY);
+                    let dist = Math.hypot(maxX - minX, maxY - minY);
                     if(dist > umbralDistancia) break; 
                     j++;
                 }
@@ -1139,10 +1232,11 @@
                     let duracion = puntosArray[j-1].time - puntosArray[i].time;
                     if(duracion >= umbralTiempo) {
                         fijaciones.push({
+                            x: Number(((minX + maxX)/2).toFixed(3)),
+                            y: Number(((minY + maxY)/2).toFixed(3)),
+                            time: puntosArray[i].time,
                             inicio: puntosArray[i].time,
-                            duracion: duracion,
-                            x: (minX + maxX)/2,
-                            y: (minY + maxY)/2
+                            duracion: duracion
                         });
                         i = j; 
                     } else {
@@ -1220,7 +1314,8 @@
             let puntosEvolutivos = [];
             window.playbackData.forEach(userPoints => {
                 for(let i=0; i < userPoints.length; i++){
-                    if(userPoints[i].time <= currentTime) {
+                    let t = userPoints[i].time || userPoints[i].inicio || 0;
+                    if(t <= currentTime) {
                         puntosEvolutivos.push([userPoints[i].x * canvas.width, userPoints[i].y * canvas.height, 1]);
                     } else break;
                 }
@@ -1257,7 +1352,7 @@
             document.getElementById('label-playback-max').textContent = (window.playbackMaxTime/1000).toFixed(1) + 's';
             window.playbackData = []; 
 
-            let puntosBrutos = [];
+            let fijacionesTotalesBrutas = [];
             let totalParticipantesFiltro = 0;
             let sumTTFF = 0;
             let sumDuracionFijacion = 0;
@@ -1274,21 +1369,18 @@
                     if (p.gazePorMaterial && p.gazePorMaterial[material.id] && p.gazePorMaterial[material.id].length > 0) {
                         totalParticipantesFiltro++;
                         
-                        const dataUsuario = p.gazePorMaterial[material.id].filter(
-                            pt => typeof pt.x === 'number' && typeof pt.y === 'number' && !isNaN(pt.x) && !isNaN(pt.y) && isFinite(pt.x) && isFinite(pt.y)
-                        );
+                        const rawData = p.gazePorMaterial[material.id];
+                        const fijacionesUsr = analizarFijaciones(rawData);
                         
-                        puntosBrutos = puntosBrutos.concat(dataUsuario);
-                        window.playbackData.push(dataUsuario); 
+                        fijacionesTotalesBrutas = fijacionesTotalesBrutas.concat(fijacionesUsr);
+                        window.playbackData.push(fijacionesUsr); 
 
-                        const fijacionesUsr = analizarFijaciones(dataUsuario);
-                        
                         if(fijacionesUsr.length > 0) {
                             fijacionesPorUsuario.push(fijacionesUsr);
-                            sumTTFF += fijacionesUsr[0].inicio; 
+                            sumTTFF += (fijacionesUsr[0].inicio || fijacionesUsr[0].time || 0); 
                             countTTFFValidos++;
                             totalFijacionesCalculadas += fijacionesUsr.length;
-                            fijacionesUsr.forEach(f => sumDuracionFijacion += f.duracion);
+                            fijacionesUsr.forEach(f => sumDuracionFijacion += (f.duracion || 150));
                         }
                     }
                 });
@@ -1300,10 +1392,6 @@
                 document.getElementById('metrica-ttff').textContent = msToSecs(sumTTFF / countTTFFValidos);
                 document.getElementById('metrica-duracion').textContent = msToSecs(sumDuracionFijacion / totalFijacionesCalculadas);
                 document.getElementById('metrica-cantidad').textContent = (totalFijacionesCalculadas / totalParticipantesFiltro).toFixed(1);
-            } else if (totalParticipantesFiltro > 0) {
-                document.getElementById('metrica-ttff').textContent = "< 0.10s";
-                document.getElementById('metrica-duracion').textContent = "Escaneo";
-                document.getElementById('metrica-cantidad').textContent = "1.0";
             } else {
                 document.getElementById('metrica-ttff').textContent = '-';
                 document.getElementById('metrica-duracion').textContent = '-';
@@ -1326,7 +1414,7 @@
             container.appendChild(canvas);
             wrap.appendChild(container);
 
-            if (puntosBrutos.length === 0) {
+            if (fijacionesTotalesBrutas.length === 0) {
                 document.getElementById('heatmap-empty').style.display = 'block';
             } else {
                 document.getElementById('heatmap-empty').style.display = 'none';
@@ -1338,14 +1426,14 @@
                 canvas.style.width = '100%';
                 canvas.style.height = '100%';
                 
-                if (puntosBrutos.length > 0) {
+                if (fijacionesTotalesBrutas.length > 0) {
                     const scaleFactor = img.naturalWidth / 800;
                     let radius = Number(document.getElementById('heatmap-radius').value) * scaleFactor;
                     let blur = Number(document.getElementById('heatmap-blur').value) * scaleFactor;
                     
                     const validPoints = [];
-                    puntosBrutos.forEach(p => {
-                        validPoints.push([p.x * canvas.width, p.y * canvas.height, 1]);
+                    fijacionesTotalesBrutas.forEach(p => {
+                        validPoints.push([p.x * canvas.width, p.y * canvas.height, Math.min(5, Math.max(1, (p.duracion || 150) / 100))]);
                     });
 
                     try {
@@ -1353,7 +1441,7 @@
                             const heat = simpleheat(canvas);
                             heat.radius(radius, blur);
                             heat.data(validPoints);
-                            heat.max(Math.max(2, validPoints.length / 40)); 
+                            heat.max(Math.max(2, validPoints.length / 30)); 
                             heat.draw();
                         } else if (window.visualizacionModo === 'foco') {
                             const ctx = canvas.getContext('2d');
@@ -1361,11 +1449,9 @@
                             ctx.fillRect(0, 0, canvas.width, canvas.height);
                             ctx.globalCompositeOperation = 'destination-out';
                             
-                            const fijacionesTotales = analizarFijaciones(puntosBrutos);
                             const focusRadius = radius * 1.5; 
 
-                            fijacionesTotales.forEach(f => {
-                                if(isNaN(f.x) || isNaN(f.y)) return;
+                            fijacionesTotalesBrutas.forEach(f => {
                                 let cx = f.x * canvas.width;
                                 let cy = f.y * canvas.height;
                                 
@@ -1400,7 +1486,7 @@
                                 userFix.forEach((f, i) => {
                                     let cx = f.x * canvas.width;
                                     let cy = f.y * canvas.height;
-                                    let radio = Math.min(60 * scaleFactor, Math.max(15 * scaleFactor, (f.duracion / 30) * scaleFactor));
+                                    let radio = Math.min(60 * scaleFactor, Math.max(15 * scaleFactor, ((f.duracion || 150) / 30) * scaleFactor));
                                     
                                     ctx.beginPath();
                                     ctx.arc(cx, cy, radio, 0, Math.PI * 2);
@@ -1422,16 +1508,110 @@
                             document.getElementById('btn-playpause').innerHTML = '<i class="fas fa-play" style="margin-left:3px;"></i>';
                             window.actualizarFramePlayback(0);
                         }
+
+                        // DIBUJAR CAJAS AOI SOBRE EL CANVAS SI ESTÁ ACTIVADO
+                        const mostrarAOIs = document.getElementById('check-mostrar-aois').checked;
+                        if (mostrarAOIs && material.aois && material.aois.length > 0) {
+                            const ctx = canvas.getContext('2d');
+                            ctx.globalCompositeOperation = 'source-over';
+                            material.aois.forEach(aoi => {
+                                let ax = (aoi.x / 100) * canvas.width;
+                                let ay = (aoi.y / 100) * canvas.height;
+                                let aw = (aoi.width / 100) * canvas.width;
+                                let ah = (aoi.height / 100) * canvas.height;
+
+                                ctx.strokeStyle = '#f59e0b';
+                                ctx.lineWidth = 3 * scaleFactor;
+                                ctx.setLineDash([6, 6]);
+                                ctx.strokeRect(ax, ay, aw, ah);
+
+                                ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
+                                ctx.fillRect(ax, ay, aw, ah);
+
+                                ctx.fillStyle = '#f59e0b';
+                                ctx.font = `bold ${16 * scaleFactor}px Outfit`;
+                                ctx.fillText(aoi.nombre, ax + 5, ay + 20 * scaleFactor);
+                            });
+                        }
+
                     } catch(e) {
                         console.error("Seguro activo. UI protegida.", e);
                     }
                 }
                 
+                calcularMétricasAOI(material, fijacionesPorUsuario, totalParticipantesFiltro);
                 renderizarLineaDeTiempo(fijacionesPorUsuario, material.duracion || 10);
             };
             
             img.src = material.imagen;
         };
+
+        // DASHBOARD Y CÁLCULO DE MÉTRICAS AOI
+        function calcularMétricasAOI(material, fijacionesPorUsuario, totalUsuarios) {
+            const tbody = document.getElementById('tabla-aoi-resultados');
+            tbody.innerHTML = '';
+
+            if (!material.aois || material.aois.length === 0 || totalUsuarios === 0) {
+                document.getElementById('empty-aoi-results').style.display = 'block';
+                return;
+            }
+            document.getElementById('empty-aoi-results').style.display = 'none';
+
+            let reportesAOI = material.aois.map(aoi => {
+                let usuariosVieronCount = 0;
+                let sumTTFF = 0;
+                let sumTiempoTotal = 0;
+
+                fijacionesPorUsuario.forEach(userFix => {
+                    let primeraFijacionInAOI = null;
+                    let tiempoTotalUserAOI = 0;
+
+                    userFix.forEach(f => {
+                        let fx = f.x * 100;
+                        let fy = f.y * 100;
+
+                        if (fx >= aoi.x && fx <= (aoi.x + aoi.width) && fy >= aoi.y && fy <= (aoi.y + aoi.height)) {
+                            if (!primeraFijacionInAOI) primeraFijacionInAOI = f;
+                            tiempoTotalUserAOI += (f.duracion || 150);
+                        }
+                    });
+
+                    if (primeraFijacionInAOI) {
+                        usuariosVieronCount++;
+                        sumTTFF += (primeraFijacionInAOI.inicio || primeraFijacionInAOI.time || 0);
+                        sumTiempoTotal += tiempoTotalUserAOI;
+                    }
+                });
+
+                let ttffPromedio = usuariosVieronCount > 0 ? (sumTTFF / usuariosVieronCount) : Infinity;
+                let tiempoFijacionPromedio = usuariosVieronCount > 0 ? (sumTiempoTotal / usuariosVieronCount) : 0;
+                let porcentajeVisto = (usuariosVieronCount / totalUsuarios) * 100;
+
+                return {
+                    nombre: aoi.nombre,
+                    ttff: ttffPromedio,
+                    tiempoTotal: tiempoFijacionPromedio,
+                    porcentaje: porcentajeVisto
+                };
+            });
+
+            reportesAOI.sort((a, b) => a.ttff - b.ttff);
+
+            reportesAOI.forEach((r, idx) => {
+                const tr = document.createElement('tr');
+                const ttffTxt = r.ttff === Infinity ? '-' : (r.ttff / 1000).toFixed(2) + 's';
+                const totalTxt = (r.tiempoTotal / 1000).toFixed(2) + 's';
+                
+                tr.innerHTML = `
+                    <td><span class="aoi-badge" style="background:rgba(245,158,11,0.2); color:#f59e0b;">#${idx + 1}</span></td>
+                    <td style="font-weight:700;">${r.nombre}</td>
+                    <td>${ttffTxt}</td>
+                    <td>${totalTxt}</td>
+                    <td><strong style="color:var(--accent);">${r.porcentaje.toFixed(1)}%</strong></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
         function renderizarLineaDeTiempo(fijacionesPorUsuario, duracionSegundos) {
             let maxTime = duracionSegundos * 1000;
@@ -1444,7 +1624,9 @@
                 
                 fijacionesPorUsuario.forEach(userFix => {
                     userFix.forEach(f => {
-                        if (f.inicio <= t + 500 && (f.inicio + f.duracion) >= t) {
+                        let tIni = f.inicio || f.time || 0;
+                        let tDur = f.duracion || 150;
+                        if (tIni <= t + 500 && (tIni + tDur) >= t) {
                             fijacionesSimultaneas++;
                         }
                     });
@@ -1460,7 +1642,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Fijaciones simultáneas (Usuarios mirando un punto fijo)',
+                        label: 'Fijaciones simultáneas (Usuarios enfocando la vista)',
                         data: dataAtencion,
                         borderColor: '#10b981',
                         backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -1512,27 +1694,30 @@
             }
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Estudio,Participante_ID,Edad,Genero,Ocupacion,Material_ID,Material_Nombre,Tiempo_ms,Norm_X,Norm_Y\n";
+            csvContent += "Estudio,Participante_ID,Edad,Genero,Ocupacion,Score_Calibracion,Calidad_Muestra,Material_ID,Material_Nombre,Inicio_ms,Duracion_ms,Norm_X,Norm_Y\n";
 
             estudio.participantes.forEach(part => {
                 if (part.gazePorMaterial) {
                     Object.keys(part.gazePorMaterial).forEach(matId => {
                         const material = estudio.estimulos.find(m => m.id === matId);
                         const matNombre = material ? material.nombre : matId;
-                        const gazeData = part.gazePorMaterial[matId];
+                        const fijacionesData = analizarFijaciones(part.gazePorMaterial[matId]);
 
-                        gazeData.forEach(punto => {
+                        fijacionesData.forEach(f => {
                             const row = [
                                 `"${estudio.nombre}"`, 
                                 part.id, 
                                 `"${part.edadRango}"`, 
                                 `"${part.genero}"`, 
                                 `"${part.ocupacion}"`,
+                                part.scoreCalibracion || 85,
+                                `"${part.calidad || 'Alta'}"`,
                                 matId, 
                                 `"${matNombre}"`, 
-                                punto.time, 
-                                punto.x.toFixed(4), 
-                                punto.y.toFixed(4)
+                                f.inicio || f.time || 0, 
+                                f.duracion || 150,
+                                f.x.toFixed(3), 
+                                f.y.toFixed(3)
                             ].join(",");
                             csvContent += row + "\n";
                         });
@@ -1543,7 +1728,7 @@
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `DataEyeTracking_${estudio.nombre.replace(/\s+/g, '_')}.csv`);
+            link.setAttribute("download", `DataEyeTracking_Fijaciones_${estudio.nombre.replace(/\s+/g, '_')}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -1563,7 +1748,6 @@
             mostrarPantalla('p-consentimiento');
         };
 
-        // INICIAR WEBGAZER JS SEGURO
         window.participanteAceptar = function() {
             const btn = document.getElementById('btn-iniciar-camara');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando IA WebGazer...';
@@ -1574,15 +1758,11 @@
                 window.localStorage.removeItem('webgazerGlobalData');
                 window.localStorage.removeItem('webgazerGlobalSettings');
 
-                // ESTE ES EL RECOLECTOR MAESTRO DE DATOS (EL ÚNICO LISTENER)
                 webgazer.setRegression('ridge').setGazeListener(function(data, elapsedTime) {
                     if (data == null) {
-                        window.ultimoFrameOjos = 0; 
                         return;
                     }
                     window.ultimoFrameOjos = Date.now();
-
-                    // ¡LA CORRECCIÓN VITAL ESTÁ AQUÍ! Pasamos los datos en vivo a la variable global.
                     window.latestGazeData = data; 
                     
                 }).begin().then(function() {
@@ -1623,6 +1803,7 @@
 
         function iniciarCalibracionPasoAPaso() {            
             pasoCalibracionActual = 0;
+            window.calibErrorsList = [];
             mostrarPantalla('contenedor-calibracion');
             mostrarPuntoCalibracion();
         }
@@ -1632,6 +1813,19 @@
 
             if (pasoCalibracionActual >= puntosCalibracion.length) {
                 punto.style.display = 'none';
+                
+                // CÁLCULO DEL SCORE DE CALIBRACIÓN (%)
+                let avgError = window.calibErrorsList.length > 0 ? (window.calibErrorsList.reduce((a,b)=>a+b, 0) / window.calibErrorsList.length) : 50;
+                let calibScore = Math.max(30, Math.min(98, Math.round(100 - (avgError / 12))));
+                window.scoreCalibracionActual = calibScore;
+
+                if (calibScore < 60) {
+                    if (confirm(`⚠️ Score de precisión de calibración bajo (${calibScore}%). ¿Deseas repetir la calibración para mejorar la precisión?`)) {
+                        iniciarCalibracionPasoAPaso();
+                        return;
+                    }
+                }
+                
                 iniciarSecuenciaEstimulos();
                 return;
             }
@@ -1659,6 +1853,11 @@
                     return; 
                 }
                 
+                if (window.latestGazeData) {
+                    let err = Math.hypot(e.clientX - window.latestGazeData.x, e.clientY - window.latestGazeData.y);
+                    window.calibErrorsList.push(err);
+                }
+
                 try { webgazer.recordScreenPosition(e.clientX, e.clientY, 'click'); } catch(err) {}
 
                 window.isCalibrating = false;
@@ -1752,6 +1951,7 @@
 
                 window.datosGazeActuales = [];
                 window.tiempoInicioEstimulo = Date.now();
+                window.puntosPérdidaRostroCount = 0;
                 
                 let duracionMs = Number(mat.duracion);
                 if(isNaN(duracionMs) || duracionMs <= 0) duracionMs = 10;
@@ -1759,11 +1959,17 @@
 
                 window.isStimulusActive = true; 
 
-                // LOOP DE RECOLECCIÓN QUE LEE LOS DATOS FRESCOS DE LA VARIABLE GLOBAL
+                // MUESTREO REDUCIDO A 60 ms & MONITOREO DE PÉRDIDA DE ROSTRO
                 window.pollingInterval = setInterval(() => {
-                    if(!window.isStimulusActive || !window.latestGazeData) return;
-                    
-                    if (imgEl.naturalWidth === 0 || imgEl.naturalHeight === 0) return; 
+                    if(!window.isStimulusActive) return;
+
+                    // MONITOR PÉRDIDA DE ROSTRO (DESAPARICIÓN POR MÁS DE 1.2 SEG)
+                    if (Date.now() - window.ultimoFrameOjos > 1200) {
+                        window.puntosPérdidaRostroCount++;
+                        mostrarToast('⚠️ Rostro no detectado. Ubícate frente a la cámara', 'warn');
+                    }
+
+                    if (!window.latestGazeData || imgEl.naturalWidth === 0 || imgEl.naturalHeight === 0) return; 
                     
                     let data = window.latestGazeData;
                     let rect = imgEl.getBoundingClientRect(); 
@@ -1789,25 +1995,28 @@
                     let normX = (data.x - rect.left - offX) / drawW;
                     let normY = (data.y - rect.top - offY) / drawH;
 
-                    let finalX = Math.max(0, Math.min(1, normX));
-                    let finalY = Math.max(0, Math.min(1, normY));
+                    // COMPRESIÓN DE COORDENADAS A 3 DECIMALES
+                    let finalX = Number(Math.max(0, Math.min(1, normX)).toFixed(3));
+                    let finalY = Number(Math.max(0, Math.min(1, normY)).toFixed(3));
 
                     if (!isNaN(finalX) && !isNaN(finalY) && isFinite(finalX) && isFinite(finalY)) {
                         window.datosGazeActuales.push({
                             x: finalX,
                             y: finalY,
-                            time: Date.now() - window.tiempoInicioEstimulo,
-                            intensity: 1
+                            time: Date.now() - window.tiempoInicioEstimulo
                         });
                     }
-                }, 30);
+                }, 60);
 
                 window.timeoutEstimulo = setTimeout(() => {
                     clearInterval(window.pollingInterval);
                     window.isStimulusActive = false; 
                     
+                    // PROCESAR Y GUARDAR ÚNICAMENTE FIJACIONES PARA REDUCIR ESPACIO HASTA 95%
+                    let fijacionesCalculadas = analizarFijaciones(window.datosGazeActuales);
+
                     if (!window.resultadosParticipanteGaze.gazePorMaterial) window.resultadosParticipanteGaze.gazePorMaterial = {};
-                    window.resultadosParticipanteGaze.gazePorMaterial[mat.id] = window.datosGazeActuales;
+                    window.resultadosParticipanteGaze.gazePorMaterial[mat.id] = fijacionesCalculadas;
 
                     window.materialActualIndex++;
                     if (window.materialActualIndex < window.estimulosOrdenadosActuales.length) {
@@ -1835,6 +2044,14 @@
 
             mostrarPantalla('p-fin');
 
+            // VALIDACIÓN DE CALIDAD DEL PARTICIPANTE
+            let calidadFinal = 'Alta';
+            if (window.scoreCalibracionActual < 55 || window.puntosPérdidaRostroCount > 4) {
+                calidadFinal = 'Baja';
+            } else if (window.scoreCalibracionActual < 75 || window.puntosPérdidaRostroCount > 1) {
+                calidadFinal = 'Media';
+            }
+
             if (window.estudioParticipanteObj) {
                 let dbEstudios = JSON.parse(localStorage.getItem('et_estudios') || '[]');
                 const idx = dbEstudios.findIndex(e => e.id === window.estudioParticipanteObj.id);
@@ -1845,6 +2062,8 @@
                     dbEstudios[idx].participantes.push({
                         id: 'part_' + Math.random().toString(36).substr(2, 9),
                         fecha: Date.now(),
+                        scoreCalibracion: window.scoreCalibracionActual || 85,
+                        calidad: calidadFinal,
                         ...window.datosDemograficosTemp,
                         gazePorMaterial: window.resultadosParticipanteGaze.gazePorMaterial || {}
                     });
@@ -1854,7 +2073,7 @@
                         window.estudios = dbEstudios;
                     } catch (e) {
                         console.error(e);
-                        alert("⚠️ ¡CUIDADO! La memoria del navegador está llena (Límite 5MB). Los datos de esta prueba NO pudieron guardarse. Ve al Dashboard y borra estudios antiguos para liberar espacio.");
+                        alert("⚠️ ¡CUIDADO! La memoria del navegador está llena (Límite 5MB). Se recomienda migrar a Cloud Storage (Firebase/S3) para estudios de alto tráfico.");
                     }
                 }
             }
